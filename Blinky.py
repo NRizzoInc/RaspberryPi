@@ -14,7 +14,7 @@ from threading import Thread
 import argparse
 
 # setup board objects
-redLED = PWMLED(24) # gpio18 (can use variable brightness)
+redLED = PWMLED(24) # pin18 (can use variable brightness)
 yellowLED = PWMLED(23)
 greenLED = PWMLED(18)
 blueLED = PWMLED(15)
@@ -37,8 +37,10 @@ def justLED():
     while True:
         # can also just use "blink(on_time, off_time)"
         redLED.on()
+        print("On")
         time.sleep(1)
         redLED.off()
+        print("Off")
         time.sleep(1)
 
 # blinks LED but increases intensity
