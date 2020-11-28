@@ -24,19 +24,6 @@ greenButton = Button(4)
 blueButton = Button(17)
 
 
-# calls the correct function based on the mode
-def main(mode:int):
-    if mode == 1: justLED()
-    if mode == 2: LEDIntensity()
-    if mode == 3: redPress()
-    if mode == 4: rgbyButtons()
-
-# create lmbda specific function for each
-redPress    = lambda: buttonToLED(redLED, redButton)
-yellowPress = lambda: buttonToLED(yellowLED, yellowButton)
-greenPress  = lambda: buttonToLED(greenLED, greenButton)
-bluePress   = lambda: buttonToLED(blueLED, blueButton)
-
 # helper function that turns on a specific LED based on a specific button
 def buttonToLED(LEDobj:PWMLED, buttonObj:Button):
     while True:
@@ -78,11 +65,33 @@ def rgbyButtons():
 
 
 
-if __name__ == "__main__":    
-    if len(sys.argv) < 2:
-        print("Invalid # of arguments! (enter mode '1' for blink, or '2' for button control")
-        sys.exit()
-        
-    mode = int(sys.argv[1])
+# create lmbda specific function for each
+redPress    = lambda: buttonToLED(redLED, redButton)
+yellowPress = lambda: buttonToLED(yellowLED, yellowButton)
+greenPress  = lambda: buttonToLED(greenLED, greenButton)
+bluePress   = lambda: buttonToLED(blueLED, blueButton)
 
-    main(mode)
+# calls the correct function based on the mode
+modeToAction = {
+    "LED-Blink"         :   justLED(),
+    "LED-Intensity"     :   LEDIntensity(),
+    "Red-Button"        :   redPress(),
+    "Buttons"           :   rgbyButtons()
+}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Basic GPIO Controller")
+    parser.add_argument(
+        "-m", "--mode",
+        required=True,
+        help="Which action to perform",
+        choices=list(modeToAction.keys())
+        
+    )
+
+    # actually parse flags
+    args = parser.parse_args()
+    
+    # call entered function
+    modeToAction[args.mode]()
