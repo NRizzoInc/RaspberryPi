@@ -73,10 +73,10 @@ bluePress   = lambda: buttonToLED(blueLED, blueButton)
 
 # calls the correct function based on the mode
 modeToAction = {
-    "LED-Blink"         :   justLED(),
-    "LED-Intensity"     :   LEDIntensity(),
-    "Red-Button"        :   redPress(),
-    "Buttons"           :   rgbyButtons()
+    "Red-Blink"         :   justLED,
+    "LED-Intensity"     :   LEDIntensity,
+    "Red-Button"        :   redPress,
+    "Buttons"           :   rgbyButtons
 }
 
 
