@@ -1,0 +1,10 @@
+# Build/Run Remenants
+__pycache__/
+build/
+dist/
+
+# exclude all log Files
+*.log
+
+# Dev tools
+\.vscode/

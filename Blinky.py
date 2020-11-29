@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+# standard includes
 import os
 import sys
 import gpiozero
@@ -7,11 +8,11 @@ from gpiozero import LED, Button, PWMLED
 from signal import pause
 import time
 from time import sleep
-import multiprocessing
-from multiprocessing import Process
-import threading
-from threading import Thread
+from threading import Thread, Event
 import argparse
+
+# our includes
+from threadHelpers.killableThreads import threadWithException, stopThreadOnSetCallback
 
 # setup board objects
 redLED = PWMLED(24) # pin18 (can use variable brightness)
@@ -54,16 +55,50 @@ def LEDIntensity():
 # blinks with button (red, yellow, green blue)- uses multiprocess
 def rgbyButtons():
     # create a process for each color (total of 4- red, yellow, green, blue)
-    redProc = Thread(target=redPress, name='red')
-    yellowProc = Thread(target=yellowPress, name='yellow')
-    greenProc = Thread(target=greenPress, name='green')
-    blueProc = Thread(target=bluePress, name='blue')
+    # add an event which is used to communicate stopping to all threads
+    stopEvent = Event()
+    
+    redProc = threadWithException(
+        target=redPress,
+        toPrintOnStop="Stopping red",
+        name='red',
+        stopEvent=stopEvent
+    )
+    yellowProc = threadWithException(
+        target=yellowPress, 
+        toPrintOnStop="Stopping yellow",
+        name='yellow',
+        stopEvent=stopEvent
+    )
+    greenProc = threadWithException(
+        target=greenPress,  
+        toPrintOnStop="Stopping green",
+        name='green',
+        stopEvent=stopEvent
+    )
+    blueProc = threadWithException(
+        target=bluePress,   
+        toPrintOnStop="Stopping blue",
+        name='blue',
+        stopEvent=stopEvent
+    )
 
     # start the processes
     redProc.start()
+    redProc.join()
+
     yellowProc.start()
+    yellowProc.join()
+
     greenProc.start()
+    greenProc.join()
+
     blueProc.start()
+    blueProc.join()
+
+    # end all threads
+    
+    # stopEvent.set()
 
 
 
