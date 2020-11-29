@@ -175,7 +175,7 @@ if __name__ == "__main__":
         "-n", "--name",
         required=False,
         help="Which Led-Button Pair to use. Only needed for ",
-        choices=list(gpioHandler.getBtnLedPairNames())
+        choices=list(gpioHandler.getBtnLedPairNames()),
         
     )
 
@@ -183,5 +183,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # call entered function
-    gpioHandler.run(args.mode, pairName=args.pairName)
+    gpioHandler.run(args.mode, pairName=args.name)
 
