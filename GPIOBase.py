@@ -21,7 +21,7 @@ class GPIOBase():
 
         # Map functions based on the input mode
         self.__modeToAction = {
-            "Blink"         : self.blinkLed,
+            "Blink"         : lambda nameLi, interval, *args, **kwargs: self.blinkLeds(nameLi, interval),
             "Intensity"     : lambda nameLi, interval, *args, **kwargs: self.LEDIntensity(nameLi, interval),
             "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
             "All-Btns"      : self.runAllLedBtns
@@ -83,28 +83,34 @@ class GPIOBase():
             stopEvent=stopEvent
         )
 
-    def blinkLed(self, ledObj:PWMLED, interval:int=1, *args, **kwargs):
+    def blinkLeds(self, nameLi:list, interval:int, *args, **kwargs):
         """Blinks a specific LED
 
-        \n@Args - LEDobj (PWMLED): The created PWMLed object to blink
+        \n@Args - nameLi ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
         \n@Args - interval (int): How long (in seconds) the LED should stay on/off for
         \n@Notes:
             Function wraps in an infinite loop so use a Thread to not block
         """
+        # figure out which ones to blink
+        toBlinkLi = [name for name in nameLi if name in self.__leds.keys()]
+        toBlinkStr = ", ".join([name for name in toBlinkLi])
+        print(f"Blinking: " + toBlinkStr)
+        print(f"interval: {interval}s")
+        isOn = False
         while True:
-            # can also just use "blink(on_time, off_time)"
-            ledObj.on()
-            print("On")
-            time.sleep(interval)
-            ledObj.off()
-            print("Off")
+            for ledName in toBlinkLi:
+                ledObj = self.__leds[ledName]
+                if  isOn:   ledObj.off()
+                else:       ledObj.on()
+
+            isOn = not isOn
             time.sleep(interval)
 
     def LEDIntensity(self, nameLi:list, interval:int, *args, **kwargs):
         """
             Blinks LED but at increases intensity
             
-            \n@Args - ledName ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
+            \n@Args - nameLi ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
             \n@Args - interval (int): How long (in seconds) the LED should stay on/off for
             \n@Notes:
                 Function wraps in an infinite loop so use a Thread to not block
@@ -113,7 +119,7 @@ class GPIOBase():
         toBlinkLi = [name for name in nameLi if name in self.__leds.keys()]
         toBlinkStr = ", ".join([name for name in toBlinkLi])
         print(f"Changing intensity for: " + toBlinkStr)
-        print(f"interval: {interval}")
+        print(f"interval: {interval}s")
         
         brightness = 0
         while True:
