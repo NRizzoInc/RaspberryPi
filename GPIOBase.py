@@ -22,7 +22,7 @@ class GPIOBase():
         # Map functions based on the input mode
         self.__modeToAction = {
             "Blink"         : self.blinkLed,
-            "Intensity"     : lambda ledObj, interval, *args, **kwargs: self.LEDIntensity(ledObj, interval),
+            "Intensity"     : lambda nameLi, interval, *args, **kwargs: self.LEDIntensity(nameLi, interval),
             "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
             "All-Btns"      : self.runAllLedBtns
         }
@@ -100,18 +100,26 @@ class GPIOBase():
             print("Off")
             time.sleep(interval)
 
-    def LEDIntensity(self, ledObj:PWMLED, interval:int=1, *args, **kwargs):
+    def LEDIntensity(self, nameLi:list, interval:int, *args, **kwargs):
         """
             Blinks LED but at increases intensity
             
-            \n@Args - LEDobj (PWMLED): The created PWMLed object to blink
+            \n@Args - ledName ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
             \n@Args - interval (int): How long (in seconds) the LED should stay on/off for
             \n@Notes:
                 Function wraps in an infinite loop so use a Thread to not block
         """
+        # figure out which ones to change brightness for
+        toBlinkLi = [name for name in nameLi if name in self.__leds.keys()]
+        toBlinkStr = ", ".join([name for name in toBlinkLi])
+        print(f"Changing intensity for: " + toBlinkStr)
+        print(f"interval: {interval}")
+        
         brightness = 0
         while True:
-            ledObj.value = brightness
+            # for each listed led, change intensity
+            for ledName in toBlinkLi:
+                self.__leds[ledName].value = brightness 
             time.sleep(interval)
             brightness = (brightness + .5) % 1.5 # three settings 0, .5, 1
 
@@ -162,7 +170,7 @@ class GPIOBase():
         # collate list of all button pairs
         self.handleLedBtns(list(self.btnLedPairs.keys()))
 
-    def run(self, mode:str, nameLi:list=[], interval=1, stopEvent:Event=None):
+    def run(self, mode:str, nameLi:list, interval, stopEvent:Event=None):
         """
             Run the desired operational mode based on the input
             \n@Args - mode (str): The GPIO mode to run (comes from getModeList())
@@ -196,6 +204,7 @@ if __name__ == "__main__":
         help="Which Led-Button Pairs (multiple) to use. Space seperated",
         choices=list(gpioHandler.getBtnLedPairNames()),
         dest="nameLi",
+        default=[]
     )
     
     parser.add_argument(
@@ -203,11 +212,12 @@ if __name__ == "__main__":
         type=float,
         required=False,
         help="The interval to blink the LEDs",
+        default=1
     )
 
     # actually parse flags
     args = parser.parse_args()
     
     # call entered function
-    gpioHandler.run(args.mode, nameLi=args.nameLi, interval=args.interval)
+    gpioHandler.run(args.mode, args.nameLi, args.interval)
 
