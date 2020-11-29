@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 # standard includes
+import sys
 from gpiozero import LED, Button, PWMLED
 import signal
 import time
@@ -8,7 +9,7 @@ from threading import Thread, Event
 import argparse
 
 # our includes
-from threadHelpers.killableThreads import threadWithException, stopThreadOnSetCallback
+from threadHelpers.killableThreads import threadWithException, stopThreadOnSetCallback, stopThreadOnSignal
 from threadHelpers.ThreadHelperFunctions import startAndJoinThread
 from ButtonLedController import ButtonLedPair
 
@@ -21,7 +22,7 @@ class GPIOBase():
 
         # Map functions based on the input mode
         self.__modeToAction = {
-            "Blink"         : lambda nameLi, interval, *args, **kwargs: self.blinkLeds(nameLi, interval),
+            "Blink"         : lambda nameLi, interval, *args, **kwargs: self.blinkLeds(nameLi, interval).join(),
             "Intensity"     : lambda nameLi, interval, *args, **kwargs: self.LEDIntensity(nameLi, interval),
             "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
             "All-Btns"      : self.runAllLedBtns
@@ -99,29 +100,38 @@ class GPIOBase():
             stopEvent=stopEvent
         )
 
-    def blinkLeds(self, nameLi:list, interval:int, *args, **kwargs):
+    def blinkLeds(self, nameLi:list, interval:int, *args, **kwargs)->stopThreadOnSignal:
         """
             Blinks a specific LED
 
             \n@Args - nameLi ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
             \n@Args - interval (int): How long (in seconds) the LED should stay on/off for
-        \n@Notes:
-            Function wraps in an infinite loop so use a Thread to not block
+            \n@Returns - thread running the blinker
         """
         # figure out which ones to blink
         toBlinkLi = [name for name in nameLi if name in self.getLedNames()]
         toBlinkStr = ", ".join([name for name in toBlinkLi])
         print(f"Blinking: " + toBlinkStr)
         print(f"interval: {interval}s")
-        isOn = False
-        while True:
-            for ledName in toBlinkLi:
-                ledObj = self.getLedObj(ledName)
-                if  isOn:   ledObj.off()
-                else:       ledObj.on()
 
-            isOn = not isOn
-            time.sleep(interval)
+        def blinkWorker():
+            isOn = False
+            while True:
+                for ledName in toBlinkLi:
+                    ledObj = self.getLedObj(ledName)
+                    if  isOn:   ledObj.off()
+                    else:       ledObj.on()
+
+                isOn = not isOn
+                time.sleep(interval)
+
+        blinkThread = stopThreadOnSignal(
+            name="Blink-Thread",
+            target=blinkWorker,
+        )
+        blinkThread.start()
+        return blinkThread
+
 
     def LEDIntensity(self, nameLi:list, interval:int, *args, **kwargs):
         """

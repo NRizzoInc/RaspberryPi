@@ -1,7 +1,9 @@
 #------------------------------STANDARD DEPENDENCIES-----------------------------#
+import sys
 import threading
 from queue import Queue
 import ctypes
+import signal
 
 class threadWithException(threading.Thread):
     def __init__(self, name:str, target, toPrintOnStop:str="", stopEvent:threading.Event=None):
@@ -65,3 +67,31 @@ class stopThreadOnSetCallback(threading.Thread):
         """Waits until stopEvent.set() is called and then triggers callback"""
         self.stopEvent.wait()
         self.onStopCallback(*self.args, **self.kwargs)
+
+class stopThreadOnSignal(threading.Thread):
+    def __init__(self, name:str, target, *args, **kwargs):
+        """
+            \n@Brief: Helper class that makes it easy to stop a thread when threading.Event.set() is doen
+            \n@Param: name - The name of the thread
+            \n@Param: target - the function to perform that will be stopped in the middle
+            \n@Use: Create it -> start it -> sleep/do other action -> kill with control+c
+        """
+        threading.Thread.__init__(self) 
+        self.name = name
+        self.workerFn = target
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self): 
+        """Waits until stopEvent.set() is called and then triggers callback"""
+        # actually create control+c handler
+        print("Press Ctrl+C to Stop")
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.pause()
+        self.workerFn(*self.args, **self.kwargs)
+
+    def signal_handler(self, sig, frame):
+        print('You pressed Ctrl+C')
+        self.stopEvent.set()
+        sys.exit(0) # make sure thread is closed
+        
