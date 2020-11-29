@@ -58,43 +58,36 @@ def rgbyButtons():
     # add an event which is used to communicate stopping to all threads
     stopEvent = Event()
     
-    redProc = threadWithException(
+    threadList = []
+    
+    threadList.append(threadWithException(
         target=redPress,
         toPrintOnStop="Stopping red",
         name='red',
         stopEvent=stopEvent
-    )
-    yellowProc = threadWithException(
+    ))
+    threadList.append(threadWithException(
         target=yellowPress, 
         toPrintOnStop="Stopping yellow",
         name='yellow',
         stopEvent=stopEvent
-    )
-    greenProc = threadWithException(
+    ))
+    threadList.append(threadWithException(
         target=greenPress,  
         toPrintOnStop="Stopping green",
         name='green',
         stopEvent=stopEvent
-    )
-    blueProc = threadWithException(
+    ))
+    threadList.append(threadWithException(
         target=bluePress,   
         toPrintOnStop="Stopping blue",
         name='blue',
         stopEvent=stopEvent
-    )
+    ))
 
-    # start the processes
-    redProc.start()
-    redProc.join()
-
-    yellowProc.start()
-    yellowProc.join()
-
-    greenProc.start()
-    greenProc.join()
-
-    blueProc.start()
-    blueProc.join()
+    # start and join all the threads
+    for proc in threadList: proc.start()
+    for proc in threadList: proc.join()
 
     # end all threads
     
