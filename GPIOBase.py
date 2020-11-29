@@ -9,7 +9,8 @@ from threading import Thread, Event
 import argparse
 
 # our includes
-from threadHelpers.killableThreads import threadWithException, stopThreadOnSetCallback, stopThreadOnSignal
+from threadHelpers.killableThreads import threadWithException, stopThreadOnSetCallback
+from threadHelpers.SignalHelpers import signal_handler_generator, setup_sig_handler
 from threadHelpers.ThreadHelperFunctions import startAndJoinThread
 from ButtonLedController import ButtonLedPair
 
@@ -22,7 +23,7 @@ class GPIOBase():
 
         # Map functions based on the input mode
         self.__modeToAction = {
-            "Blink"         : lambda nameLi, interval, *args, **kwargs: self.blinkLeds(nameLi, interval).join(),
+            "Blink"         : lambda nameLi, interval, stopEvent, *args, **kwargs: self.blinkLeds(nameLi, interval, stopEvent),
             "Intensity"     : lambda nameLi, interval, *args, **kwargs: self.LEDIntensity(nameLi, interval),
             "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
             "All-Btns"      : self.runAllLedBtns
@@ -100,7 +101,7 @@ class GPIOBase():
             stopEvent=stopEvent
         )
 
-    def blinkLeds(self, nameLi:list, interval:int, *args, **kwargs)->stopThreadOnSignal:
+    def blinkLeds(self, nameLi:list, interval:int, stopEvent:Event=None, *args, **kwargs)->threadWithException:
         """
             Blinks a specific LED
 
@@ -125,9 +126,11 @@ class GPIOBase():
                 isOn = not isOn
                 time.sleep(interval)
 
-        blinkThread = stopThreadOnSignal(
+        blinkThread = threadWithException(
             name="Blink-Thread",
             target=blinkWorker,
+            toPrintOnStop=f"Stopping Blinker Thread",
+            stopEvent=stopEvent
         )
         blinkThread.start()
         return blinkThread
@@ -213,7 +216,7 @@ class GPIOBase():
         if mode not in self.getModeList(): raise Exception("Input mode does not exist!")
 
         # run function based on mode
-        self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent, interval=interval)
+        return self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent, interval=interval)
 
 if __name__ == "__main__":
     # create gpio handler obj
@@ -250,7 +253,10 @@ if __name__ == "__main__":
 
     # actually parse flags
     args = parser.parse_args()
-    
-    # call entered function
-    gpioHandler.run(args.mode, args.nameLi, args.interval)
 
+    # call entered function
+    stopEvent = Event()
+    thread = gpioHandler.run(args.mode, args.nameLi, args.interval, stopEvent)
+
+    # setup handlers to gracefully end thread created by run
+    setup_sig_handler(thread)
