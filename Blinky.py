@@ -5,7 +5,7 @@ import os
 import sys
 import gpiozero
 from gpiozero import LED, Button, PWMLED
-from signal import pause
+import signal
 import time
 from time import sleep
 from threading import Thread, Event
@@ -85,13 +85,22 @@ def rgbyButtons():
         stopEvent=stopEvent
     ))
 
-    # start and join all the threads
+    # start all the threads
     for proc in threadList: proc.start()
-    for proc in threadList: proc.join()
 
-    # end all threads
-    
-    # stopEvent.set()
+    # end threads via control+c
+    # end all threads via raise_exception
+    # cleanup with join just in case
+    def signal_handler(sig, frame):
+        print('You pressed Ctrl+C')
+        for proc in threadList:
+            proc.raise_exception()
+            proc.join()
+
+    # actually create control+c handler
+    print("Press Ctrl+C to Stop")
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.pause()
 
 
 
