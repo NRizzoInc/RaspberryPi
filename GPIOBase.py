@@ -22,7 +22,7 @@ class GPIOBase():
         # Map functions based on the input mode
         self.__modeToAction = {
             "Blink"         : self.blinkLed,
-            "LEDs"          : self.LEDIntensity,
+            "LEDs"          : lambda ledObj, interval, *args, **kwargs: self.LEDIntensity(ledObj, interval),
             "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
             "All-Btns"      : self.runAllLedBtns
         }
@@ -30,30 +30,32 @@ class GPIOBase():
     def _setupPins(self):
         """Sets up the board based on my breadboard's pin configuration"""
         #------------------------------------------ Buttons & LED ------------------------------------------#
-        self.__redLED         =  PWMLED(24) # gpio24/ pin 18 (can use variable brightness)
-        self.__yellowLED      =  PWMLED(23)
-        self.__greenLED       =  PWMLED(18)
-        self.__blueLED        =  PWMLED(15)
-        self.__redButton      =  Button(2) # "gpio2" = "BOARD3"
-        self.__yellowButton   =  Button(3)
-        self.__greenButton    =  Button(4)
-        self.__blueButton     =  Button(17)
-
-        #------------------------------------------ Btn-LED Pairs ------------------------------------------#
-        self.btnLedPairs = {
-            "red"     : ButtonLedPair(self.__redLED, self.__redButton),
-            "yellow"  : ButtonLedPair(self.__yellowLED, self.__yellowButton),
-            "green"   : ButtonLedPair(self.__greenLED, self.__greenButton),
-            "blue"    : ButtonLedPair(self.__blueLED, self.__blueButton)
+        self.__leds = {
+            "red"     : PWMLED(24), # gpio24/ pin 18 (can use variable brightness)
+            "yellow"  : PWMLED(23),
+            "green"   : PWMLED(18),
+            "blue"    : PWMLED(15)
+        }
+        self.__btns = {
+            "red"     : Button(2), # "gpio2" = "BOARD3"
+            "yellow"  : Button(3),
+            "green"   : Button(4),
+            "blue"    : Button(17)
         }
 
+        #------------------------------------------ Btn-LED Pairs ------------------------------------------#
+        createPairs = lambda name: (name, ButtonLedPair(self.__leds[name], self.__btns[name]))
+        self.btnLedPairs = dict(map(createPairs, list(self.__leds.keys())))
+
         #----------------------------------------- LCD(4 bit mode) -----------------------------------------#
-        self.pin4 = 36  # LCD #4  = GPIO16 (=pin36) 
-        self.pin6 = 32  # LCD #6  = GPIO12 (=Pin32)  
-        self.pin11 = 1  # LCD #11 = GPIO1  (=Pin28)
-        self.pin12 = 7  # LCD #12 = GPIO7  (=Pin26)
-        self.pin13 = 8  # LCD #13 = GPIO8  (=Pin24)
-        self.pin14 = 25 # LCD #14 = GPIO25 (=Pin22)
+        self.__LCD = {
+            "pin4"  : 36,  # LCD #4  = GPIO16 (=pin36) 
+            "pin6"  : 32,  # LCD #6  = GPIO12 (=Pin32)  
+            "pin11" : 1,  # LCD #11 = GPIO1  (=Pin28)
+            "pin12" : 7,  # LCD #12 = GPIO7  (=Pin26)
+            "pin13" : 8,  # LCD #13 = GPIO8  (=Pin24)
+            "pin14" : 25, # LCD #14 = GPIO25 (=Pin22)
+        }
 
     def getBtnLedPairNames(self)->list:
         """Returns a list of all led-button pair names"""
@@ -160,16 +162,17 @@ class GPIOBase():
         # collate list of all button pairs
         self.handleLedBtns(list(self.btnLedPairs.keys()))
 
-    def run(self, mode:str, nameLi:list=[], stopEvent:Event=None):
+    def run(self, mode:str, nameLi:list=[], interval=1, stopEvent:Event=None):
         """
             Run the desired operational mode based on the input
             \n@Args - mode (str): The GPIO mode to run (comes from getModeList())
             \n@args - nameLi (list): Contains names of all Button-Led Pairs to control
+            \n@args - interval (float): seconds intrerval between led blinks
         """
         if mode not in self.getModeList(): raise Exception("Input mode does not exist!")
 
         # run function based on mode
-        self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent)
+        self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent, interval=interval)
 
 if __name__ == "__main__":
     # create gpio handler obj
