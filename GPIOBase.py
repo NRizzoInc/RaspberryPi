@@ -44,8 +44,8 @@ class GPIOBase():
         }
 
         #------------------------------------------ Btn-LED Pairs ------------------------------------------#
-        createPairs = lambda name: (name, ButtonLedPair(self.__leds[name], self.__btns[name]))
-        self.btnLedPairs = dict(map(createPairs, list(self.__leds.keys())))
+        createPairs = lambda name: (name, ButtonLedPair(self.getLedObj(name), self.getBtnObj(name)))
+        self.btnLedPairs = dict(map(createPairs, list(self.getLedNames())))
 
         #----------------------------------------- LCD(4 bit mode) -----------------------------------------#
         self.__LCD = {
@@ -64,6 +64,22 @@ class GPIOBase():
     def getModeList(self)->list:
         """Returns a list of all available modes"""
         return list(self.__modeToAction.keys())
+
+    def getLedNames(self)->list:
+        """Returns a list of all led names"""
+        return list(self.__leds.keys())
+
+    def getBtnNames(self)->list:
+        """Returns a list corresponding to all the btn names"""
+        return list(self.__btns.keys())
+
+    def getLedObj(self, ledName:str)->PWMLED:
+        """Returns the led obj corresponding to the name"""
+        return self.__leds[ledName]
+
+    def getBtnObj(self, ledName:str)->Button:
+        """Returns the btn obj corresponding to the name"""
+        return self.__btns[ledName]
 
     def setupBtnLedControl(self, pairName:str, stopEvent:Event=None, *args, **kwargs)->threadWithException:
         """Start a thread in which the led is controlled by the button
@@ -84,22 +100,23 @@ class GPIOBase():
         )
 
     def blinkLeds(self, nameLi:list, interval:int, *args, **kwargs):
-        """Blinks a specific LED
+        """
+            Blinks a specific LED
 
-        \n@Args - nameLi ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
-        \n@Args - interval (int): How long (in seconds) the LED should stay on/off for
+            \n@Args - nameLi ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
+            \n@Args - interval (int): How long (in seconds) the LED should stay on/off for
         \n@Notes:
             Function wraps in an infinite loop so use a Thread to not block
         """
         # figure out which ones to blink
-        toBlinkLi = [name for name in nameLi if name in self.__leds.keys()]
+        toBlinkLi = [name for name in nameLi if name in self.getLedNames()]
         toBlinkStr = ", ".join([name for name in toBlinkLi])
         print(f"Blinking: " + toBlinkStr)
         print(f"interval: {interval}s")
         isOn = False
         while True:
             for ledName in toBlinkLi:
-                ledObj = self.__leds[ledName]
+                ledObj = self.getLedObj(ledName)
                 if  isOn:   ledObj.off()
                 else:       ledObj.on()
 
@@ -116,7 +133,7 @@ class GPIOBase():
                 Function wraps in an infinite loop so use a Thread to not block
         """
         # figure out which ones to change brightness for
-        toBlinkLi = [name for name in nameLi if name in self.__leds.keys()]
+        toBlinkLi = [name for name in nameLi if name in self.getLedNames()]
         toBlinkStr = ", ".join([name for name in toBlinkLi])
         print(f"Changing intensity for: " + toBlinkStr)
         print(f"interval: {interval}s")
@@ -125,7 +142,7 @@ class GPIOBase():
         while True:
             # for each listed led, change intensity
             for ledName in toBlinkLi:
-                self.__leds[ledName].value = brightness 
+                self.getLedObj(ledName).value = brightness 
             time.sleep(interval)
             brightness = (brightness + .5) % 1.5 # three settings 0, .5, 1
 
