@@ -18,7 +18,7 @@ class ButtonLedPair():
         self.btnController = buttonObj
 
 
-    def buttonToLED(self):
+    def buttonToLED(self, **kwargs):
         """ Runner function that turns on a specific LED based on a specific button
 
             \nNotes:

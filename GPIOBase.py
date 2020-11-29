@@ -9,6 +9,7 @@ import argparse
 
 # our includes
 from threadHelpers.killableThreads import threadWithException, stopThreadOnSetCallback
+from threadHelpers.ThreadHelperFunctions import startAndJoinThread
 from ButtonLedController import ButtonLedPair
 
 class GPIOBase():
@@ -20,10 +21,10 @@ class GPIOBase():
 
         # Map functions based on the input mode
         self.__modeToAction = {
-            "Blink"     :   self.blinkLed,
-            "LEDs"      :   self.LEDIntensity,
-            "Red-Btn"   :   self.btnLedPairs["red"].buttonToLED,
-            "Btns"      :   self.startBtnLedControl
+            "Blink"         :   self.blinkLed,
+            "LEDs"          :   self.LEDIntensity,
+            "Single-Btn"    :   lambda name: startAndJoinThread(self.setupBtnLedControl(name)),
+            "Btns"          :   self.runAllLedBtns
         }
 
     def _setupPins(self):
@@ -62,7 +63,7 @@ class GPIOBase():
         """Returns a list of all available modes"""
         return list(self.__modeToAction.keys())
 
-    def startBtnLedControl(self, pairName:str, stopEvent:Event=None)->threadWithException:
+    def setupBtnLedControl(self, pairName:str, stopEvent:Event=None, *args, **kwargs)->threadWithException:
         """Start a thread in which the led is controlled by the button
 
         \n@Args - pairName (str): The name of the LED-Button Pair (found with getBtnLedPairNames)
@@ -80,7 +81,7 @@ class GPIOBase():
             stopEvent=stopEvent
         )
 
-    def blinkLed(self, ledObj:PWMLED, interval:int=1):
+    def blinkLed(self, ledObj:PWMLED, interval:int=1, *args, **kwargs):
         """Blinks a specific LED
 
         \n@Args - LEDobj (PWMLED): The created PWMLed object to blink
@@ -97,7 +98,7 @@ class GPIOBase():
             print("Off")
             time.sleep(interval)
 
-    def LEDIntensity(self, ledObj:PWMLED, interval:int=1):
+    def LEDIntensity(self, ledObj:PWMLED, interval:int=1, *args, **kwargs):
         """
             Blinks LED but at increases intensity
             
@@ -112,7 +113,7 @@ class GPIOBase():
             time.sleep(interval)
             brightness = (brightness + .5) % 1.5 # three settings 0, .5, 1
 
-    def runAllLedBtns(self):
+    def runAllLedBtns(self, *args, **kwargs):
         """
             Controls all LEDs controlled by button (red, yellow, green blue)- using threads
             Function can be stopped using Ctrl+C
@@ -127,7 +128,7 @@ class GPIOBase():
 
         # add all threads to a list to start at the same time
         for LedBtnPairName in self.btnLedPairs.keys():
-            threadList.append(self.startBtnLedControl(LedBtnPairName, stopEvent))
+            threadList.append(self.setupBtnLedControl(LedBtnPairName, stopEvent))
             
         # start all the threads
         for proc in threadList:
@@ -147,7 +148,7 @@ class GPIOBase():
         signal.signal(signal.SIGINT, signal_handler)
         signal.pause()
 
-    def run(self, mode:str):
+    def run(self, mode:str, pairName:str="", stopEvent:Event=None):
         """
             Run the desired operational mode based on the input
             \n@Args - mode (str): The GPIO mode to run (comes from getModeList())
@@ -155,7 +156,7 @@ class GPIOBase():
         if mode not in self.getModeList(): raise Exception("Input mode does not exist!")
 
         # run function based on mode
-        self.__modeToAction[mode]()
+        self.__modeToAction[mode](pairName=pairName, stopEvent=stopEvent)
 
 if __name__ == "__main__":
     # create gpio handler obj
@@ -170,10 +171,17 @@ if __name__ == "__main__":
         choices=list(gpioHandler.getModeList())
         
     )
+    parser.add_argument(
+        "-n", "--name",
+        required=False,
+        help="Which Led-Button Pair to use. Only needed for ",
+        choices=list(gpioHandler.getBtnLedPairNames())
+        
+    )
 
     # actually parse flags
     args = parser.parse_args()
     
     # call entered function
-    gpioHandler.run(args.mode)
+    gpioHandler.run(args.mode, pairName=args.pairName)
 
