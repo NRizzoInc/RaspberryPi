@@ -21,10 +21,10 @@ class GPIOBase():
 
         # Map functions based on the input mode
         self.__modeToAction = {
-            "Blink"         :   self.blinkLed,
-            "LEDs"          :   self.LEDIntensity,
-            "Single-Btn"    :   lambda name: startAndJoinThread(self.setupBtnLedControl(name)),
-            "Btns"          :   self.runAllLedBtns
+            "Blink"         : self.blinkLed,
+            "LEDs"          : self.LEDIntensity,
+            "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
+            "All-Btns"      : self.runAllLedBtns
         }
 
     def _setupPins(self):
@@ -113,21 +113,23 @@ class GPIOBase():
             time.sleep(interval)
             brightness = (brightness + .5) % 1.5 # three settings 0, .5, 1
 
-    def runAllLedBtns(self, *args, **kwargs):
+    def handleLedBtns(self, liPairs:list=[], *args, **kwargs):
         """
-            Controls all LEDs controlled by button (red, yellow, green blue)- using threads
-            Function can be stopped using Ctrl+C
+            Handles the starting, joining, and ending of the LED-Button threads
 
+            \n@Args - liPairs (list): List of names for ButtonLedPair objects to handle
             \n@Note: Blocks main thread
         """
-        # create a process for each color (total of 4- red, yellow, green, blue)
+        # create a process for each color
         # add an event which is used to communicate stopping to all threads
         stopEvent = Event()
-        
         threadList = []
 
         # add all threads to a list to start at the same time
-        for LedBtnPairName in self.btnLedPairs.keys():
+        for LedBtnPairName in liPairs:
+            if LedBtnPairName not in self.getBtnLedPairNames():
+                raise Exception(f"Button pair {LedBtnPairName} does not exist!")
+
             threadList.append(self.setupBtnLedControl(LedBtnPairName, stopEvent))
             
         # start all the threads
@@ -148,15 +150,26 @@ class GPIOBase():
         signal.signal(signal.SIGINT, signal_handler)
         signal.pause()
 
-    def run(self, mode:str, pairName:str="", stopEvent:Event=None):
+    def runAllLedBtns(self, *args, **kwargs):
+        """
+            Controls all LEDs controlled by button (red, yellow, green blue)- using threads
+            Function can be stopped using Ctrl+C
+
+            \n@Note: Blocks main thread
+        """
+        # collate list of all button pairs
+        self.handleLedBtns(list(self.btnLedPairs.keys()))
+
+    def run(self, mode:str, nameLi:list=[], stopEvent:Event=None):
         """
             Run the desired operational mode based on the input
             \n@Args - mode (str): The GPIO mode to run (comes from getModeList())
+            \n@args - nameLi (list): Contains names of all Button-Led Pairs to control
         """
         if mode not in self.getModeList(): raise Exception("Input mode does not exist!")
 
         # run function based on mode
-        self.__modeToAction[mode](pairName=pairName, stopEvent=stopEvent)
+        self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent)
 
 if __name__ == "__main__":
     # create gpio handler obj
@@ -171,17 +184,20 @@ if __name__ == "__main__":
         choices=list(gpioHandler.getModeList())
         
     )
+
     parser.add_argument(
-        "-n", "--name",
+        "--names",
+        type=str,
+        nargs="+", # accept multiple args and store in list
         required=False,
-        help="Which Led-Button Pair to use. Only needed for ",
+        help="Which Led-Button Pairs (multiple) to use. Space seperated",
         choices=list(gpioHandler.getBtnLedPairNames()),
-        
+        dest="nameLi",
     )
 
     # actually parse flags
     args = parser.parse_args()
     
     # call entered function
-    gpioHandler.run(args.mode, pairName=args.name)
+    gpioHandler.run(args.mode, nameLi=args.nameLi)
 
