@@ -216,7 +216,10 @@ class GPIOBase():
         if mode not in self.getModeList(): raise Exception("Input mode does not exist!")
 
         # run function based on mode
-        return self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent, interval=interval)
+        runThread = self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent, interval=interval)
+
+        # setup handlers to gracefully end created thread
+        setup_sig_handler(runThread)
 
 if __name__ == "__main__":
     # create gpio handler obj
@@ -256,7 +259,4 @@ if __name__ == "__main__":
 
     # call entered function
     stopEvent = Event()
-    thread = gpioHandler.run(args.mode, args.nameLi, args.interval, stopEvent)
-
-    # setup handlers to gracefully end thread created by run
-    setup_sig_handler(thread)
+    gpioHandler.run(args.mode, args.nameLi, args.interval, stopEvent)
