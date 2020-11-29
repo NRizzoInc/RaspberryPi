@@ -197,10 +197,17 @@ if __name__ == "__main__":
         choices=list(gpioHandler.getBtnLedPairNames()),
         dest="nameLi",
     )
+    
+    parser.add_argument(
+        "--interval",
+        type=float,
+        required=False,
+        help="The interval to blink the LEDs",
+    )
 
     # actually parse flags
     args = parser.parse_args()
     
     # call entered function
-    gpioHandler.run(args.mode, nameLi=args.nameLi)
+    gpioHandler.run(args.mode, nameLi=args.nameLi, interval=args.interval)
 
