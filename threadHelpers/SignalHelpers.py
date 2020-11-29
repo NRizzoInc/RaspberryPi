@@ -12,6 +12,7 @@ def signal_handler_generator(myThread:threadWithException):
     return sig_handler
 
 def setup_sig_handler(thread:threadWithException):
+    """2-in-1 function that makes it easy to stop a thread with ctrl+c. """
     print("Press Ctrl+C to Stop")
     signal.signal(signal.SIGINT, signal_handler_generator(thread))
-    signal.pause()
+    # signal.pause() # blocks main if uncommented

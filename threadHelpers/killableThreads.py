@@ -6,7 +6,7 @@ import ctypes
 import signal
 
 class threadWithException(threading.Thread):
-    def __init__(self, name:str, target, toPrintOnStop:str="", stopEvent:threading.Event=None):
+    def __init__(self, name:str, target, toPrintOnStop:str="", stopEvent:threading.Event=None, *args, **kwargs):
         """
             \n@Brief: Helper class that makes it easy to stop a thread
             \n@Param: name - The name of the thread
@@ -21,11 +21,13 @@ class threadWithException(threading.Thread):
         self.workerFn = target
         self.toPrintOnStop = toPrintOnStop
         self.stopEvent = stopEvent
+        self.args = args
+        self.kwargs = kwargs
 
     def run(self): 
         # target function of the thread class 
         try:
-            self.workerFn()
+            self.workerFn(*self.args, **self.kwargs)
             if self.stopEvent != None: self.stopEvent.set()
         finally:
             if self.toPrintOnStop != "": print(self.toPrintOnStop)

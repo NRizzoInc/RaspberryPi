@@ -23,7 +23,7 @@ class GPIOBase():
 
         # Map functions based on the input mode
         self.__modeToAction = {
-            "Blink"         : lambda nameLi, interval, stopEvent, *args, **kwargs: self.blinkLeds(nameLi, interval, stopEvent),
+            "Blink"         : lambda nameLi, interval, *args, **kwargs: self.blinkLeds(nameLi, interval),
             "Intensity"     : lambda nameLi, interval, *args, **kwargs: self.LEDIntensity(nameLi, interval),
             "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
             "All-Btns"      : self.runAllLedBtns
@@ -101,13 +101,12 @@ class GPIOBase():
             stopEvent=stopEvent
         )
 
-    def blinkLeds(self, nameLi:list, interval:int, stopEvent:Event=None, *args, **kwargs)->threadWithException:
+    def blinkLeds(self, nameLi:list, interval:int, *args, **kwargs):
         """
             Blinks a specific LED
 
             \n@Args - nameLi ([str...]): List of names that map to the PWMLed objects to blink with diff intensity
             \n@Args - interval (int): How long (in seconds) the LED should stay on/off for
-            \n@Returns - thread running the blinker
         """
         # figure out which ones to blink
         toBlinkLi = [name for name in nameLi if name in self.getLedNames()]
@@ -115,26 +114,15 @@ class GPIOBase():
         print(f"Blinking: " + toBlinkStr)
         print(f"interval: {interval}s")
 
-        def blinkWorker():
-            isOn = False
-            while True:
-                for ledName in toBlinkLi:
-                    ledObj = self.getLedObj(ledName)
-                    if  isOn:   ledObj.off()
-                    else:       ledObj.on()
+        isOn = False
+        while True:
+            for ledName in toBlinkLi:
+                ledObj = self.getLedObj(ledName)
+                if  isOn:   ledObj.off()
+                else:       ledObj.on()
 
-                isOn = not isOn
-                time.sleep(interval)
-
-        blinkThread = threadWithException(
-            name="Blink-Thread",
-            target=blinkWorker,
-            toPrintOnStop=f"Stopping Blinker Thread",
-            stopEvent=stopEvent
-        )
-        blinkThread.start()
-        return blinkThread
-
+            isOn = not isOn
+            time.sleep(interval)
 
     def LEDIntensity(self, nameLi:list, interval:int, *args, **kwargs):
         """
@@ -216,10 +204,22 @@ class GPIOBase():
         if mode not in self.getModeList(): raise Exception("Input mode does not exist!")
 
         # run function based on mode
-        runThread = self.__modeToAction[mode](nameLi=nameLi, stopEvent=stopEvent, interval=interval)
+        stopEvent = Event()
+        runThread = threadWithException(
+            name=f"{mode}-Thread",
+            target=self.__modeToAction[mode],
+            toPrintOnStop=f"Stopping {mode} Thread",
+            # additional params
+            stopEvent=stopEvent,
+            nameLi=nameLi,
+            interval=interval
+        )
+        # start the thread
+        runThread.start()
 
         # setup handlers to gracefully end created thread
         setup_sig_handler(runThread)
+
 
 if __name__ == "__main__":
     # create gpio handler obj
@@ -258,5 +258,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # call entered function
-    stopEvent = Event()
-    gpioHandler.run(args.mode, args.nameLi, args.interval, stopEvent)
+    gpioHandler.run(args.mode, args.nameLi, args.interval,)
