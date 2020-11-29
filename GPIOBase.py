@@ -1,19 +1,15 @@
 #!/usr/bin/python3
 
 # standard includes
-import os
-import sys
-import gpiozero
 from gpiozero import LED, Button, PWMLED
 import signal
 import time
-from time import sleep
 from threading import Thread, Event
 import argparse
 
 # our includes
 from threadHelpers.killableThreads import threadWithException, stopThreadOnSetCallback
-from ButtonLEDPair import ButtonLedPair
+from ButtonLedController import ButtonLedPair
 
 class GPIOBase():
     def __init__(self):

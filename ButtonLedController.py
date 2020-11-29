@@ -1,12 +1,7 @@
 #!/usr/bin/python3
 
 # standard includes
-import os
-import sys
-import gpiozero
 from gpiozero import LED, Button, PWMLED
-import signal
-import time
 from time import sleep
 
 class ButtonLedPair():
