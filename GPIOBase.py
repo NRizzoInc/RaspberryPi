@@ -22,7 +22,7 @@ class GPIOBase():
         # Map functions based on the input mode
         self.__modeToAction = {
             "Blink"         : self.blinkLed,
-            "LEDs"          : lambda ledObj, interval, *args, **kwargs: self.LEDIntensity(ledObj, interval),
+            "Intensity"     : lambda ledObj, interval, *args, **kwargs: self.LEDIntensity(ledObj, interval),
             "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
             "All-Btns"      : self.runAllLedBtns
         }
