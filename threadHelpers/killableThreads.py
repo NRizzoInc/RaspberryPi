@@ -6,13 +6,20 @@ import ctypes
 import signal
 
 class threadWithException(threading.Thread):
-    def __init__(self, name:str, target, toPrintOnStop:str="", stopEvent:threading.Event=None, *args, **kwargs):
+    def __init__(self,
+        name:str,
+        target,
+        toPrintOnStop:str="",
+        stopEvent:threading.Event=None,
+        resQueue:Queue=None,
+        *args, **kwargs):
         """
             \n@Brief: Helper class that makes it easy to stop a thread
             \n@Param: name - The name of the thread
             \n@Param: target - the function to perform that will be stopped in the middle
             \n@Param: toPrintOnStop - (optional) What's printed when the thread is stopped during target's execution
             \n@Param: stopEvent - Event to broadcast a stop message if this worker thread finishes
+            \n@Param: resQueue - Queue to store potential returns
             \n@Note: https://www.geeksforgeeks.org/python-different-ways-to-kill-a-thread/ -- "raising exceptions"
             \n@Use: Create it -> start it -> sleep/do other action -> thisThread.raise_exception() -> thisThread.join()
         """
@@ -21,14 +28,16 @@ class threadWithException(threading.Thread):
         self.workerFn = target
         self.toPrintOnStop = toPrintOnStop
         self.stopEvent = stopEvent
+        self.outputQueue = resQueue
         self.args = args
         self.kwargs = kwargs
 
     def run(self): 
         # target function of the thread class 
         try:
-            self.workerFn(*self.args, **self.kwargs)
-            if self.stopEvent != None: self.stopEvent.set()
+            res = self.workerFn(*self.args, **self.kwargs)
+            if self.outputQueue != None:    self.outputQueue.put(res)
+            if self.stopEvent != None:      self.stopEvent.set()
         finally:
             if self.toPrintOnStop != "": print(self.toPrintOnStop)
 

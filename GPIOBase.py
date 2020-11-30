@@ -98,6 +98,7 @@ class GPIOBase():
             target=self.btnLedPairs[pairName].buttonToLED,
             toPrintOnStop=f"Stopping {pairName}",
             name=pairName,
+            stopEvent=stopEvent,
             stopEventLoop=stopEvent
         )
 
@@ -169,6 +170,13 @@ class GPIOBase():
             print(f"Starting {proc.getName()}")
             proc.start()
 
+        stopEvent.wait()
+
+        # stop threads since stop event is complete
+        for proc in threadList:
+            proc.raise_exception()
+
+        return threadList
 
     def runAllLedBtns(self, stopEvent:Event=None, *args, **kwargs):
         """
@@ -200,11 +208,12 @@ class GPIOBase():
             stopEvent=stopEvent,
             stopEventLoop=stopEvent,
         )
+        # setup handlers to gracefully end created thread
+        setup_sig_handler(runThread, stopEvent)
+
         # start the thread
         runThread.start()
-
-        # setup handlers to gracefully end created thread
-        setup_sig_handler(runThread)
+        runThread.join()
 
 
 if __name__ == "__main__":
