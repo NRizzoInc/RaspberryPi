@@ -3,6 +3,7 @@
 # standard includes
 from gpiozero import LED, Button, PWMLED
 from time import sleep
+from threading import Event
 
 class ButtonLedPair():
     def __init__(self, LEDobj:PWMLED, buttonObj:Button):
@@ -18,7 +19,7 @@ class ButtonLedPair():
         self.btnController = buttonObj
 
 
-    def buttonToLED(self, **kwargs):
+    def buttonToLED(self, *args, **kwargs):
         """ Runner function that turns on a specific LED based on a specific button
 
             \nNotes:

@@ -25,7 +25,7 @@ class GPIOBase():
         self.__modeToAction = {
             "Blink"         : lambda nameLi, interval, *args, **kwargs: self.blinkLeds(nameLi, interval),
             "Intensity"     : lambda nameLi, interval, *args, **kwargs: self.LEDIntensity(nameLi, interval),
-            "Btns"          : lambda nameLi, *args, **kwargs: self.handleLedBtns(nameLi, *args, **kwargs),
+            "Btns"          : lambda nameLi, stopEventLoop, *args, **kwargs: self.handleLedBtns(nameLi, stopEventLoop),
             "All-Btns"      : self.runAllLedBtns
         }
 
@@ -83,7 +83,7 @@ class GPIOBase():
         """Returns the btn obj corresponding to the name"""
         return self.__btns[ledName]
 
-    def setupBtnLedControl(self, pairName:str, stopEvent:Event=None, *args, **kwargs)->threadWithException:
+    def setupBtnLedControl(self, pairName:str, stopEvent:Event=None)->threadWithException:
         """Start a thread in which the led is controlled by the button
 
         \n@Args - pairName (str): The name of the LED-Button Pair (found with getBtnLedPairNames)
@@ -98,7 +98,7 @@ class GPIOBase():
             target=self.btnLedPairs[pairName].buttonToLED,
             toPrintOnStop=f"Stopping {pairName}",
             name=pairName,
-            stopEvent=stopEvent
+            stopEventLoop=stopEvent
         )
 
     def blinkLeds(self, nameLi:list, interval:int, *args, **kwargs):
@@ -147,16 +147,14 @@ class GPIOBase():
             time.sleep(interval)
             brightness = (brightness + .5) % 1.5 # three settings 0, .5, 1
 
-    def handleLedBtns(self, liPairs:list=[], *args, **kwargs):
+    def handleLedBtns(self, liPairs:list, stopEvent:Event):
         """
             Handles the starting, joining, and ending of the LED-Button threads
 
             \n@Args - liPairs (list): List of names for ButtonLedPair objects to handle
-            \n@Note: Blocks main thread
         """
         # create a process for each color
         # add an event which is used to communicate stopping to all threads
-        stopEvent = Event()
         threadList = []
 
         # add all threads to a list to start at the same time
@@ -168,23 +166,11 @@ class GPIOBase():
             
         # start all the threads
         for proc in threadList:
+            print(f"Starting {proc.getName()}")
             proc.start()
 
-        # end threads via control+c
-        # end all threads via raise_exception
-        # cleanup with join just in case
-        def signal_handler(sig, frame):
-            print('You pressed Ctrl+C')
-            for proc in threadList:
-                proc.raise_exception()
-                proc.join()
 
-        # actually create control+c handler
-        print("Press Ctrl+C to Stop")
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.pause()
-
-    def runAllLedBtns(self, *args, **kwargs):
+    def runAllLedBtns(self, stopEvent:Event=None, *args, **kwargs):
         """
             Controls all LEDs controlled by button (red, yellow, green blue)- using threads
             Function can be stopped using Ctrl+C
@@ -192,9 +178,9 @@ class GPIOBase():
             \n@Note: Blocks main thread
         """
         # collate list of all button pairs
-        self.handleLedBtns(list(self.btnLedPairs.keys()))
+        self.handleLedBtns(list(self.btnLedPairs.keys()), stopEvent)
 
-    def run(self, mode:str, nameLi:list, interval, stopEvent:Event=None):
+    def run(self, mode:str, nameLi:list, interval:float, stopEvent:Event=None):
         """
             Run the desired operational mode based on the input
             \n@Args - mode (str): The GPIO mode to run (comes from getModeList())
@@ -204,15 +190,15 @@ class GPIOBase():
         if mode not in self.getModeList(): raise Exception("Input mode does not exist!")
 
         # run function based on mode
-        stopEvent = Event()
         runThread = threadWithException(
             name=f"{mode}-Thread",
             target=self.__modeToAction[mode],
             toPrintOnStop=f"Stopping {mode} Thread",
             # additional params
-            stopEvent=stopEvent,
             nameLi=nameLi,
-            interval=interval
+            interval=interval,
+            stopEvent=stopEvent,
+            stopEventLoop=stopEvent,
         )
         # start the thread
         runThread.start()
@@ -258,4 +244,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # call entered function
-    gpioHandler.run(args.mode, args.nameLi, args.interval,)
+    stopEvent = Event()
+    gpioHandler.run(args.mode, args.nameLi, args.interval, stopEvent)
