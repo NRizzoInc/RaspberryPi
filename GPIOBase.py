@@ -178,7 +178,7 @@ class GPIOBase():
 
         return threadList
 
-    def runAllLedBtns(self, stopEvent:Event=None, *args, **kwargs):
+    def runAllLedBtns(self, stopEventLoop:Event, *args, **kwargs):
         """
             Controls all LEDs controlled by button (red, yellow, green blue)- using threads
             Function can be stopped using Ctrl+C
@@ -186,7 +186,7 @@ class GPIOBase():
             \n@Note: Blocks main thread
         """
         # collate list of all button pairs
-        self.handleLedBtns(list(self.btnLedPairs.keys()), stopEvent)
+        self.handleLedBtns(list(self.btnLedPairs.keys()), stopEventLoop)
 
     def run(self, mode:str, nameLi:list, interval:float, stopEvent:Event=None):
         """
