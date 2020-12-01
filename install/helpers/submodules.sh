@@ -38,6 +38,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # best to handle submodules from root
+# issue with running git as sudo, so make sure to run as user
 echo "========== Updating Git Submodules ==========="
 cd "${rootDir}" || echo "Failed to cd to repo root: ${rootDir}" && \
-    git submodule update --init --recursive
+    (sudo -u "${SUDO_USER}" git submodule update --init --recursive)
