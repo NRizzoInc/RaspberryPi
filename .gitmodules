@@ -1,3 +1,4 @@
+
 [submodule "extern/WiringPi"]
 	path = extern/WiringPi
-	url = git@github.com:WiringPi/WiringPi.git
+	url = git@github.com:WiringPi/WiringPi
