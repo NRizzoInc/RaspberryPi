@@ -27,6 +27,7 @@ print_flags () {
     echo "========================================================================================================================="
     echo "Available Flags (mutually exclusive):"
     echo "    -a | --install-all: (Default) If used, install everything (recommended for fresh installs)"
+    echo "    -s | --submodules: Fetch & Update all the git submodules in this repo"
     echo "    -g | --gpio: Build and Install the c++ gpio library from source"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
@@ -34,6 +35,7 @@ print_flags () {
 
 # parse command line args
 installGPIO=false
+updateSubmodules=false
 installAll=true # default to installing everything
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -43,6 +45,11 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -g | --gpio )
             installGPIO=true
+            installAll=false
+            break
+            ;;
+        -s | --submodules )
+            updateSubmodules=true
             installAll=false
             break
             ;;
@@ -66,11 +73,19 @@ helpersDir="${INSTALL_DIR}/helpers"
 
 # Get helper script paths
 externalScript="${helpersDir}/externals.sh"
+submoduleScript="${helpersDir}/submodules.sh"
 
 # call helpers as needed
 echo "========== Calling Helper Scripts ==========="
-if [[ ${installGPIO} == true || ${installAll} == true ]];
-then
+
+# git submodules script
+if [[ ${updateSubmodules} == true || ${installAll} == true ]]; then
+    bash "${submoduleScript}" \
+        --root-dir "${rootDir}"
+fi
+
+# external scripts
+if [[ ${installGPIO} == true || ${installAll} == true ]]; then
     bash "${externalScript}" \
         --extern-dir "${externDir}"
 fi
@@ -78,4 +93,4 @@ fi
 echo "========= Completed Helper Scripts ========="
 
 
-echo "Install Complete!!"
+echo "Setup Complete!!"

@@ -1,41 +1,28 @@
 #!/bin/bash
-#@file: Builds and Installs externals
+#@file: Fetches and updates this repo's submodules
 
 # CLI Flags
 print_flags () {
     echo "========================================================================================================================="
-    echo "Usage: externals.sh"
+    echo "Usage: submodules.sh"
     echo "========================================================================================================================="
-    echo "Helper utility to setup external libraries in this repo"
+    echo "Helper utility to setup/update git submodules in this repo"
     echo "========================================================================================================================="
     echo "How to use:" 
-    echo "  To Start: ./externals.sh [flags]"
+    echo "  To Start: ./submodules.sh [flags]"
     echo "========================================================================================================================="
     echo "Available Flags:"
-    echo "    -i | --extern-dir: Path to the extern dir"
-    echo "    -m | --mode: [install, clean, uninstall]"
+    echo "    --root-dir <dir>: Absolute path to the root of the repo"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
 }
 
 # parse command line args
-mode=""
-externDir=""
+rootDir=""
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        -i | --extern-dir )
-            externDir="$2"
-            shift
-            ;;
-        -m | --mode )
-            mode="$2"
-            if [[ ${mode} == "install" ]]; then
-                # ./build "" for regular building
-                mode=""
-            elif [[ ${mode} != "clean" && ${mode} != "uninstall" ]]; then
-                echo "Mode can be [install, clean, uninstall]"
-                exit 1
-            fi
+        --root-dir )
+            rootDir="$2"
             shift
             ;;
         -h | --help )
@@ -50,14 +37,8 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# deduse library paths
-gpioLib="${externDir}/WiringPi"
-gpioBuildExe="${gpioLib}/build"
-
-# build/install libraries
-
-
-# install gpio lib, have to be in the correct dir for this (chain commands)
-echo "=============== Bulding and Installing GPIO Library! ==============="
-cd "${gpioLib}" && \
-    bash "${gpioBuildExe}" "${mode}"
+# best to handle submodules from root
+echo "========== Updating Git Submodules ==========="
+cd "${rootDir}" || echo "Failed to cd to repo root: ${rootDir}" && \
+    git submodule init && \
+    git submodule update
