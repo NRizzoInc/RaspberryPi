@@ -40,5 +40,4 @@ done
 # best to handle submodules from root
 echo "========== Updating Git Submodules ==========="
 cd "${rootDir}" || echo "Failed to cd to repo root: ${rootDir}" && \
-    git submodule init && \
-    git submodule update
+    git submodule update --init --recursive
