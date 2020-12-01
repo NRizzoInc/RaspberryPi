@@ -1,4 +1,0 @@
-
-[submodule "extern/WiringPi"]
-	path = extern/WiringPi
-	url = git@github.com:WiringPi/WiringPi
