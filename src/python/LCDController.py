@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os
 import sys
 import gpiozero
@@ -5,8 +6,6 @@ from gpiozero import LED, Button, PWMLED
 from RPLCD import CharLCD # for LCD (had to sudo pip RPLCD)
 from signal import pause
 import time
-from time import sleep
-import threading
 from threading import Thread
 
 #--------------Buttons & LED-------------------#
