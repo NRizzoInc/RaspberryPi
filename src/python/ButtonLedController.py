@@ -13,7 +13,7 @@ import time
 from .ButtonLedPair import ButtonLedPair
 
 # 3rd Party Includes
-from gpiozero import LED, Button, PWMLED
+from gpiozero import Button, PWMLED
 
 class ButtonLedController():
     def __init__(self):

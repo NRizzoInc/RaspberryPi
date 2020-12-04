@@ -1,7 +1,7 @@
 """@File: Manages a Button Led pair""" 
 
 # standard includes
-from gpiozero import LED, Button, PWMLED
+from gpiozero import Button, PWMLED
 from time import sleep
 from threading import Event
 

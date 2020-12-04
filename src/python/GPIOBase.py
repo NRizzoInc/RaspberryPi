@@ -2,14 +2,7 @@
 """@File: Manages all the raspberry pi's GPIO functions (LEDs, Buttons, LCDs)"""
 
 # standard includes
-import sys
-import signal
-import time
 from threading import Event
-import argparse
-
-# 3rd party includes
-from gpiozero import LED, Button, PWMLED
 
 # our includes
 from .threadHelpers.killableThreads import threadWithException
@@ -18,6 +11,8 @@ from .ButtonLedController import ButtonLedController
 
 class GPIOBase(ButtonLedController):
     def __init__(self):
+        """Responsible for Managing all components of the GPIO (LED, LCD, Btns, Servos...)
+        """
         # call init functions to setup pins
         super().__init__()
 
