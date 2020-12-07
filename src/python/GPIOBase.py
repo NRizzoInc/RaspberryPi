@@ -8,16 +8,16 @@ from threading import Event
 from .threadHelpers.killableThreads import threadWithException
 from .threadHelpers.SignalHelpers import setup_sig_handler
 from .ButtonLedController import ButtonLedController
+from .LCDController import LCDController
 
-class GPIOBase(ButtonLedController):
+class GPIOBase(ButtonLedController, LCDController):
     def __init__(self):
         """Responsible for Managing all components of the GPIO (LED, LCD, Btns, Servos...)
         """
         # call init functions to setup pins
-        super().__init__()
-
-        # setup board objects
-        self._setupPins()
+        # super().__init__()
+        ButtonLedController.__init__(self)
+        LCDController.__init__(self)
 
         # Map functions based on the input mode
         self.__modeToAction = {
@@ -25,19 +25,6 @@ class GPIOBase(ButtonLedController):
             "Intensity"     : lambda nameLi, interval, *args, **kwargs: self.LEDIntensity(nameLi, interval),
             "Btns"          : lambda nameLi, stopEventLoop, *args, **kwargs: self.handleLedBtns(nameLi, stopEventLoop),
             "All-Btns"      : self.runAllLedBtns
-        }
-
-    def _setupPins(self):
-        """Sets up the board based on my breadboard's pin configuration"""
-
-        #----------------------------------------- LCD(4 bit mode) -----------------------------------------#
-        self.__LCD = {
-            "pin4"  : 36,  # LCD #4  = GPIO16 (=pin36) 
-            "pin6"  : 32,  # LCD #6  = GPIO12 (=Pin32)  
-            "pin11" : 1,  # LCD #11 = GPIO1  (=Pin28)
-            "pin12" : 7,  # LCD #12 = GPIO7  (=Pin26)
-            "pin13" : 8,  # LCD #13 = GPIO8  (=Pin24)
-            "pin14" : 25, # LCD #14 = GPIO25 (=Pin22)
         }
 
     def getModeList(self)->list:

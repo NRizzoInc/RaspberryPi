@@ -1,104 +1,70 @@
 #!/usr/bin/python3
-import os
-import sys
-import gpiozero
-from gpiozero import LED, Button, PWMLED
-from RPLCD import CharLCD # for LCD (had to sudo pip RPLCD)
-from signal import pause
+
+# standard includes
 import time
 from threading import Thread
 
-#--------------Buttons & LED-------------------#
-# setup board objects
-redLED = PWMLED(24) # gpio24/ pin 18
-yellowLED = PWMLED(23)
-greenLED = PWMLED(18)
-blueLED = PWMLED(15)
-redButton = Button(2) # "gpio2" = "BOARD3"
-yellowButton = Button(3)
-greenButton = Button(4)
-blueButton = Button(17)
+# 3rd party includes
+import RPi.GPIO as GPIO # only available on linux distros (needed to set numbering_mode)
+from RPLCD.gpio import CharLCD
 
-#-------------LCD(4 bit mode)-------------#
-pin4 = 36  # LCD #4  = GPIO16 (=pin36) 
-pin6 = 32  # LCD #6  = GPIO12 (=Pin32)  
-pin11 = 1  # LCD #11 = GPIO1  (=Pin28)
-pin12 = 7  # LCD #12 = GPIO7  (=Pin26)
-pin13 = 8  # LCD #13 = GPIO8  (=Pin24)
-pin14 = 25 # LCD #14 = GPIO25 (=Pin22)
+# our includes
 
-column = 
-row = 
-pins_rs = 
-pins_e =
-pins_loc = [] # LCD #11-14
-lcd = CharLCD(column, row)
+class LCDController():
+    def __init__(self)->None:
+        """Class that manages the LCD on the GPIO pins"""
+        # https://rplcd.readthedocs.io/en/stable/getting_started.html
+        super().__init__()
+        print("In LCD")
+        self.lcdObj = self._setupLCD()
+        print("writting message")
+        self.lcdObj.write_string("Hello World")
 
+    def _setupLCD(self)->CharLCD:
+        """Setup LCD and return the created object""" 
+        #----------------------------------------- LCD(4 bit mode) -----------------------------------------#
+        # config (https://pimylifeup.com/raspberry-pi-lcd-16x2/) -- using different scheme
+        # LCD1                              = GND
+        # LCD2                              = VCC+5
+        # LCD3  (contrast adjustment)       = Potentiometer-output-middle 
+        # LCD4  (H/L Reg Select Signal)     = 22 (GPIO 25) => 36 (GPIO 16)
+        # LCD5  (H/L Read/Write Signal)     = GND 
+        # LCD6  (Enable Signal)             = 18 (GPIO 24) => 32 (GPIO 12) 
+        # LCD7  (Data Line Bus 0)           = Empty
+        # LCD8  (Data Line Bus 1)           = Empty
+        # LCD9  (Data Line Bus 2)           = Empty
+        # LCD10 (Data Line Bus 3)           = Empty
+        # LCD11 (Data Line Bus 4)           = 16 (GPIO 23) => 28 (GPIO 1)
+        # LCD12 (Data Line Bus 5)           = 11 (GPIO 17) => 26 (GPIO 7) 
+        # LCD13 (Data Line Bus 6)           = 12 (GPIO 18) => 24 (GPIO 8)
+        # LCD14 (Data Line Bus 7)           = 15 (GPIO 22) => 22 (GPIO 25)
+        # LCD15                             = VCC+5
+        # LCD16                             = GND
+        # Note: Depends on which numbering system being used (GPIO or than pin numbers)
+        __LCDMapping = {
+            # GPIO numbers
+            "GPIO": {
+                "numbering_mode":   GPIO.BCM,       # selects GPIO numbering system
+                "pin_rs":           16,             # register select
+                "pin_e":            12,             # enable (start read/write)
+                "pin_rw":           21,             # (not actually used) read/write select
+                "pin_backlight":    20,             # (not actually used) set backlight on/off 
+                "pins_data":        [1, 7, 8, 25]   # list of data GPIO pins
+            },
+            # pin numberings
+            "Pin": {
+                "numbering_mode":   GPIO.BOARD,     # selects Pin numbering system
+                "pin_rs":           36,             # register select
+                "pin_e":            32,             # enable (start read/write)
+                "pin_rw":           40,             # (not actually used) read/write select
+                "pin_backlight":    38,             # (not actually used) set backlight on/off 
+                "pins_data":        [28, 26, 24, 22]   # list of data GPIO pins
+            },
+        }
+        print("Making CharLCD")
+        return CharLCD(
+            **__LCDMapping["GPIO"],
+            cols=16, rows=2, dotsize=8, charmap='A02',
+            auto_linebreaks=True, backlight_enabled=True,
+        )
 
-# calls the correct function based on the mode
-def main(mode:int):
-    if mode == 1: justLED()
-    if mode == 2: LEDIntensity()
-    if mode == 3: redPress()
-    if mode == 4: rgbyButtons()
-    if mode == 5: LCD()
-
-# create lmbda specific function for each
-redPress    = lambda: buttonToLED(redLED, redButton)
-yellowPress = lambda: buttonToLED(yellowLED, yellowButton)
-greenPress  = lambda: buttonToLED(greenLED, greenButton)
-bluePress   = lambda: buttonToLED(blueLED, blueButton)
-
-# helper function that turns on a specific LED based on a specific button
-def buttonToLED(LEDobj:PWMLED, buttonObj:Button):
-    while True:
-        if buttonObj.is_pressed:
-            LEDobj.on()
-        else:
-            LEDobj.off()
-
-# blinks LED
-def justLED():
-    while True:
-        # can also just use "blink(on_time, off_time)"
-        redLED.on()
-        time.sleep(1)
-        redLED.off()
-        time.sleep(1)
-
-# blinks LED but increases intensity
-def LEDIntensity():
-    brightness = 0
-    while True:
-        redLED.value = brightness
-        time.sleep(1)
-        brightness = (brightness + .5) % 1.5 # three settings 0, .5, 1 
-
-# blinks with button (red, yellow, green blue)- uses multiprocess
-def rgbyButtons():
-    # create a process for each color (total of 4- red, yellow, green, blue)
-    redProc = Thread(target=redPress, name='red')
-    yellowProc = Thread(target=yellowPress, name='yellow')
-    greenProc = Thread(target=greenPress, name='green')
-    blueProc = Thread(target=bluePress, name='blue')
-
-    # start the processes
-    redProc.start()
-    yellowProc.start()
-    greenProc.start()
-    blueProc.start()
-
-# starts up the LCD with the correct pins
-def LCD():
-    
-
-
-
-if __name__ == "__main__":    
-    if len(sys.argv) < 2:
-        print("Invalid # of arguments! (enter mode '1' for blink, or '2' for button control")
-        sys.exit()
-        
-    mode = int(sys.argv[1])
-
-    main(mode)
