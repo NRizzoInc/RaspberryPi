@@ -26,7 +26,7 @@ class LCDController(CharLCD):
         # LCD2                              = VCC+5
         # LCD3  (contrast adjustment)       = Potentiometer-output-middle 
         # LCD4  (H/L Reg Select Signal)     = 22 (GPIO 25) => 36 (GPIO 16)
-        # LCD5  (H/L Read/Write Signal)     = GND 
+        # LCD5  (H/L Read/Write Signal)     = 40 (GPIO 21) 
         # LCD6  (Enable Signal)             = 18 (GPIO 24) => 32 (GPIO 12) 
         # LCD7  (Data Line Bus 0)           = Empty
         # LCD8  (Data Line Bus 1)           = Empty
@@ -47,7 +47,7 @@ class LCDController(CharLCD):
                 "pin_e":            12,                 # enable (start read/write)
                 "pin_rw":           None,               # (not actually used) read/write select
                 "pin_backlight":    None,               # (not actually used) set backlight on/off
-                "pins_data":        [1, 7, 8, 25]       # list of data GPIO pins (D0-7 ascending)
+                "pins_data":        [1, 7, 8, 25]       # list of data GPIO pins (D0/4-7 ascending)
             },
             # pin numberings
             "Pin": {
@@ -56,7 +56,7 @@ class LCDController(CharLCD):
                 "pin_e":            32,                 # enable (start read/write)
                 "pin_rw":           None,               # (not actually used) read/write select
                 "pin_backlight":    None,               # (not actually used) set backlight on/off
-                "pins_data":        [28, 26, 24, 22]    # list of data GPIO pins (D0-7 ascending)
+                "pins_data":        [28, 26, 24, 22]    # list of data GPIO pins (D0/4-7 ascending)
             },
         }
         __miscInfo = {
@@ -66,6 +66,7 @@ class LCDController(CharLCD):
             "charmap":              'A02', #A00 = Japanese Font, A02 = European Font
             "auto_linebreaks":      True,
             "backlight_enabled":    True,
+            "compat_mode":          True,
         }
 
         # combine dicts
