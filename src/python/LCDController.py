@@ -10,18 +10,17 @@ from RPLCD.gpio import CharLCD
 
 # our includes
 
-class LCDController():
+class LCDController(CharLCD):
     def __init__(self)->None:
         """Class that manages the LCD on the GPIO pins"""
         # https://rplcd.readthedocs.io/en/stable/getting_started.html
-        super().__init__()
         print("In LCD")
-        self.lcdObj = self._setupLCD()
+        super().__init__(**self._setupLCD())
         print("writting message")
-        self.lcdObj.write_string("Hello World")
+        self.write_string("Hello World")
 
-    def _setupLCD(self)->CharLCD:
-        """Setup LCD and return the created object""" 
+    def _setupLCD(self)->dict:
+        """Determine CharLCD required info in form of dict to expand as arguments""" 
         #----------------------------------------- LCD(4 bit mode) -----------------------------------------#
         # config (https://pimylifeup.com/raspberry-pi-lcd-16x2/) -- using different scheme
         # LCD1                              = GND
@@ -44,27 +43,32 @@ class LCDController():
         __LCDMapping = {
             # GPIO numbers
             "GPIO": {
-                "numbering_mode":   GPIO.BCM,       # selects GPIO numbering system
-                "pin_rs":           16,             # register select
-                "pin_e":            12,             # enable (start read/write)
-                "pin_rw":           21,             # (not actually used) read/write select
-                "pin_backlight":    20,             # (not actually used) set backlight on/off 
-                "pins_data":        [1, 7, 8, 25]   # list of data GPIO pins
+                "numbering_mode":   GPIO.BCM,           # selects GPIO numbering system
+                "pin_rs":           16,                 # register select
+                "pin_e":            12,                 # enable (start read/write)
+                "pin_rw":           21,                 # (not actually used) read/write select
+                "pin_backlight":    20,                 # (not actually used) set backlight on/off
+                "pins_data":        [1, 7, 8, 25]       # list of data GPIO pins
             },
             # pin numberings
             "Pin": {
-                "numbering_mode":   GPIO.BOARD,     # selects Pin numbering system
-                "pin_rs":           36,             # register select
-                "pin_e":            32,             # enable (start read/write)
-                "pin_rw":           40,             # (not actually used) read/write select
-                "pin_backlight":    38,             # (not actually used) set backlight on/off 
-                "pins_data":        [28, 26, 24, 22]   # list of data GPIO pins
+                "numbering_mode":   GPIO.BOARD,         # selects Pin numbering system
+                "pin_rs":           36,                 # register select
+                "pin_e":            32,                 # enable (start read/write)
+                "pin_rw":           40,                 # (not actually used) read/write select
+                "pin_backlight":    38,                 # (not actually used) set backlight on/off
+                "pins_data":        [28, 26, 24, 22]    # list of data GPIO pins
             },
         }
-        print("Making CharLCD")
-        return CharLCD(
-            **__LCDMapping["GPIO"],
-            cols=16, rows=2, dotsize=8, charmap='A02',
-            auto_linebreaks=True, backlight_enabled=True,
-        )
+        __miscInfo = {
+            "cols":                 16,
+            "rows":                 2,
+            "dotsize":              8,
+            "charmap":              'A02',
+            "auto_linebreaks":      True,
+            "backlight_enabled":    True,
+        }
+
+        # combine dicts
+        return {**__LCDMapping["GPIO"], **__miscInfo}
 
