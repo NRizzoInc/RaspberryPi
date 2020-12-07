@@ -14,7 +14,6 @@ class LCDController(CharLCD):
     def __init__(self)->None:
         """Class that manages the LCD on the GPIO pins"""
         # https://rplcd.readthedocs.io/en/stable/getting_started.html
-        print("In LCD")
         super().__init__(**self._setupLCD())
         print("writting message")
         self.write_string("Hello World")
@@ -46,25 +45,25 @@ class LCDController(CharLCD):
                 "numbering_mode":   GPIO.BCM,           # selects GPIO numbering system
                 "pin_rs":           16,                 # register select
                 "pin_e":            12,                 # enable (start read/write)
-                "pin_rw":           21,                 # (not actually used) read/write select
-                "pin_backlight":    20,                 # (not actually used) set backlight on/off
-                "pins_data":        [1, 7, 8, 25]       # list of data GPIO pins
+                "pin_rw":           None,               # (not actually used) read/write select
+                "pin_backlight":    None,               # (not actually used) set backlight on/off
+                "pins_data":        [1, 7, 8, 25]       # list of data GPIO pins (D0-7 ascending)
             },
             # pin numberings
             "Pin": {
                 "numbering_mode":   GPIO.BOARD,         # selects Pin numbering system
                 "pin_rs":           36,                 # register select
                 "pin_e":            32,                 # enable (start read/write)
-                "pin_rw":           40,                 # (not actually used) read/write select
-                "pin_backlight":    38,                 # (not actually used) set backlight on/off
-                "pins_data":        [28, 26, 24, 22]    # list of data GPIO pins
+                "pin_rw":           None,               # (not actually used) read/write select
+                "pin_backlight":    None,               # (not actually used) set backlight on/off
+                "pins_data":        [28, 26, 24, 22]    # list of data GPIO pins (D0-7 ascending)
             },
         }
         __miscInfo = {
             "cols":                 16,
             "rows":                 2,
             "dotsize":              8,
-            "charmap":              'A02',
+            "charmap":              'A02', #A00 = Japanese Font, A02 = European Font
             "auto_linebreaks":      True,
             "backlight_enabled":    True,
         }

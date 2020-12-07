@@ -19,7 +19,6 @@ class ButtonLedController():
     def __init__(self):
         """Class that manages the Buttons and LEDs on the GPIO pins"""
         # declare vars to be defined later
-        print("In Btn Controller")
         self.__leds = None
         self.__btns = None
         self.btnLedPairs = {}
