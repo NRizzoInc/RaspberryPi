@@ -27,12 +27,15 @@ class ButtonController {
         ButtonController();
         virtual ~ButtonController();
 
-        /********************************************* Public Helpers *********************************************/
+        /********************************************* Getters/Setters *********************************************/
         /**
          * @brief: Gets a list of Button colors
          * @returns: Vector<string> of each color
          */
         std::vector<std::string> getBtnColorList();
+
+        /******************************************** Button Functions ********************************************/
+
 
     private:
         /******************************************** Private Variables ********************************************/
