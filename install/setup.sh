@@ -27,6 +27,7 @@ print_flags () {
     echo "========================================================================================================================="
     echo "Available Flags (mutually exclusive):"
     echo "    -a | --install-all: (Default) If used, install everything (recommended for fresh installs)"
+    echo "    -p | --linux-pkgs: Install all the required linux packages"
     echo "    -s | --submodules: Fetch & Update all the git submodules in this repo"
     echo "    -g | --gpio: Build and Install the c++ gpio library from source"
     echo "    -h | --help: This message"
@@ -36,11 +37,17 @@ print_flags () {
 # parse command line args
 installGPIO=false
 updateSubmodules=false
+linuxPkgs=false
 installAll=true # default to installing everything
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -a | --install-all )
             echo "Installing all externals!"
+            break
+            ;;
+        -p | --linux-pkgs )
+            linuxPkgs=true
+            installAll=false
             break
             ;;
         -g | --gpio )
@@ -74,9 +81,15 @@ helpersDir="${INSTALL_DIR}/helpers"
 # Get helper script paths
 wiringPiScript="${helpersDir}/WiringPi.sh"
 submoduleScript="${helpersDir}/submodules.sh"
+linuxPkgsScript="${helpersDir}/linux_pkgs.sh"
 
 # call helpers as needed
 echo "========== Calling Helper Scripts ==========="
+
+# linux packages
+if [[ ${linuxPkgs} == true || ${installAll} == true ]]; then
+    bash "${linuxPkgsScript}"
+fi
 
 # git submodules script
 if [[ ${updateSubmodules} == true || ${installAll} == true ]]; then
