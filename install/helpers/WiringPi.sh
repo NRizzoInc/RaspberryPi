@@ -4,15 +4,15 @@
 # CLI Flags
 print_flags () {
     echo "========================================================================================================================="
-    echo "Usage: externals.sh"
+    echo "Usage: WiringPi.sh"
     echo "========================================================================================================================="
     echo "Helper utility to setup external libraries in this repo"
     echo "========================================================================================================================="
     echo "How to use:" 
-    echo "  To Start: ./externals.sh [flags]"
+    echo "  To Start: ./WiringPi.sh [flags]"
     echo "========================================================================================================================="
     echo "Available Flags:"
-    echo "    -i | --extern-dir: Path to the extern dir"
+    echo "    -i | --extern-dir: Path to the extern dir (defaults to git pinned path)"
     echo "    -m | --mode: [install, clean, uninstall]"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
@@ -20,7 +20,7 @@ print_flags () {
 
 # parse command line args
 mode=""
-externDir=""
+externDir="$(readlink -fm "$0"/../../../extern/)" # default to git pinned path
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -i | --extern-dir )

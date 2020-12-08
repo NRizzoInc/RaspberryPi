@@ -72,7 +72,7 @@ externDir="${rootDir}/extern"
 helpersDir="${INSTALL_DIR}/helpers"
 
 # Get helper script paths
-externalScript="${helpersDir}/externals.sh"
+wiringPiScript="${helpersDir}/WiringPi.sh"
 submoduleScript="${helpersDir}/submodules.sh"
 
 # call helpers as needed
@@ -86,7 +86,7 @@ fi
 
 # external scripts
 if [[ ${installGPIO} == true || ${installAll} == true ]]; then
-    bash "${externalScript}" \
+    bash "${wiringPiScript}" \
         --extern-dir "${externDir}"
 fi
 
