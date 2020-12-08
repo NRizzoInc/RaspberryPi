@@ -39,3 +39,4 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 # add more folders here as needed
 # these trigger the CMakeLists.txt file to be called in the listed dirs
 add_subdirectory(src/c++/main)
+add_subdirectory(src/c++/gpio)

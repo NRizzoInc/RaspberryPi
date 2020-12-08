@@ -1,4 +1,5 @@
 #include <iostream>
+#include <GPIO_Controller.h>
 
 using std::cout;
 using std::cerr;
