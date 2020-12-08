@@ -1,4 +1,5 @@
 #include <iostream>
+#include <wiringPi.h>
 
 using std::cout;
 using std::cerr;

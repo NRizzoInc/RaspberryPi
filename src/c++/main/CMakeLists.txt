@@ -7,4 +7,5 @@ add_executable(gpio_controller
 
 # include created libs from other dirs -- comes after add executable
 target_link_libraries(gpio_controller
+    ${WiringPi_LIBS}
 )

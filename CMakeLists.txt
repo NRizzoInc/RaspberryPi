@@ -23,17 +23,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/c++/
 # Find the packages
 # find_package(BoostLib REQUIRED) # uses FindBoost.cmake in cmake dir
 find_package(CLI11 REQUIRED) # using https://cliutils.gitlab.io/CLI11Tutorial/
+find_package(WiringPi REQUIRED)
 
 
 # Include the package's header files
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include") # contains OUR headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include/helpers")
 include_directories(${CLI11_INCLUDE_DIR})
-
-
-
-# ===================================== Accept Build Mode for Debug/Release ========================================
-# TODO
+include_directories(${WiringPi_INCLUDE_DIRS}) # pair with target_link_libraries(<projName> ${WiringPi_LIBS})
 
 # ============================================ Build individual subdirs ============================================
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin) # store produce binaries in src/bin/*
