@@ -1,10 +1,10 @@
 // Standard Includes
 #include <iostream>
 #include <functional>
+#include <csignal>
 
 // Our Includes
 #include <GPIO_Controller.h>
-#include "signal_handlers.hpp"
 
 using std::cout;
 using std::cerr;
