@@ -29,20 +29,12 @@ class LEDController {
         LEDController();
         virtual ~LEDController();
 
-        /********************************************* Public Helpers *********************************************/
+        /********************************************* Getters/Setters *********************************************/
         /**
          * @brief: Gets a list of LED colors
          * @returns: Vector<string> of each color
          */
         std::vector<std::string> getLedColorList();
-
-        /**
-         * @brief Blink specific leds at the set interval (default to 1s) 
-         * @param colors The list of colors to blink
-         * @param interval The interval to blink the leds at (in ms)
-         * @param duration How long to run for in ms (-1 = infinite)
-         */
-        void blinkLEDs(std::vector<std::string> colors, unsigned int interval=1000, int duration=-1);
 
         /**
          * @brief Set whether the thread should stop
@@ -55,6 +47,15 @@ class LEDController {
          * @return std::atomic_bool 
          */
         const std::atomic_bool& getShouldThreadExit() const;
+
+        /********************************************* LED Functions *********************************************/
+        /**
+         * @brief Blink specific leds at the set interval (default to 1s) 
+         * @param colors The list of colors to blink
+         * @param interval The interval to blink the leds at (in ms)
+         * @param duration How long to run for in ms (-1 = infinite)
+         */
+        void blinkLEDs(std::vector<std::string> colors, unsigned int interval=1000, int duration=-1);
 
     private:
         /******************************************** Private Variables ********************************************/

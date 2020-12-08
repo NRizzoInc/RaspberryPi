@@ -1,8 +1,10 @@
 #include "LED_Controller.h"
 
+// to keep lines short
 using std::cout;
 using std::cerr;
 using std::endl;
+using ms = std::chrono::milliseconds;
 
 
 namespace gpio {
@@ -34,18 +36,27 @@ LEDController::~LEDController() {
     }
 }
 
-/********************************************* Public Helpers *********************************************/
+/********************************************* Getters/Setters *********************************************/
 std::vector<std::string> LEDController::getLedColorList() {
     return Helpers::getMapKeys(color_to_leds);
 }
+
+ReturnCodes LEDController::setShouldThreadExit(const bool new_status) {
+    stop_thread = new_status;
+    return ReturnCodes::Success;
+}
+
+const std::atomic_bool& LEDController::getShouldThreadExit() const {
+    return stop_thread;
+}
+
+/********************************************* LED Functions *********************************************/
 
 void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int interval, int duration) {
     // keep track of time/duration
     const auto start_time = std::chrono::steady_clock::now();
 
-    // to keep lines short, use a lambda to keep track of end time
-    // & temporarily shorten syntax for ms
-    using ms = std::chrono::milliseconds;
+    // use a lambda to keep track of end time
     const auto hasTimeElapsed = [&](){
         const auto end_time = std::chrono::steady_clock::now();
         const auto elapsed_time = std::chrono::duration_cast<ms>(end_time - start_time).count();
@@ -68,15 +79,6 @@ void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int inte
     }
 }
 
-
-ReturnCodes LEDController::setShouldThreadExit(const bool new_status) {
-    stop_thread = new_status;
-    return ReturnCodes::Success;
-}
-
-const std::atomic_bool& LEDController::getShouldThreadExit() const {
-    return stop_thread;
-}
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes LEDController::initLEDs() {
