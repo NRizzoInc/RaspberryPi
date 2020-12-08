@@ -10,11 +10,13 @@ namespace LED {
 
 /********************************************** Constructors **********************************************/
 LEDController::LEDController()
+    // pin mappings -- http://wiringpi.com/pins/
+    // gpio readall -- care about WPi column
     : color_to_leds ({
-            {"red",     24}, // gpio24/pin 18 (can use variable brightness)
-            {"yellow",  23},
-            {"green",   18},
-            {"blue",    15}
+            {"red",     5}, // gpio5 /pin(BCM) 24 (can use variable brightness)
+            {"yellow",  4},
+            {"green",   1},
+            {"blue",    16}
         })
 {
     // init LEDs on board
@@ -32,13 +34,31 @@ std::vector<std::string> LEDController::getLedColorList() {
     return Helpers::getMapKeys(color_to_leds);
 }
 
-void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int interval) {
-    for (auto& to_blink : colors) {
+void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int interval, int duration) {
+    // keep track of time/duration
+    const auto start_time = std::chrono::steady_clock::now();
+
+    // to keep lines short, use a lambda to keep track of end time
+    // & temporarily shorten syntax for ms
+    using ms = std::chrono::milliseconds;
+    const auto hasTimeElapsed = [&](){
+        const auto end_time = std::chrono::steady_clock::now();
+        const auto elapsed_time = std::chrono::duration_cast<ms>(end_time - start_time).count();
+        return elapsed_time > duration;
+    };
+
+    // if duration == -1 : run forever
+    while (duration == -1 || hasTimeElapsed()) {
         // on
-        digitalWrite(color_to_leds.at(to_blink), HIGH);
+        for (auto& to_blink : colors) {
+            softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MAX);
+        }
         delay(interval);
+
         // off
-        digitalWrite(color_to_leds.at(to_blink), LOW);
+        for (auto& to_blink : colors) {
+            softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MIN);
+        }
         delay(interval);
     }
 }
@@ -47,10 +67,13 @@ void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int inte
 /********************************************* Helper Functions ********************************************/
 ReturnCodes LEDController::initLEDs() {
     // setup pins for their purpose
-    wiringPiSetup();
+    if (wiringPiSetup() == -1) {
+        return ReturnCodes::Error;
+    }
+
     for (auto& led_entry : color_to_leds) {
-        // set each led pin as an output
-        pinMode(led_entry.second, OUTPUT);
+        // setup each led as a software PWM LED (RPI only has 2 actual pwm pins)
+        softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_MAX);
     }
     return ReturnCodes::Success;
 }

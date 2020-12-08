@@ -9,7 +9,9 @@ enum class ReturnCodes {
 };
 
 namespace Constants {
-
+    // http://wiringpi.com/reference/software-pwm-library/
+    const int LED_SOFT_PWM_MIN = 0;
+    const int LED_SOFT_PWM_MAX = 100;
 
 }; // end of constants namespace
 

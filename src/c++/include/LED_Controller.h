@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <chrono>
 
 // Our Includes
 #include "map_helpers.hpp"
@@ -13,6 +14,7 @@
 
 // 3rd Party Includes
 #include <wiringPi.h>
+#include <softPwm.h>
 
 namespace gpio {
 namespace LED {
@@ -37,8 +39,9 @@ class LEDController {
          * @brief Blink specific leds at the set interval (default to 1s) 
          * @param colors The list of colors to blink
          * @param interval The interval to blink the leds at (in ms)
+         * @param duration How long to run for in ms (-1 = infinite)
          */
-        void blinkLEDs(std::vector<std::string> colors, unsigned int interval=1000);
+        void blinkLEDs(std::vector<std::string> colors, unsigned int interval=1000, int duration=-1);
 
     private:
         /******************************************** Private Variables ********************************************/
