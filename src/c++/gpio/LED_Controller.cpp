@@ -32,6 +32,16 @@ std::vector<std::string> LEDController::getLedColorList() {
     return Helpers::getMapKeys(color_to_leds);
 }
 
+void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int interval) {
+    for (auto& to_blink : colors) {
+        // on
+        digitalWrite(color_to_leds.at(to_blink), HIGH);
+        delay(interval);
+        // off
+        digitalWrite(color_to_leds.at(to_blink), LOW);
+        delay(interval);
+    }
+}
 
 
 /********************************************* Helper Functions ********************************************/

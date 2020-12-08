@@ -33,6 +33,13 @@ class LEDController {
          */
         std::vector<std::string> getLedColorList();
 
+        /**
+         * @brief Blink specific leds at the set interval (default to 1s) 
+         * @param colors The list of colors to blink
+         * @param interval The interval to blink the leds at (in ms)
+         */
+        void blinkLEDs(std::vector<std::string> colors, unsigned int interval=1000);
+
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number

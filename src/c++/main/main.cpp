@@ -10,4 +10,7 @@ using std::endl;
 
 int main() {
     gpio::GPIO_Controller gpio_obj;
+
+    cout << "Blinking red led" << endl;
+    gpio_obj.blinkLEDs({"red", "green"});
 }
