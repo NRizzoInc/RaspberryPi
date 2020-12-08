@@ -9,4 +9,18 @@
 // 3rd Party Includes
 #include <wiringPi.h>
 
+namespace gpio {
+
+class GPIO_Controller {
+    public:
+        /********************************************** Constructors **********************************************/
+        GPIO_Controller();
+
+    private:
+
+};
+
+
+}; // end of gpio namespace
+
 #endif
