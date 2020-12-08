@@ -18,6 +18,7 @@ LEDController::LEDController()
             {"green",   1},
             {"blue",    16}
         })
+    , stop_thread(false)
 {
     // init LEDs on board
     if(initLEDs() != ReturnCodes::Success) {
@@ -52,7 +53,7 @@ void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int inte
     };
 
     // if duration == -1 : run forever
-    while (duration == -1 || hasTimeElapsed()) {
+    while (!getShouldThreadExit() && (duration == -1 || hasTimeElapsed())) {
         // on
         for (auto& to_blink : colors) {
             softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MAX);
@@ -67,6 +68,15 @@ void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int inte
     }
 }
 
+
+ReturnCodes LEDController::setShouldThreadExit(const bool new_status) {
+    stop_thread = new_status;
+    return ReturnCodes::Success;
+}
+
+const std::atomic_bool& LEDController::getShouldThreadExit() const {
+    return stop_thread;
+}
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes LEDController::initLEDs() {

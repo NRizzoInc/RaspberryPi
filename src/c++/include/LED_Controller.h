@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <chrono>
+#include <atomic>
 
 // Our Includes
 #include "map_helpers.hpp"
@@ -43,10 +44,24 @@ class LEDController {
          */
         void blinkLEDs(std::vector<std::string> colors, unsigned int interval=1000, int duration=-1);
 
+        /**
+         * @brief Set whether the thread should stop
+         * @param new_status The new status (true = stop, false = keep going) 
+         * @return ReturnCodes 
+         */
+        ReturnCodes setShouldThreadExit(const bool new_status);
+        /**
+         * @brief Get whether the thread should stop
+         * @return std::atomic_bool 
+         */
+        const std::atomic_bool& getShouldThreadExit() const;
+
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number
         const std::map<std::string, int> color_to_leds;
+        // controls whether or not to stop blocking functions (i.e. blink)
+        std::atomic_bool stop_thread;
 
 
         /********************************************* Helper Functions ********************************************/
