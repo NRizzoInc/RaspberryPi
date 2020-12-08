@@ -36,13 +36,13 @@ std::vector<std::string> LEDController::getLedColorList() {
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes LEDController::initLEDs() {
-    try {
-        wiringPiSetup();
-        return ReturnCodes::Success;
-    } catch (std::exception err) {
-        err.what();
-        return ReturnCodes::Error;
+    // setup pins for their purpose
+    wiringPiSetup();
+    for (auto& led_entry : color_to_leds) {
+        // set each led pin as an output
+        pinMode(led_entry.second, OUTPUT);
     }
+    return ReturnCodes::Success;
 }
 
 
