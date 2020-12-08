@@ -30,7 +30,7 @@ LEDController::LEDController()
 
 LEDController::~LEDController() {
     // set all LEDs to off at end
-    cout << "calling LED destructor" << endl;
+    cout << "Resetting LED Pins" << endl;
     for (auto& color_pin : color_to_leds) {
         softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
     }
@@ -52,30 +52,34 @@ const std::atomic_bool& LEDController::getShouldThreadExit() const {
 
 /********************************************* LED Functions *********************************************/
 
-void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int interval, int duration) {
+void LEDController::blinkLEDs(
+    const std::vector<std::string>& colors,
+    const unsigned int interval,
+    const int duration
+) {
+    cout << "Blinking: " << Helpers::createVecStr(colors) << endl;
+    cout << "Interval: " << interval << "ms" << endl;
+    cout << "Duration: " << duration << "ms" << endl;
+
     // keep track of time/duration
     const auto start_time = std::chrono::steady_clock::now();
 
-    // use a lambda to keep track of end time
-    const auto hasTimeElapsed = [&](){
-        const auto end_time = std::chrono::steady_clock::now();
-        const auto elapsed_time = std::chrono::duration_cast<ms>(end_time - start_time).count();
-        return elapsed_time > duration;
-    };
-
-    // if duration == -1 : run forever
-    while (!getShouldThreadExit() && (duration == -1 || hasTimeElapsed())) {
+    while (
+        !getShouldThreadExit() &&
+        // if duration == -1 : run forever
+        (duration == -1 || Helpers::hasTimeElapsed(start_time, duration, ms(1)))
+    ) {
         // on
         for (auto& to_blink : colors) {
             softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MAX);
         }
-        delay(interval);
+        std::this_thread::sleep_for(ms(interval));
 
         // off
         for (auto& to_blink : colors) {
             softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MIN);
         }
-        delay(interval);
+        std::this_thread::sleep_for(ms(interval));
     }
 }
 

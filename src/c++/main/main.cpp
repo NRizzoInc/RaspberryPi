@@ -22,7 +22,8 @@ int main() {
     });
 
     cout << "Changing led intensity" << endl;
-    gpio_obj.LEDIntensity({"red", "green"});
+    gpio_obj.blinkLEDs({"red", "green"});
+    // gpio_obj.LEDIntensity({"red", "green"});
 
     return 0;
 }

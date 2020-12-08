@@ -58,7 +58,11 @@ class LEDController {
          * @param interval The interval to blink the leds at (in ms)
          * @param duration How long to run for in ms (-1 = infinite)
          */
-        void blinkLEDs(std::vector<std::string> colors, unsigned int interval=1000, int duration=-1);
+        void blinkLEDs(
+            const std::vector<std::string>& colors,
+            const unsigned int interval=1000,
+            const int duration=-1
+        );
 
         /**
          * @brief Increase specific leds brightness at the set interval (default to 1s) 
