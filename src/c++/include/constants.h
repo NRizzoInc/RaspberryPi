@@ -12,6 +12,7 @@ namespace Constants {
     // http://wiringpi.com/reference/software-pwm-library/
     const int LED_SOFT_PWM_MIN = 0;
     const int LED_SOFT_PWM_MAX = 100;
+    const int LED_SOFT_PWM_RANGE = LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN;
 
 }; // end of constants namespace
 

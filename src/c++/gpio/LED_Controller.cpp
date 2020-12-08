@@ -79,6 +79,43 @@ void LEDController::blinkLEDs(std::vector<std::string> colors, unsigned int inte
     }
 }
 
+void LEDController::LEDIntensity(
+    const std::vector<std::string>& colors,
+    const unsigned int interval,
+    const int duration,
+    const unsigned int rate
+) {
+    cout << "Changing intensity for: " << Helpers::createVecStr(colors) << endl;
+    cout << "Interval: " << interval << "ms" << endl;
+    cout << "Duration: " << duration << "ms" << endl;
+    cout << "Change Rate: " << rate << 'x' << endl;
+
+    // keep track of time/duration
+    const auto start_time = std::chrono::steady_clock::now();
+
+    const unsigned int num_intervals {Constants::LED_SOFT_PWM_RANGE / rate};
+    unsigned int curr_interval_count {0};
+    while (
+        !getShouldThreadExit() &&
+        // if duration == -1 : run forever
+        (duration == -1 || Helpers::hasTimeElapsed(start_time, duration, ms(1)))
+    ) {
+        // get current intensity by finding brightness as current interval count
+        const float perc_interv {
+            static_cast<float>(curr_interval_count) / static_cast<float>(num_intervals)
+        };
+        const unsigned int curr_brightness {
+            static_cast<unsigned int>(perc_interv * Constants::LED_SOFT_PWM_RANGE)
+        };
+        curr_interval_count = (curr_interval_count+1) % (num_intervals+1); // +1 to reach max
+
+        // change LEDs brightness
+        for (auto& to_change : colors) {
+            softPwmWrite(color_to_leds.at(to_change), curr_brightness);
+        }
+        std::this_thread::sleep_for(ms(interval));
+    }
+}
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes LEDController::initLEDs() {
@@ -89,7 +126,7 @@ ReturnCodes LEDController::initLEDs() {
 
     for (auto& led_entry : color_to_leds) {
         // setup each led as a software PWM LED (RPI only has 2 actual pwm pins)
-        softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_MAX);
+        softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_RANGE);
     }
     return ReturnCodes::Success;
 }

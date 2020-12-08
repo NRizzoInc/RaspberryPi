@@ -21,8 +21,8 @@ int main() {
         gpio_obj.setShouldThreadExit(true);
     });
 
-    cout << "Blinking red led" << endl;
-    gpio_obj.blinkLEDs({"red", "green"});
+    cout << "Changing led intensity" << endl;
+    gpio_obj.LEDIntensity({"red", "green"});
 
     return 0;
 }
