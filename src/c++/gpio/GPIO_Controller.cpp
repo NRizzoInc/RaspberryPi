@@ -8,7 +8,12 @@ namespace gpio {
 
 /********************************************** Constructors **********************************************/
 GPIO_Controller::GPIO_Controller()
-    : color_to_led_btn_pairs ({
+    // call constructors for parents
+    : LED::LEDController()
+    , Button::ButtonController()
+
+    // init vars
+    , color_to_led_btn_pairs ({
             //stub
         })
 {
