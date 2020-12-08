@@ -45,6 +45,14 @@ class GPIO_Controller {
         // Map each color to a button's corresponding pin number
         const std::map<std::string, int> color_to_btns;
         const std::map<std::string, int> color_to_led_btn_pairs;
+
+        /********************************************* Helper Functions ********************************************/
+        /**
+         * @Brief: Helps construct color_to_led_btn_pairs based on what colors they share
+         * @Returns: The constructed map of shared colors
+         */
+        // std::map<std::string, int> generateLedBtnPairs();
+
 };
 
 
