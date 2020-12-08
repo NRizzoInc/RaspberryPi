@@ -26,7 +26,11 @@ LEDController::LEDController()
 }
 
 LEDController::~LEDController() {
-    //stub
+    // set all LEDs to off at end
+    cout << "calling LED destructor" << endl;
+    for (auto& color_pin : color_to_leds) {
+        softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
+    }
 }
 
 /********************************************* Public Helpers *********************************************/
