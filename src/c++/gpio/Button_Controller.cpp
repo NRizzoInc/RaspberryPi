@@ -17,7 +17,10 @@ ButtonController::ButtonController()
             {"blue",    17}
         })
 {
-
+    // init Buttons on board
+    if(initButtons() != ReturnCodes::Success) {
+        cerr << "Failed to properly init buttons" << endl;
+    }
 }
 
 ButtonController::~ButtonController() {
@@ -31,7 +34,15 @@ std::vector<std::string> ButtonController::getBtnColorList() {
 
 
 /********************************************* Helper Functions ********************************************/
-
+ReturnCodes ButtonController::initButtons() {
+    try {
+        wiringPiSetup();
+        return ReturnCodes::Success;
+    } catch (std::exception err) {
+        err.what();
+        return ReturnCodes::Error;
+    }
+}
 
 }; // end of Button namespace
 

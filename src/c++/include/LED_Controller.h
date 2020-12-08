@@ -42,9 +42,9 @@ class LEDController {
         /********************************************* Helper Functions ********************************************/
         /**
          * @brief Helps intialize the leds
-         * @return Constants::ReturnCodes
+         * @return ReturnCodes
          */
-        Constants::ReturnCodes initLEDs();
+        ReturnCodes initLEDs();
 
 
 }; // end of LEDController class

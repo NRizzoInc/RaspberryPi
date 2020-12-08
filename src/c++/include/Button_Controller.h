@@ -43,9 +43,9 @@ class ButtonController {
         /********************************************* Helper Functions ********************************************/
         /**
          * @brief Helps intialize the buttons
-         * @return Constants::ReturnCodes
+         * @return ReturnCodes
          */
-        Constants::ReturnCodes initButtons();
+        ReturnCodes initButtons();
 
 }; // end of ButtonController class
 

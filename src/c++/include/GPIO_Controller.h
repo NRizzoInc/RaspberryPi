@@ -36,9 +36,9 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
 
         /**
          * @brief Helps intialize all gpio components
-         * @return Constants::ReturnCodes
+         * @return ReturnCodes
          */
-        Constants::ReturnCodes initGPIOs();
+        ReturnCodes initGPIOs();
 
     private:
         /******************************************** Private Variables ********************************************/

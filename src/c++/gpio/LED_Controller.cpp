@@ -17,7 +17,10 @@ LEDController::LEDController()
             {"blue",    15}
         })
 {
-    
+    // init LEDs on board
+    if(initLEDs() != ReturnCodes::Success) {
+        cerr << "Failed to properly init LEDs" << endl;
+    }
 }
 
 LEDController::~LEDController() {
@@ -32,7 +35,15 @@ std::vector<std::string> LEDController::getLedColorList() {
 
 
 /********************************************* Helper Functions ********************************************/
-
+ReturnCodes LEDController::initLEDs() {
+    try {
+        wiringPiSetup();
+        return ReturnCodes::Success;
+    } catch (std::exception err) {
+        err.what();
+        return ReturnCodes::Error;
+    }
+}
 
 
 }; // end of LED namespace
