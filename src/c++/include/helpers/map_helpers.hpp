@@ -9,6 +9,7 @@
 #include <typeinfo>
 #include <typeindex>
 #include <cassert>
+#include <initializer_list>
 
 // Our Includes
 
@@ -28,7 +29,12 @@ using FnMapType = std::unordered_map<
  * @brief Helper class to map a string to a class's member functions (maps str -> fn)
  * @note Instantiate => .insert(str, fnRef) => .searchAndCall<RtnType>(mapName, args)
  */
-struct FnMap : public FnMapType {
+class FnMap : public FnMapType {
+
+public:
+    FnMap() : FnMapType() {}
+    // FnMap(std::initializer_list<FnMapType>& init_list) : FnMapType(init_list) {}
+
     /**
      * @brief Insert a str-to-function pair in mapping
      * @param fn_str The string to map to a specific function

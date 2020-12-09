@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
 
 // Our Includes
 #include "map_helpers.hpp"
@@ -27,22 +28,23 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         GPIO_Controller();
         virtual ~GPIO_Controller();
 
-        /********************************************* Public Helpers *********************************************/
+        /********************************************* Getters/Setters *********************************************/
         /**
          * @brief: Gets a list of colors that are shared between LEDs & Buttons
          * @returns: Vector<string> of each color
          */
-        std::vector<std::string> getPairColorList();
+        std::vector<std::string> getPairColorList() const;
 
-        /**
-         * @brief Helps intialize all gpio components
-         * @return ReturnCodes
-         */
-        ReturnCodes initGPIOs();
+        std::vector<std::string> getModes() const;
+
+        /*********************************************** GPIO Helpers **********************************************/
 
     private:
         /******************************************** Private Variables ********************************************/
         const std::map<std::string, int> color_to_led_btn_pairs;
+        // maps a string (mode name) to a gpio function
+        // cannot bc constant due to nature of how it must be constructed
+        const Helpers::Map::FnMap& mode_to_action;
 
         /********************************************* Helper Functions ********************************************/
         /**
@@ -50,6 +52,14 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @returns: The constructed map of shared colors
          */
         // std::map<std::string, int> generateLedBtnPairs();
+
+
+        /**
+         * @brief Create a Fn Map object
+         * @return The function map object 
+         * @note Use in constructor with std::move to save in reference variable
+         */
+        Helpers::Map::FnMap createFnMap () const;
 
 };
 
