@@ -23,8 +23,8 @@ int main(int argc, char* argv[]) {
     gpio::CLI_Parser cli_parser(
         argc,
         argv,
-        gpio_handler.getLedColorList(),
         gpio_handler.getModes(),
+        gpio_handler.getLedColorList(),
         "GPIO App"
     );
     // will have to convert string values to required type

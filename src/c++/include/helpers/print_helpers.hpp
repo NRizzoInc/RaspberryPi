@@ -20,10 +20,11 @@ namespace Helpers {
  * @return std::string 
  */
 template <typename vecType>
-inline std::string createVecStr(const std::vector<vecType>& vec) {
+inline std::string createVecStr(const std::vector<vecType>& vec, const bool space_sep=true) {
     std::stringstream to_return;
     for (auto& el : vec) {
-        to_return << el << ", ";
+        const std::string space_char = space_sep ? " " : "";
+        to_return << el << "," << space_char;
     }
     return to_return.str();
 }

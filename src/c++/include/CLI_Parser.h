@@ -12,6 +12,8 @@
 
 // Our Includes
 #include "constants.h"
+#include "string_helpers.hpp"
+#include "print_helpers.hpp"
 
 namespace CLI::Results {
     // shortening of parse results mapping
