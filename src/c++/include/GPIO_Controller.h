@@ -59,8 +59,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         /******************************************** Private Variables ********************************************/
         const std::unordered_map<std::string, int> color_to_led_btn_pairs;
         // maps a string (mode name) to a gpio function
-        // cannot bc constant due to nature of how it must be constructed
-        const Helpers::Map::FnMap& mode_to_action;
+        const Helpers::Map::FnMap mode_to_action;
 
         /********************************************* Helper Functions ********************************************/
         /**
@@ -73,7 +72,6 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         /**
          * @brief Create a Fn Map object
          * @return The function map object 
-         * @note Use in constructor with std::move to save in reference variable
          */
         Helpers::Map::FnMap createFnMap () const;
 

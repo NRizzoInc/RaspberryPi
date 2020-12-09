@@ -16,7 +16,7 @@ GPIO_Controller::GPIO_Controller()
     , color_to_led_btn_pairs ({
             //stub
         })
-    , mode_to_action (std::move(createFnMap()))
+    , mode_to_action (createFnMap())
 {
     // stub
 }

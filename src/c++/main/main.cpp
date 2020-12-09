@@ -51,5 +51,5 @@ int main(int argc, char* argv[]) {
     gpio_handler.blinkLEDs(Helpers::splitStr(',', parse_res[CLI::Results::COLORS]));
     // gpio_handler.LEDIntensity({"red", "green"});
 
-    return 0;
+    return EXIT_SUCCESS;
 }
