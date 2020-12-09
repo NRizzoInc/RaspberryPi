@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <chrono>
 #include <atomic>
 #include <thread>
@@ -81,7 +81,7 @@ class LEDController {
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number
-        const std::map<std::string, int> color_to_leds;
+        const std::unordered_map<std::string, int> color_to_leds;
         // controls whether or not to stop blocking functions (i.e. blink)
         std::atomic_bool stop_thread;
 

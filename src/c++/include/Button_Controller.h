@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 // Our Includes
 #include "map_helpers.hpp"
@@ -40,7 +40,7 @@ class ButtonController {
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a button's corresponding pin number
-        const std::map<std::string, int> color_to_btns;
+        const std::unordered_map<std::string, int> color_to_btns;
 
 
         /********************************************* Helper Functions ********************************************/

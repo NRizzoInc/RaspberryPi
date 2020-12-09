@@ -38,7 +38,7 @@ std::vector<std::string> GPIO_Controller::getModes() const {
 
 /********************************************* Helper Functions ********************************************/
 
-// std::map<std::string, int> GPIO_Controller::generateLedBtnPairs() {}
+// std::unordered_map<std::string, int> GPIO_Controller::generateLedBtnPairs() {}
 
 Helpers::Map::FnMap GPIO_Controller::createFnMap() const {
     Helpers::Map::FnMap to_rtn;

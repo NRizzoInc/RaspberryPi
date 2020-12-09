@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 // 3rd Party Includes
 #include "CLI11.hpp"
@@ -14,7 +15,7 @@
 
 namespace CLI::Results {
     // shortening of parse results mapping
-    using ParseResults = std::map<std::string, std::string>;
+    using ParseResults = std::unordered_map<std::string, std::string>;
 
     const std::string MODE      { "mode"     };
     const std::string COLORS    { "names"    };
@@ -51,7 +52,7 @@ class CLI_Parser : public CLI::App {
         /********************************************* Parse Functions *********************************************/
         /**
          * @brief Parses CLI and returns results in a map
-         * @return std::map<std::string, std::string>
+         * @return The results in map
          * @note Will throw if encounters error while parsing cli
          */
         const CLI::Results::ParseResults& parse_flags() noexcept(false);

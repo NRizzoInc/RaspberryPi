@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <functional>
 
 // Our Includes
@@ -41,7 +41,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
 
     private:
         /******************************************** Private Variables ********************************************/
-        const std::map<std::string, int> color_to_led_btn_pairs;
+        const std::unordered_map<std::string, int> color_to_led_btn_pairs;
         // maps a string (mode name) to a gpio function
         // cannot bc constant due to nature of how it must be constructed
         const Helpers::Map::FnMap& mode_to_action;
@@ -51,7 +51,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @brief: Helps construct color_to_led_btn_pairs based on what colors they share
          * @returns: The constructed map of shared colors
          */
-        // std::map<std::string, int> generateLedBtnPairs();
+        // std::unordered_map<std::string, int> generateLedBtnPairs();
 
 
         /**
