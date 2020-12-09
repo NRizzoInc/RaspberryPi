@@ -33,7 +33,7 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
     try {
         CLI::App::parse(argc, argv);
     } catch  (const CLI::ParseError &e) {
-        cerr << "Failed to Parse CLI Flags: " << e.what() << endl;
+        cerr << "=========== Failed to Parse CLI Flags! ===========" << endl;
         CLI::App::exit(e); // handles printing of error messages
         throw(e);
     }
