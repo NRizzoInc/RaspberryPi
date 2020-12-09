@@ -23,8 +23,16 @@ namespace Helpers {
 template <typename vecType>
 inline std::string createVecStr(const std::vector<vecType>& vec, const std::string sep=", ") {
     std::stringstream to_return;
+    const unsigned int end_idx      {static_cast<unsigned int>(vec.size())-1};
+    unsigned int idx_count          {0};
     for (auto& el : vec) {
-        to_return << el << sep;
+        // dont add seperator for last element
+        if (idx_count != end_idx) {
+            to_return << el << sep;
+        } else {
+            to_return << el;
+        }
+        idx_count++;
     }
     return to_return.str();
 }
