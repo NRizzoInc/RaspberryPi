@@ -14,7 +14,7 @@ namespace Helpers {
  * @param to_split The string to split
  * @return The split string in the form of a vector
  */
-inline const std::vector<std::string>& splitStr(const char delim, const std::string to_split) {
+inline const std::vector<std::string> splitStr(const char delim, const std::string to_split) {
     std::vector<std::string> split_str;
 
     // iterate over string (backwards bc of push_back)

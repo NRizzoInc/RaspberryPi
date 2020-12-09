@@ -45,9 +45,7 @@ int main(int argc, char* argv[]) {
     });
 
     /* ========================================== Initialize & Start ========================================= */
-    cout << "Initializing GPIO Board" << endl;
     gpio_handler.init();
-    cout << "Changing led intensity" << endl;
     gpio_handler.blinkLEDs(Helpers::splitStr(',', parse_res[CLI::Results::COLORS]));
     // gpio_handler.LEDIntensity({"red", "green"});
 
