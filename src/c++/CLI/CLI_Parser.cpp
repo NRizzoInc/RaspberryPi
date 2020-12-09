@@ -49,7 +49,7 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
 ReturnCodes CLI_Parser::addFlags() {
     add_option("-c,--colors", cli_res[CLI::Results::COLORS])
         ->description(
-            "Which LEDs/Buttons to use (Comma-seperated): " + Helpers::createVecStr(color_list, false))
+            "Which LEDs/Buttons to use (Comma-seperated): " + Helpers::createVecStr(color_list, ","))
         ->required(false)
         ->default_val("")
         // make sure each passed color is in the allowed list
@@ -75,7 +75,7 @@ ReturnCodes CLI_Parser::addFlags() {
         ;
 
     add_option("-m,--mode", cli_res[CLI::Results::MODE])
-        ->description("Which action to perform: " + Helpers::createVecStr(mode_list, false))
+        ->description("Which action to perform: " + Helpers::createVecStr(mode_list, ","))
         ->required(true)
         ->check(CLI::IsMember(mode_list))
         ;

@@ -16,15 +16,15 @@ namespace Helpers {
 
 /**
  * @brief Creates a string containing all elements of the vector (comma-seperated)
- * @param colors 
+ * @param vec The vector to print
+ * @param sep What to print in between elements (defaults to ", ") 
  * @return std::string 
  */
 template <typename vecType>
-inline std::string createVecStr(const std::vector<vecType>& vec, const bool space_sep=true) {
+inline std::string createVecStr(const std::vector<vecType>& vec, const std::string sep=", ") {
     std::stringstream to_return;
     for (auto& el : vec) {
-        const std::string space_char = space_sep ? " " : "";
-        to_return << el << "," << space_char;
+        to_return << el << sep;
     }
     return to_return.str();
 }
