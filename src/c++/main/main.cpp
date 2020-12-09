@@ -14,6 +14,7 @@ using std::endl;
 int main(int argc, char* argv[]) {
 
     gpio::CLI_Parser cli_parser(argc, argv, "GPIO App");
+    const CLI::ParseResults parse_res {cli_parser.parse_flags()};
 
     // create single static gpio obj to controll rpi
     // static needed so it can be accessed in lambda

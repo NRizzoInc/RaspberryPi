@@ -12,6 +12,11 @@
 // Our Includes
 #include "constants.h"
 
+namespace CLI {
+    // shortening of parse results mapping
+    using ParseResults = std::map<std::string, std::string>;
+}; // end of CLI namespace
+
 namespace gpio {
 
 /**
@@ -33,6 +38,13 @@ class CLI_Parser : public CLI::App {
         );
 
         /********************************************* Parse Functions *********************************************/
+        /**
+         * @brief Parses CLI and returns results in a map
+         * @return std::map<std::string, std::string>
+         * @note Will throw if encounters error while parsing cli
+         */
+        const CLI::ParseResults& parse_flags() noexcept(false);
+
 
         /********************************************* Getters/Setters *********************************************/
 
@@ -43,7 +55,15 @@ class CLI_Parser : public CLI::App {
         // storage of cli argument
         char** argv;
 
+        CLI::ParseResults cli_res;
+
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Adds all the required flags/arguments to the cli parser
+         * @return ReturnCodes 
+         */
+        ReturnCodes addFlags();
 };
 
 
