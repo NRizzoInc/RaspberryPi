@@ -47,37 +47,23 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes CLI_Parser::addFlags() {
-    add_option("-c,--colors", cli_res[CLI::Results::COLORS])
-        ->description(
-            "Which LEDs/Buttons to use (Comma-seperated): " + Helpers::createVecStr(color_list, ","))
-        ->required(false)
-        ->default_val("")
-        // make sure each passed color is in the allowed list
-        // return empty string == okay
-        ->check([&](const std::string& color_str) {
-            // first have to split the string to check each one
-            const std::vector<std::string>& colors {Helpers::splitStr(',', color_str)};
-            for (auto& color_to_check : colors) {
-                bool isOkColor = false;
-                for (auto& acceptable_color : color_list) {
-                    if (color_to_check == acceptable_color) {
-                        isOkColor = true;
-                    }
-                }
-
-                // if this color was not okay, immediately return false
-                if (!isOkColor) return std::string("Some colors are not in list");;
-            }
-
-            // if havent returned yet, all passed colors must be acceptable
-            return std::string();
-        })
-        ;
-
     add_option("-m,--mode", cli_res[CLI::Results::MODE])
         ->description("Which action to perform")
         ->required(true)
         ->check(CLI::IsMember(mode_list))
+        ;
+
+    const char delim {','};
+    add_option("-c,--colors", cli_res[CLI::Results::COLORS])
+        ->description("Which LEDs/Buttons to use (comma-seperated)")
+        ->required(false)
+        ->default_val("")
+        // method for taking in multiple args => str-represented vector
+        ->expected(0, color_list.size()-1)
+        ->allow_extra_args() // allow mutliple inputs despite type=str
+        ->delimiter(delim)
+        ->check(CLI::IsMember(color_list))
+        ->join(delim)
         ;
 
     add_option("-i,--interval", cli_res[CLI::Results::INTERVAL])
