@@ -22,7 +22,7 @@ GPIO_Controller::GPIO_Controller()
 }
 
 GPIO_Controller::~GPIO_Controller() {
-    cout << "Resetting Button Pins" << endl;
+    // destructor stub
 }
 
 /********************************************* Getters/Setters *********************************************/

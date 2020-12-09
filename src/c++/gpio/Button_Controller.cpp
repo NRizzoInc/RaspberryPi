@@ -22,7 +22,10 @@ ButtonController::ButtonController()
 }
 
 ButtonController::~ButtonController() {
-    isInit = false;
+    if (isInit) {
+        cout << "Resetting Button Pins" << endl;
+        isInit = false;
+    }
 }
 
 ReturnCodes ButtonController::init() {

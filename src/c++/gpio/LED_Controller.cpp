@@ -28,11 +28,13 @@ LEDController::LEDController()
 
 LEDController::~LEDController() {
     // set all LEDs to off at end
-    cout << "Resetting LED Pins" << endl;
-    for (auto& color_pin : color_to_leds) {
-        softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
+    if (isInit) {
+        cout << "Resetting LED Pins" << endl;
+        for (auto& color_pin : color_to_leds) {
+            softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
+        }
+        isInit = false;
     }
-    isInit = false;
 }
 
 ReturnCodes LEDController::init() {
