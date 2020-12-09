@@ -12,10 +12,16 @@
 // Our Includes
 #include "constants.h"
 
-namespace CLI {
+namespace CLI::Results {
     // shortening of parse results mapping
     using ParseResults = std::map<std::string, std::string>;
-}; // end of CLI namespace
+
+    const std::string MODE      { "mode"     };
+    const std::string COLORS    { "names"    };
+    const std::string INTERVAL  { "interval" };
+    const std::string RATE      { "rate"     };
+    const std::string DURATION  { "duration" };
+}; // end of CLI::Results namespace
 
 namespace gpio {
 
@@ -25,15 +31,20 @@ namespace gpio {
 class CLI_Parser : public CLI::App {
     public:
         /********************************************** Constructors **********************************************/
+        
         /**
          * @brief Create the gpio parser with all required info
          * @param _argc The number of arguments
-         * @param _argv An array of string-literals containing each argument
+         * @param _argv An array of string-literals containing each argument\
+         * @param mode_list A list of acceptable modes
+         * @param color_list A list of available LEDs & Buttons to use
          * @param name The name of the parser (has a default)
          */
         explicit CLI_Parser(
             int _argc,
             char* _argv[],
+            const std::vector<std::string>& mode_list,
+            const std::vector<std::string>& color_list,
             const std::string name="GPIO CLI Parser"
         );
 
@@ -43,7 +54,7 @@ class CLI_Parser : public CLI::App {
          * @return std::map<std::string, std::string>
          * @note Will throw if encounters error while parsing cli
          */
-        const CLI::ParseResults& parse_flags() noexcept(false);
+        const CLI::Results::ParseResults& parse_flags() noexcept(false);
 
 
         /********************************************* Getters/Setters *********************************************/
@@ -55,7 +66,12 @@ class CLI_Parser : public CLI::App {
         // storage of cli argument
         char** argv;
 
-        CLI::ParseResults cli_res;
+        // the list of acceptable modes
+        const std::vector<std::string>& mode_list;
+        // the list of acceptable colors
+        const std::vector<std::string>& color_list;
+
+        CLI::Results::ParseResults cli_res;
 
         /********************************************* Helper Functions ********************************************/
 
