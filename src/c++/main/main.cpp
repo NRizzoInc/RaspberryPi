@@ -4,13 +4,17 @@
 #include <csignal>
 
 // Our Includes
-#include <GPIO_Controller.h>
+#include "GPIO_Controller.h"
+#include "CLI_Parser.h"
 
 using std::cout;
 using std::cerr;
 using std::endl;
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    gpio::CLI_Parser cli_parser(argc, argv, "GPIO App");
+
     // create single static gpio obj to controll rpi
     // static needed so it can be accessed in lambda
     static gpio::GPIO_Controller gpio_obj;
