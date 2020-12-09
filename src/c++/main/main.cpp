@@ -33,6 +33,8 @@ int main(int argc, char* argv[]) {
         gpio_handler.getModes(),
         "GPIO App"
     );
+    // will have to convert string values to required type
+    // note: will have to manually convert color str into list by splitting commas
     const CLI::Results::ParseResults parse_res {cli_parser.parse_flags()};
 
     cout << "Changing led intensity" << endl;

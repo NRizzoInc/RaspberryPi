@@ -47,7 +47,35 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes CLI_Parser::addFlags() {
+    auto color_opt = add_option("-c,--colors", cli_res[CLI::Results::COLORS])
+        ->description("Which Led-Button Pairs (multiple) to use. Comma-seperated")
+        ->required(false)
+        ->default_val("")
+        ;
 
+    add_option("-m,--mode", cli_res[CLI::Results::MODE])
+        ->description("Which action to perform")
+        ->required(true)
+        ->check(CLI::IsMember(mode_list))
+        ->needs(color_opt)
+        ;
+
+    add_option("-i,--interval", cli_res[CLI::Results::INTERVAL])
+        ->description("The interval (in ms) between changing LEDs' states")
+        ->required(false)
+        ;
+
+    add_option("-d,--duration", cli_res[CLI::Results::DURATION])
+        ->description("How long the program should run (in ms)")
+        ->required(false)
+        ;
+
+    add_option("-r,--rate", cli_res[CLI::Results::RATE])
+        ->description("How fast the LEDs' intensity should change (1x, 2x, 3x...)")
+        ->required(false)
+        ;
+
+    return ReturnCodes::Success;
 }
 
 
