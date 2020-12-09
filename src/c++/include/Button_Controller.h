@@ -27,6 +27,12 @@ class ButtonController {
         ButtonController();
         virtual ~ButtonController();
 
+        /**
+         * @brief Helps intialize the buttons
+         * @return ReturnCodes
+         */
+        virtual ReturnCodes init();
+
         /********************************************* Getters/Setters *********************************************/
         /**
          * @brief: Gets a list of Button colors
@@ -47,11 +53,6 @@ class ButtonController {
 
 
         /********************************************* Helper Functions ********************************************/
-        /**
-         * @brief Helps intialize the buttons
-         * @return ReturnCodes
-         */
-        ReturnCodes initButtons();
 
 }; // end of ButtonController class
 

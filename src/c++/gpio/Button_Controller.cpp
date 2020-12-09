@@ -18,14 +18,26 @@ ButtonController::ButtonController()
         })
     , isInit(false)
 {
-    // init Buttons on board
-    if(initButtons() != ReturnCodes::Success) {
-        cerr << "Failed to properly init buttons" << endl;
-    }
+    // stub
 }
 
 ButtonController::~ButtonController() {
     isInit = false;
+}
+
+ReturnCodes ButtonController::init() {
+    // if already init, stop now
+    if (isInit) return ReturnCodes::Success;
+
+    // setup pins for their purpose
+    if (wiringPiSetup() == -1) {
+        return ReturnCodes::Error;
+    }
+
+    // TODO: Init button input pins
+
+    isInit = true;
+    return ReturnCodes::Success;
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -41,20 +53,6 @@ bool ButtonController::getIsInit() const {
 
 
 /********************************************* Helper Functions ********************************************/
-ReturnCodes ButtonController::initButtons() {
-    // if already init, stop now
-    if (isInit) return ReturnCodes::Success;
-
-    // setup pins for their purpose
-    if (wiringPiSetup() == -1) {
-        return ReturnCodes::Error;
-    }
-
-    // TODO: Init button input pins
-
-    isInit = true;
-    return ReturnCodes::Success;
-}
 
 }; // end of Button namespace
 

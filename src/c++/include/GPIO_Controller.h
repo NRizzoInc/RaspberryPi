@@ -49,6 +49,12 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
 
         /*********************************************** GPIO Helpers **********************************************/
 
+        /**
+         * @brief Wrapper for base classes init functions
+         * @return ReturnCodes Success if gpio board is init
+         */
+        ReturnCodes init() override;
+
     private:
         /******************************************** Private Variables ********************************************/
         const std::unordered_map<std::string, int> color_to_led_btn_pairs;

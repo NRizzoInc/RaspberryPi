@@ -17,13 +17,6 @@ int main(int argc, char* argv[]) {
     // static needed so it can be accessed in lambda
     static gpio::GPIO_Controller gpio_handler;
 
-    /* ========================================= Create Ctrl+C Handler ======================================== */
-    // setup ctrl+c handler w/ callback to stop threads
-    std::signal(SIGINT, [](int signum) {
-        cout << "Caught ctrl+c: " << signum << endl;
-        gpio_handler.setShouldThreadExit(true);
-    });
-
     /* ============================================ Parse CLI Flags =========================================== */
     // object that parses the command line inputs
     gpio::CLI_Parser cli_parser(
@@ -37,6 +30,16 @@ int main(int argc, char* argv[]) {
     // note: will have to manually convert color str into list by splitting commas
     const CLI::Results::ParseResults parse_res {cli_parser.parse_flags()};
 
+    /* ========================================= Create Ctrl+C Handler ======================================== */
+    // setup ctrl+c handler w/ callback to stop threads
+    std::signal(SIGINT, [](int signum) {
+        cout << "Caught ctrl+c: " << signum << endl;
+        gpio_handler.setShouldThreadExit(true);
+    });
+
+    /* ========================================== Initialize & Start ========================================= */
+    cout << "Initializing GPIO Board" << endl;
+    gpio_handler.init();
     cout << "Changing led intensity" << endl;
     // gpio_handler.blinkLEDs({"red", "green"});
     // gpio_handler.LEDIntensity({"red", "green"});

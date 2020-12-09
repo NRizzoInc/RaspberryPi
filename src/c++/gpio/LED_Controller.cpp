@@ -23,10 +23,7 @@ LEDController::LEDController()
     , stop_thread(false)
     , isInit(false)
 {
-    // init LEDs on board
-    if(initLEDs() != ReturnCodes::Success) {
-        cerr << "Failed to properly init LEDs" << endl;
-    }
+    // stub
 }
 
 LEDController::~LEDController() {
@@ -36,6 +33,24 @@ LEDController::~LEDController() {
         softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
     }
     isInit = false;
+}
+
+ReturnCodes LEDController::init() {
+    // if already init, stop now
+    if (isInit) return ReturnCodes::Success;
+
+    // setup pins for their purpose
+    if (wiringPiSetup() == -1) {
+        return ReturnCodes::Error;
+    }
+
+    for (auto& led_entry : color_to_leds) {
+        // setup each led as a software PWM LED (RPI only has 2 actual pwm pins)
+        softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_RANGE);
+    }
+
+    isInit = true;
+    return ReturnCodes::Success;
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -128,23 +143,6 @@ void LEDController::LEDIntensity(
 }
 
 /********************************************* Helper Functions ********************************************/
-ReturnCodes LEDController::initLEDs() {
-    // if already init, stop now
-    if (isInit) return ReturnCodes::Success;
-
-    // setup pins for their purpose
-    if (wiringPiSetup() == -1) {
-        return ReturnCodes::Error;
-    }
-
-    for (auto& led_entry : color_to_leds) {
-        // setup each led as a software PWM LED (RPI only has 2 actual pwm pins)
-        softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_RANGE);
-    }
-
-    isInit = true;
-    return ReturnCodes::Success;
-}
 
 
 }; // end of LED namespace

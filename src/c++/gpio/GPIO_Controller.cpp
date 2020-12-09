@@ -42,6 +42,24 @@ bool GPIO_Controller::getIsInit() const {
 
 /********************************************* Helper Functions ********************************************/
 
+ReturnCodes GPIO_Controller::init() {
+    // immediately return if already init
+    if (getIsInit()) return ReturnCodes::Success;
+
+    // otherwise init sub-components
+    if (LEDController::init() != ReturnCodes::Success) {
+        cerr << "Failed to properly init LEDs" << endl;
+        return ReturnCodes::Error;
+    }
+    if (ButtonController::init() != ReturnCodes::Success) {
+        cerr << "Failed to properly init buttons" << endl;
+        return ReturnCodes::Error;
+    }
+
+    return ReturnCodes::Success;
+}
+
+
 // std::unordered_map<std::string, int> GPIO_Controller::generateLedBtnPairs() {}
 
 Helpers::Map::FnMap GPIO_Controller::createFnMap() const {

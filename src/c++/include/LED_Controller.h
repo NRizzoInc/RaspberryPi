@@ -32,6 +32,12 @@ class LEDController {
         LEDController();
         virtual ~LEDController();
 
+        /**
+         * @brief Helps intialize the leds
+         * @return ReturnCodes
+         */
+        virtual ReturnCodes init();
+
         /********************************************* Getters/Setters *********************************************/
         /**
          * @brief: Gets a list of LED colors
@@ -90,11 +96,6 @@ class LEDController {
 
 
         /********************************************* Helper Functions ********************************************/
-        /**
-         * @brief Helps intialize the leds
-         * @return ReturnCodes
-         */
-        ReturnCodes initLEDs();
 
 
 }; // end of LEDController class
