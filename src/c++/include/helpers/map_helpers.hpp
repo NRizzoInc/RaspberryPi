@@ -25,22 +25,19 @@ using FnMapType = std::unordered_map<
 >;
 
 /**
- * @brief Helper class to map a string to a class's member functions
+ * @brief Helper class to map a string to a class's member functions (maps str -> fn)
  * @note Instantiate => .insert(str, fnRef) => .searchAndCall<RtnType>(mapName, args)
  */
-struct FnMap {
-    // the mapping of str -> fn
-    FnMapType str_to_fn;
-
+struct FnMap : public FnMapType {
     /**
      * @brief Insert a str-to-function pair in mapping
      * @param fn_str The string to map to a specific function
      * @param fn_ref The function the string should map to 
      */
     template<typename T>
-    void insert(std::string fn_str, T fn_ref){
+    void insert(std::string fn_str, T fn_ref) {
         auto tt = std::type_index(typeid(fn_ref));
-        str_to_fn.insert(
+        FnMapType::insert(
             std::make_pair(
                 fn_str,
                 std::make_pair((voidFunctionType)fn_ref, tt)
@@ -56,7 +53,7 @@ struct FnMap {
      */
     template<typename T,typename... Args>
     T searchAndCall(std::string fn_str, Args&&... args){
-        auto mapIter = str_to_fn.find(fn_str);
+        auto mapIter = FnMapType::find(fn_str);
         /*chk if not end*/
         auto mapVal = mapIter->second;
 
@@ -93,7 +90,7 @@ inline std::vector<keyType> getMapKeys(const std::unordered_map<keyType, valType
 // for function maps
 inline std::vector<std::string> getMapKeys(const FnMap fnMapping) {
     std::vector<std::string> keys;
-    for (auto& entry : fnMapping.str_to_fn) {
+    for (auto& entry : fnMapping) {
         keys.push_back(entry.first);
     }
     return keys;
