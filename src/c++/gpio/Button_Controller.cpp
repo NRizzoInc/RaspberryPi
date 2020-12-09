@@ -29,7 +29,7 @@ ButtonController::~ButtonController() {
 
 /********************************************* Getters/Setters *********************************************/
 std::vector<std::string> ButtonController::getBtnColorList() {
-    return Helpers::getMapKeys(color_to_btns);
+    return Helpers::Map::getMapKeys(color_to_btns);
 }
 
 

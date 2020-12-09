@@ -38,7 +38,7 @@ LEDController::~LEDController() {
 
 /********************************************* Getters/Setters *********************************************/
 std::vector<std::string> LEDController::getLedColorList() {
-    return Helpers::getMapKeys(color_to_leds);
+    return Helpers::Map::getMapKeys(color_to_leds);
 }
 
 ReturnCodes LEDController::setShouldThreadExit(const bool new_status) {
