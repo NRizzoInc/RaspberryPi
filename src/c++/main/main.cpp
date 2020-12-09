@@ -6,6 +6,7 @@
 // Our Includes
 #include "GPIO_Controller.h"
 #include "CLI_Parser.h"
+#include "string_helpers.hpp"
 
 using std::cout;
 using std::cerr;
@@ -47,7 +48,7 @@ int main(int argc, char* argv[]) {
     cout << "Initializing GPIO Board" << endl;
     gpio_handler.init();
     cout << "Changing led intensity" << endl;
-    // gpio_handler.blinkLEDs({"red", "green"});
+    gpio_handler.blinkLEDs(Helpers::splitStr(',', parse_res[CLI::Results::COLORS]));
     // gpio_handler.LEDIntensity({"red", "green"});
 
     return 0;

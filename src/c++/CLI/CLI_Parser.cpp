@@ -47,7 +47,7 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes CLI_Parser::addFlags() {
-    auto color_opt = add_option("-c,--colors", cli_res[CLI::Results::COLORS])
+    add_option("-c,--colors", cli_res[CLI::Results::COLORS])
         ->description("Which Led-Button Pairs (multiple) to use. Comma-seperated")
         ->required(false)
         ->default_val("")
@@ -57,7 +57,6 @@ ReturnCodes CLI_Parser::addFlags() {
         ->description("Which action to perform")
         ->required(true)
         ->check(CLI::IsMember(mode_list))
-        ->needs(color_opt)
         ;
 
     add_option("-i,--interval", cli_res[CLI::Results::INTERVAL])
