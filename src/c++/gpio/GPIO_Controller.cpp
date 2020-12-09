@@ -18,7 +18,7 @@ GPIO_Controller::GPIO_Controller()
         })
     , mode_to_action (std::move(createFnMap()))
 {
-    cout << "Creating gpio obj" << endl;
+    // stub
 }
 
 GPIO_Controller::~GPIO_Controller() {
@@ -34,6 +34,10 @@ std::vector<std::string> GPIO_Controller::getModes() const {
     return Helpers::Map::getMapKeys(mode_to_action);
 }
 
+
+bool GPIO_Controller::getIsInit() const {
+    return LEDController::getIsInit() && ButtonController::getIsInit();
+}
 
 
 /********************************************* Helper Functions ********************************************/

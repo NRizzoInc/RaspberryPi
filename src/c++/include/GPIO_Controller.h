@@ -35,7 +35,17 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          */
         std::vector<std::string> getPairColorList() const;
 
+        /**
+         * @brief Get the list of possible modes that map to functions
+         * @return The possible modes (case-sensitive)
+         */
         std::vector<std::string> getModes() const;
+
+        /**
+         * @brief Determines if all GPIO modules are init
+         * @return True if everything is good to go
+         */
+        bool getIsInit() const;
 
         /*********************************************** GPIO Helpers **********************************************/
 

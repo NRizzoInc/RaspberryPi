@@ -21,6 +21,7 @@ LEDController::LEDController()
             {"blue",    16}
         })
     , stop_thread(false)
+    , isInit(false)
 {
     // init LEDs on board
     if(initLEDs() != ReturnCodes::Success) {
@@ -34,6 +35,7 @@ LEDController::~LEDController() {
     for (auto& color_pin : color_to_leds) {
         softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
     }
+    isInit = false;
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -48,6 +50,10 @@ ReturnCodes LEDController::setShouldThreadExit(const bool new_status) {
 
 const std::atomic_bool& LEDController::getShouldThreadExit() const {
     return stop_thread;
+}
+
+bool LEDController::getIsInit() const {
+    return isInit;
 }
 
 /********************************************* LED Functions *********************************************/
@@ -123,6 +129,9 @@ void LEDController::LEDIntensity(
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes LEDController::initLEDs() {
+    // if already init, stop now
+    if (isInit) return ReturnCodes::Success;
+
     // setup pins for their purpose
     if (wiringPiSetup() == -1) {
         return ReturnCodes::Error;
@@ -132,6 +141,8 @@ ReturnCodes LEDController::initLEDs() {
         // setup each led as a software PWM LED (RPI only has 2 actual pwm pins)
         softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_RANGE);
     }
+
+    isInit = true;
     return ReturnCodes::Success;
 }
 

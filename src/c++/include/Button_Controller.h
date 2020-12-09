@@ -34,6 +34,8 @@ class ButtonController {
          */
         std::vector<std::string> getBtnColorList();
 
+        bool getIsInit() const;
+
         /******************************************** Button Functions ********************************************/
 
 
@@ -41,6 +43,7 @@ class ButtonController {
         /******************************************** Private Variables ********************************************/
         // Map each color to a button's corresponding pin number
         const std::unordered_map<std::string, int> color_to_btns;
+        bool isInit;
 
 
         /********************************************* Helper Functions ********************************************/

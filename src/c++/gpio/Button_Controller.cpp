@@ -16,6 +16,7 @@ ButtonController::ButtonController()
             {"green",   4},
             {"blue",    17}
         })
+    , isInit(false)
 {
     // init Buttons on board
     if(initButtons() != ReturnCodes::Success) {
@@ -24,7 +25,7 @@ ButtonController::ButtonController()
 }
 
 ButtonController::~ButtonController() {
-    //stub
+    isInit = false;
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -32,19 +33,27 @@ std::vector<std::string> ButtonController::getBtnColorList() {
     return Helpers::Map::getMapKeys(color_to_btns);
 }
 
+bool ButtonController::getIsInit() const {
+    return isInit;
+}
 
 /******************************************** Button Functions ********************************************/
 
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes ButtonController::initButtons() {
-    try {
-        wiringPiSetup();
-        return ReturnCodes::Success;
-    } catch (std::exception err) {
-        err.what();
+    // if already init, stop now
+    if (isInit) return ReturnCodes::Success;
+
+    // setup pins for their purpose
+    if (wiringPiSetup() == -1) {
         return ReturnCodes::Error;
     }
+
+    // TODO: Init button input pins
+
+    isInit = true;
+    return ReturnCodes::Success;
 }
 
 }; // end of Button namespace

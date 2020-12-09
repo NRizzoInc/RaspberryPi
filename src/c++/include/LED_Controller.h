@@ -51,6 +51,8 @@ class LEDController {
          */
         const std::atomic_bool& getShouldThreadExit() const;
 
+        bool getIsInit() const;
+
         /********************************************* LED Functions *********************************************/
         /**
          * @brief Blink specific leds at the set interval (default to 1s) 
@@ -84,6 +86,7 @@ class LEDController {
         const std::unordered_map<std::string, int> color_to_leds;
         // controls whether or not to stop blocking functions (i.e. blink)
         std::atomic_bool stop_thread;
+        bool isInit;
 
 
         /********************************************* Helper Functions ********************************************/
