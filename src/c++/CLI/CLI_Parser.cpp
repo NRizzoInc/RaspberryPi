@@ -75,7 +75,7 @@ ReturnCodes CLI_Parser::addFlags() {
         ;
 
     add_option("-m,--mode", cli_res[CLI::Results::MODE])
-        ->description("Which action to perform: " + Helpers::createVecStr(mode_list, ","))
+        ->description("Which action to perform")
         ->required(true)
         ->check(CLI::IsMember(mode_list))
         ;
