@@ -9,6 +9,7 @@
 #include <functional>
 
 // Our Includes
+#include "string_helpers.hpp"
 #include "map_helpers.hpp"
 #include "constants.h"
 #include "LED_Controller.h"
@@ -55,11 +56,21 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          */
         ReturnCodes init() override;
 
+        /**
+         * @brief Handles the execution of the selected function
+         * @param flags Mapping contianing all command line flag values needed to call
+         * correct function with correct params
+         * @param args Additional args to unpack for the function call
+         * @return ReturnCodes
+         * @note Wrapper for FnMap's searchAndCall()
+         */
+        ReturnCodes run(const CLI::Results::ParseResults& flags) const;
+
     private:
         /******************************************** Private Variables ********************************************/
         const std::unordered_map<std::string, int> color_to_led_btn_pairs;
         // maps a string (mode name) to a gpio function
-        const Helpers::Map::FnMap mode_to_action;
+        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
 
         /********************************************* Helper Functions ********************************************/
         /**
@@ -73,7 +84,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @brief Create a Fn Map object
          * @return The function map object 
          */
-        Helpers::Map::FnMap createFnMap () const;
+        Helpers::Map::ClassFnMap<GPIO_Controller> createFnMap() const;
 
 };
 

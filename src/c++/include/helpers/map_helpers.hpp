@@ -18,22 +18,29 @@
 namespace Helpers {
 namespace Map {
 
-using voidFunctionType = std::function<void(void)>;
+// each stored function will have this type (which will be reinterpretted when needed)
+typedef void (*voidFunctionType)(void);
 
-using FnMapType = std::unordered_map<
+// class member function pointer
+template <typename classType>
+using voidClassMemFnType = void(classType::*)();
+
+// the map's type to map a string to a class's member functions
+template <typename classType>
+using ClassFnMapType = std::unordered_map<
     std::string,
-    std::pair<voidFunctionType, std::type_index>
+    voidClassMemFnType<classType>
 >;
 
 /**
  * @brief Helper class to map a string to a class's member functions (maps str -> fn)
  * @note Instantiate => .insert(str, fnRef) => .searchAndCall<RtnType>(mapName, args)
  */
-class FnMap : public FnMapType {
+template <typename classType>
+class ClassFnMap : public ClassFnMapType<classType> {
 
 public:
-    FnMap() : FnMapType() {}
-    // FnMap(std::initializer_list<FnMapType>& init_list) : FnMapType(init_list) {}
+    ClassFnMap() : ClassFnMapType<classType>() {}
 
     /**
      * @brief Insert a str-to-function pair in mapping
@@ -41,35 +48,61 @@ public:
      * @param fn_ref The function the string should map to 
      */
     template<typename T>
-    void insert(std::string fn_str, T fn_ref) {
-        auto tt = std::type_index(typeid(fn_ref));
-        FnMapType::insert(
+    void insert(const std::string& fn_str, T fn_ref) {
+        ClassFnMapType<classType>::insert(
             std::make_pair(
                 fn_str,
-                std::make_pair((voidFunctionType)fn_ref, tt)
+                (voidClassMemFnType<classType>)fn_ref
+                // std::make_pair(static_cast<voidFunctionType>(fn_ref), tt)
             )
         );
     }
 
+    /************************ How to Call Inserted Member Functions *************************/
+
+
+    /********************************* Const Function Calls *********************************/
     /**
-     * @brief Call & return from function mapped to be string
+     * @brief Call & return from function mapped to the string (const ref to obj)
+     * @param class_inst An instantiated object of same class type used for member function mapping
      * @param fn_str The string mapping to the function to call 
      * @param args The arguments to use when calling the function
      * @return T Whatever was specified as return of mapped function
+     * @note Usage: my_FnMap.searchAndCall<return type>(fn_str, args)
      */
     template<typename T,typename... Args>
-    T searchAndCall(std::string fn_str, Args&&... args){
-        auto mapIter = FnMapType::find(fn_str);
-        /*chk if not end*/
-        auto mapVal = mapIter->second;
+    T searchAndCall(const classType& class_inst, const std::string& fn_str, Args&&... args) const {
+        auto map_val = ClassFnMapType<classType>::at(fn_str);
 
-        // auto typeCastedFun = reinterpret_cast<T(*)(Args ...)>(mapVal.first); 
-        auto typeCastedFun = (T(*)(Args ...))(mapVal.first); 
+        // add const to function to signify it will not modify contents of obj 
+        auto typeCastedMemberFunc = reinterpret_cast<T(classType::*)(Args ...) const>(map_val);
 
-        //compare the types is equal or not
-        assert(mapVal.second == std::type_index(typeid(typeCastedFun)));
-        return typeCastedFun(std::forward<Args>(args)...);
+        // actually call the function
+        return (class_inst.*typeCastedMemberFunc)(std::forward<Args>(args)...);
     }
+
+    /********************************* Non-Const Function Calls *********************************/
+    /**
+     * @brief Call & return from function mapped to the string (const ref to obj)
+     * @param class_inst An instantiated object of same class type used for member function mapping
+     * @param fn_str The string mapping to the function to call 
+     * @param args The arguments to use when calling the function
+     * @return T Whatever was specified as return of mapped function
+     * @note Usage: my_FnMap.searchAndCall<return type>(fn_str, args)
+     * This is for non-const functions
+     */
+    template<typename T,typename... Args>
+    T searchAndCall(classType& class_inst, const std::string& fn_str, Args&&... args) {
+        auto map_val = ClassFnMapType<classType>::at(fn_str);
+
+        // add const to function to signify it will not modify contents of obj 
+        auto typeCastedMemberFunc = reinterpret_cast<T(classType::*)(Args ...)>(map_val);
+
+        // actually call the function
+        return (class_inst.*typeCastedMemberFunc)(std::forward<Args>(args)...);
+    }
+
+
 };
 
 /******************************************** Generic Helpers ********************************************/
@@ -94,7 +127,8 @@ inline std::vector<keyType> getMapKeys(const std::unordered_map<keyType, valType
 }
 
 // for function maps
-inline std::vector<std::string> getMapKeys(const FnMap fnMapping) {
+template <typename classType>
+inline std::vector<std::string> getMapKeys(const ClassFnMap<classType> fnMapping) {
     std::vector<std::string> keys;
     for (auto& entry : fnMapping) {
         keys.push_back(entry.first);

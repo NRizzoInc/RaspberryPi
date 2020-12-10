@@ -46,8 +46,7 @@ int main(int argc, char* argv[]) {
 
     /* ========================================== Initialize & Start ========================================= */
     gpio_handler.init();
-    gpio_handler.blinkLEDs(Helpers::splitStr(',', parse_res[CLI::Results::COLORS]));
-    // gpio_handler.LEDIntensity({"red", "green"});
+    gpio_handler.run(parse_res);
 
     return EXIT_SUCCESS;
 }
