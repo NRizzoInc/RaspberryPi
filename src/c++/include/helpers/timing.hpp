@@ -8,7 +8,7 @@
 
 // 3rd Party Includes
 
-namespace Helpers {
+namespace Helpers::Timing {
 
 /**
  * @brief Determines if the required amount of time has passed since start
@@ -29,6 +29,6 @@ bool hasTimeElapsed(
     return elapsed_time > duration;
 }
 
-}; // end of helpers namespace
+}; // end of Helpers::Timing namespace
 
 #endif

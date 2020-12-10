@@ -4,7 +4,6 @@
 using std::cout;
 using std::cerr;
 using std::endl;
-using ms = std::chrono::milliseconds;
 
 
 namespace gpio {
@@ -99,19 +98,19 @@ void LEDController::blinkLEDs(
     while (
         !getShouldThreadExit() &&
         // if duration == -1 : run forever
-        (duration == -1 || Helpers::hasTimeElapsed(start_time, duration, ms(1)))
+        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
         // on
         for (auto& to_blink : colors) {
             softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MAX);
         }
-        std::this_thread::sleep_for(ms(interval));
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
         // off
         for (auto& to_blink : colors) {
             softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MIN);
         }
-        std::this_thread::sleep_for(ms(interval));
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
 }
 
@@ -137,7 +136,7 @@ void LEDController::LEDIntensity(
     while (
         !getShouldThreadExit() &&
         // if duration == -1 : run forever
-        (duration == -1 || Helpers::hasTimeElapsed(start_time, duration, ms(1)))
+        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
         curr_brightness = (curr_brightness+1) % (Constants::LED_SOFT_PWM_MAX+1); // +1 to reach max
 
@@ -145,7 +144,7 @@ void LEDController::LEDIntensity(
         for (auto& to_change : colors) {
             softPwmWrite(color_to_leds.at(to_change), curr_brightness);
         }
-        std::this_thread::sleep_for(ms(time_between_change));
+        std::this_thread::sleep_for(std::chrono::milliseconds(time_between_change));
     }
 }
 
