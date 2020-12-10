@@ -48,9 +48,10 @@ class LEDController {
         /**
          * @brief Set whether the thread should stop
          * @param new_status The new status (true = stop, false = keep going) 
-         * @return ReturnCodes 
+         * @return ReturnCodes
+         * @note can be const because underlying bool is mutable
          */
-        ReturnCodes setShouldThreadExit(const bool new_status);
+        ReturnCodes setShouldThreadExit(const bool new_status) const;
         /**
          * @brief Get whether the thread should stop
          * @return std::atomic_bool 
@@ -94,8 +95,11 @@ class LEDController {
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number
         const std::unordered_map<std::string, int> color_to_leds;
-        // controls whether or not to stop blocking functions (i.e. blink)
-        std::atomic_bool stop_thread;
+        /**
+         * @brief Controls whether or not to stop blocking functions (i.e. blink)
+         * @note Is mutable so that it can be modified in const functions safely
+         */
+        mutable std::atomic_bool stop_thread;
         bool isInit;
 
 
