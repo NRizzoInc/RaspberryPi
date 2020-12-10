@@ -22,7 +22,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--names",
+        "--colors",
         type=str,
         nargs="+", # accept multiple args and store in list
         required=False,
