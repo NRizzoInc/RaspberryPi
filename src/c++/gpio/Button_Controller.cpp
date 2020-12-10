@@ -22,15 +22,15 @@ ButtonController::ButtonController()
 }
 
 ButtonController::~ButtonController() {
-    if (isInit) {
+    if (getIsInit()) {
         cout << "Resetting Button Pins" << endl;
-        isInit = false;
+        setIsInit(false);
     }
 }
 
-ReturnCodes ButtonController::init() {
+ReturnCodes ButtonController::init() const {
     // if already init, stop now
-    if (isInit) return ReturnCodes::Success;
+    if (getIsInit()) return ReturnCodes::Success;
 
     // setup pins for their purpose
     if (wiringPiSetup() == -1) {
@@ -39,17 +39,22 @@ ReturnCodes ButtonController::init() {
 
     // TODO: Init button input pins
 
-    isInit = true;
+    setIsInit(true);
     return ReturnCodes::Success;
 }
 
 /********************************************* Getters/Setters *********************************************/
-std::vector<std::string> ButtonController::getBtnColorList() {
+std::vector<std::string> ButtonController::getBtnColorList() const {
     return Helpers::Map::getMapKeys(color_to_btns);
 }
 
 bool ButtonController::getIsInit() const {
     return isInit;
+}
+
+ReturnCodes ButtonController::setIsInit(const bool new_state) const {
+    isInit = new_state;
+    return ReturnCodes::Success;
 }
 
 /******************************************** Button Functions ********************************************/

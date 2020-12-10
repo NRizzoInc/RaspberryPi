@@ -36,14 +36,14 @@ class LEDController {
          * @brief Helps intialize the leds
          * @return ReturnCodes
          */
-        virtual ReturnCodes init();
+        virtual ReturnCodes init() const;
 
         /********************************************* Getters/Setters *********************************************/
         /**
          * @brief: Gets a list of LED colors
          * @returns: Vector<string> of each color
          */
-        std::vector<std::string> getLedColorList();
+        std::vector<std::string> getLedColorList() const;
 
         /**
          * @brief Set whether the thread should stop
@@ -59,6 +59,7 @@ class LEDController {
         const std::atomic_bool& getShouldThreadExit() const;
 
         bool getIsInit() const;
+        ReturnCodes setIsInit(const bool new_state) const;
 
         /********************************************* LED Functions *********************************************/
         /**
@@ -100,7 +101,7 @@ class LEDController {
          * @note Is mutable so that it can be modified in const functions safely
          */
         mutable std::atomic_bool stop_thread;
-        bool isInit;
+        mutable bool isInit;
 
 
         /********************************************* Helper Functions ********************************************/

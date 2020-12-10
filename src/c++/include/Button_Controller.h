@@ -31,16 +31,17 @@ class ButtonController {
          * @brief Helps intialize the buttons
          * @return ReturnCodes
          */
-        virtual ReturnCodes init();
+        virtual ReturnCodes init() const;
 
         /********************************************* Getters/Setters *********************************************/
         /**
          * @brief: Gets a list of Button colors
          * @returns: Vector<string> of each color
          */
-        std::vector<std::string> getBtnColorList();
+        std::vector<std::string> getBtnColorList() const;
 
         bool getIsInit() const;
+        ReturnCodes setIsInit(const bool new_state) const;
 
         /******************************************** Button Functions ********************************************/
 
@@ -49,7 +50,7 @@ class ButtonController {
         /******************************************** Private Variables ********************************************/
         // Map each color to a button's corresponding pin number
         const std::unordered_map<std::string, int> color_to_btns;
-        bool isInit;
+        mutable bool isInit;
 
 
         /********************************************* Helper Functions ********************************************/

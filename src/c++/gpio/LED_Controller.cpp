@@ -28,7 +28,7 @@ LEDController::LEDController()
 
 LEDController::~LEDController() {
     // set all LEDs to off at end
-    if (isInit) {
+    if (getIsInit()) {
         cout << "Resetting LED Pins" << endl;
         for (auto& color_pin : color_to_leds) {
             softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
@@ -37,7 +37,7 @@ LEDController::~LEDController() {
     }
 }
 
-ReturnCodes LEDController::init() {
+ReturnCodes LEDController::init() const {
     // if already init, stop now
     if (isInit) return ReturnCodes::Success;
 
@@ -56,7 +56,7 @@ ReturnCodes LEDController::init() {
 }
 
 /********************************************* Getters/Setters *********************************************/
-std::vector<std::string> LEDController::getLedColorList() {
+std::vector<std::string> LEDController::getLedColorList() const {
     return Helpers::Map::getMapKeys(color_to_leds);
 }
 
@@ -72,6 +72,12 @@ const std::atomic_bool& LEDController::getShouldThreadExit() const {
 bool LEDController::getIsInit() const {
     return isInit;
 }
+
+ReturnCodes LEDController::setIsInit(const bool new_state) const {
+    isInit = new_state;
+    return ReturnCodes::Success;
+}
+
 
 /********************************************* LED Functions *********************************************/
 

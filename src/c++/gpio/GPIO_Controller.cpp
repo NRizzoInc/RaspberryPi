@@ -42,7 +42,7 @@ bool GPIO_Controller::getIsInit() const {
 
 /*********************************************** GPIO Helpers **********************************************/
 
-ReturnCodes GPIO_Controller::init() {
+ReturnCodes GPIO_Controller::init() const {
     // immediately return if already init
     if (getIsInit()) return ReturnCodes::Success;
 

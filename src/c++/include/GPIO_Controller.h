@@ -54,7 +54,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @brief Wrapper for base classes init functions
          * @return ReturnCodes Success if gpio board is init
          */
-        ReturnCodes init() override;
+        ReturnCodes init() const override;
 
         /**
          * @brief Handles the execution of the selected function
