@@ -127,27 +127,23 @@ void LEDController::LEDIntensity(
     // keep track of time/duration
     const auto start_time = std::chrono::steady_clock::now();
 
-    const unsigned int num_intervals {Constants::LED_SOFT_PWM_RANGE / rate};
-    unsigned int curr_interval_count {0};
+    // how much time to sleep for before changing the brightness (in ms)
+    // i.e.: if range of brightnesses = 100, interval = 1000ms & rate = 10x, should cycle every 1ms
+    const unsigned int cycles_per_change = {static_cast<unsigned int>(Constants::LED_SOFT_PWM_RANGE) * rate};
+    const unsigned int time_between_change {interval / cycles_per_change};
+    unsigned int curr_brightness {Constants::LED_SOFT_PWM_MIN};
     while (
         !getShouldThreadExit() &&
         // if duration == -1 : run forever
         (duration == -1 || Helpers::hasTimeElapsed(start_time, duration, ms(1)))
     ) {
-        // get current intensity by finding brightness as current interval count
-        const float perc_interv {
-            static_cast<float>(curr_interval_count) / static_cast<float>(num_intervals)
-        };
-        const unsigned int curr_brightness {
-            static_cast<unsigned int>(perc_interv * Constants::LED_SOFT_PWM_RANGE)
-        };
-        curr_interval_count = (curr_interval_count+1) % (num_intervals+1); // +1 to reach max
+        curr_brightness = (curr_brightness+1) % (Constants::LED_SOFT_PWM_MAX+1); // +1 to reach max
 
         // change LEDs brightness
         for (auto& to_change : colors) {
             softPwmWrite(color_to_leds.at(to_change), curr_brightness);
         }
-        std::this_thread::sleep_for(ms(interval));
+        std::this_thread::sleep_for(ms(time_between_change));
     }
 }
 
