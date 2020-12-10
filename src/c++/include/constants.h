@@ -16,4 +16,15 @@ namespace Constants {
 
 }; // end of constants namespace
 
+namespace CLI::Results {
+    // shortening of parse results mapping
+    using ParseResults = std::unordered_map<std::string, std::string>;
+
+    const std::string MODE      { "mode"     };
+    const std::string COLORS    { "names"    };
+    const std::string INTERVAL  { "interval" };
+    const std::string RATE      { "rate"     };
+    const std::string DURATION  { "duration" };
+}; // end of CLI::Results namespace
+
 #endif
