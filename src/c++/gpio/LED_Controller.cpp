@@ -77,9 +77,10 @@ bool LEDController::getIsInit() const {
 
 void LEDController::blinkLEDs(
     const std::vector<std::string>& colors,
-    const unsigned int interval,
-    const int duration
-) {
+    const unsigned int& interval,
+    const int& duration,
+    __attribute__((unused)) const unsigned int& rate
+) const {
     cout << "Blinking: " << Helpers::createVecStr(colors) << endl;
     cout << "Interval: " << interval << "ms" << endl;
     cout << "Duration: " << duration << "ms" << endl;
@@ -108,10 +109,10 @@ void LEDController::blinkLEDs(
 
 void LEDController::LEDIntensity(
     const std::vector<std::string>& colors,
-    const unsigned int interval,
-    const int duration,
-    const unsigned int rate
-) {
+    const unsigned int& interval,
+    const int& duration,
+    const unsigned int& rate
+) const {
     cout << "Changing intensity for: " << Helpers::createVecStr(colors) << endl;
     cout << "Interval: " << interval << "ms" << endl;
     cout << "Duration: " << duration << "ms" << endl;

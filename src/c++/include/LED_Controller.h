@@ -65,12 +65,15 @@ class LEDController {
          * @param colors The list of colors to blink
          * @param interval The interval to blink the leds at (in ms)
          * @param duration How long to run for in ms (-1 = infinite)
+         * @note Have to pass everything by reference do to function mapping requirements
          */
         void blinkLEDs(
             const std::vector<std::string>& colors,
-            const unsigned int interval=1000,
-            const int duration=-1
-        );
+            const unsigned int& interval=1000,
+            const int& duration=-1,
+            // not needed, but need to follow call guidlines for fn-mapping to work
+            __attribute__((unused)) const unsigned int& rate=1
+        ) const;
 
         /**
          * @brief Increase specific leds brightness at the set interval (default to 1s) 
@@ -78,13 +81,14 @@ class LEDController {
          * @param interval The interval to blink the leds at (in ms)
          * @param duration How long to run for in ms (-1 = infinite)
          * @param rate The rate at which the LEDs' intensity should change (i.e. 1x, 2x, 3x)
+         * @note Have to pass everything by reference do to function mapping requirements
          */
         void LEDIntensity(
             const std::vector<std::string>& colors,
-            const unsigned int interval=1000,
-            const int duration=-1,
-            const unsigned int rate=1
-        );
+            const unsigned int& interval=1000,
+            const int& duration=-1,
+            const unsigned int& rate=1
+        ) const;
 
     private:
         /******************************************** Private Variables ********************************************/
