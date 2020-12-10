@@ -3,6 +3,7 @@
 
 // Standard Includes
 #include <string>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 
@@ -26,6 +27,29 @@ inline const std::vector<std::string> splitStr(const char delim, const std::stri
     split_str.push_back(to_split.substr(beg));
 
     return std::move(split_str);
+}
+
+/**
+ * @brief Creates a string containing all elements of the vector (comma-seperated)
+ * @param vec The vector to print
+ * @param sep What to print in between elements (defaults to ", ") 
+ * @return std::string 
+ */
+template <typename vecType>
+inline std::string createVecStr(const std::vector<vecType>& vec, const std::string sep=", ") {
+    std::stringstream to_return;
+    const unsigned int end_idx      {static_cast<unsigned int>(vec.size())-1};
+    unsigned int idx_count          {0};
+    for (auto& el : vec) {
+        // dont add seperator for last element
+        if (idx_count != end_idx) {
+            to_return << el << sep;
+        } else {
+            to_return << el;
+        }
+        idx_count++;
+    }
+    return to_return.str();
 }
 
 
