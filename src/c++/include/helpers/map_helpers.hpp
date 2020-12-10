@@ -52,8 +52,8 @@ public:
         ClassFnMapType<classType>::insert(
             std::make_pair(
                 fn_str,
-                (voidClassMemFnType<classType>)fn_ref
-                // std::make_pair(static_cast<voidFunctionType>(fn_ref), tt)
+                // convert pointer to member fn with arguments into a void* member function
+                reinterpret_cast<voidClassMemFnType<classType>>(fn_ref)
             )
         );
     }
@@ -74,6 +74,7 @@ public:
     T searchAndCall(const classType& class_inst, const std::string& fn_str, Args&&... args) const {
         auto map_val = ClassFnMapType<classType>::at(fn_str);
 
+        // convert void* member function back to its original form
         // add const to function to signify it will not modify contents of obj 
         auto typeCastedMemberFunc = reinterpret_cast<T(classType::*)(Args ...) const>(map_val);
 
@@ -95,7 +96,7 @@ public:
     T searchAndCall(classType& class_inst, const std::string& fn_str, Args&&... args) {
         auto map_val = ClassFnMapType<classType>::at(fn_str);
 
-        // add const to function to signify it will not modify contents of obj 
+        // convert void* member function back to its original form
         auto typeCastedMemberFunc = reinterpret_cast<T(classType::*)(Args ...)>(map_val);
 
         // actually call the function
