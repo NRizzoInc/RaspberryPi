@@ -46,7 +46,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @brief Determines if all GPIO modules are init
          * @return True if everything is good to go
          */
-        bool getIsInit() const;
+        bool getIsInit() const override;
 
         /*********************************************** GPIO Helpers **********************************************/
 
@@ -55,6 +55,20 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @return ReturnCodes Success if gpio board is init
          */
         ReturnCodes init() const override;
+
+        /**
+         * @brief Set whether the thread should stop
+         * @param new_status The new status (true = stop, false = keep going) 
+         * @return ReturnCodes
+         * @note can be const because underlying bool is mutable
+         */
+        ReturnCodes setShouldThreadExit(const bool new_status) const override;
+
+        /**
+         * @brief Get whether the thread should stop
+         * @return std::atomic_bool 
+         */
+        const std::atomic_bool& getShouldThreadExit() const override;
 
         /**
          * @brief Handles the execution of the selected function

@@ -57,6 +57,15 @@ ReturnCodes ButtonController::setIsInit(const bool new_state) const {
     return ReturnCodes::Success;
 }
 
+ReturnCodes ButtonController::setShouldThreadExit(const bool new_status) const {
+    stop_thread = new_status;
+    return ReturnCodes::Success;
+}
+
+const std::atomic_bool& ButtonController::getShouldThreadExit() const {
+    return stop_thread;
+}
+
 /******************************************** Button Functions ********************************************/
 
 

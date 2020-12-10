@@ -51,14 +51,14 @@ class LEDController {
          * @return ReturnCodes
          * @note can be const because underlying bool is mutable
          */
-        ReturnCodes setShouldThreadExit(const bool new_status) const;
+        virtual ReturnCodes setShouldThreadExit(const bool new_status) const;
         /**
          * @brief Get whether the thread should stop
          * @return std::atomic_bool 
          */
-        const std::atomic_bool& getShouldThreadExit() const;
+        virtual const std::atomic_bool& getShouldThreadExit() const;
 
-        bool getIsInit() const;
+        virtual bool getIsInit() const;
         ReturnCodes setIsInit(const bool new_state) const;
 
         /********************************************* LED Functions *********************************************/

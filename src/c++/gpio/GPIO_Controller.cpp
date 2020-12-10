@@ -59,6 +59,22 @@ ReturnCodes GPIO_Controller::init() const {
     return ReturnCodes::Success;
 }
 
+ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
+    // only return success if both were successful
+    return \
+        LEDController::setShouldThreadExit(new_status) == ReturnCodes::Success &&
+        ButtonController::setShouldThreadExit(new_status) == ReturnCodes::Success ?
+            ReturnCodes::Success : ReturnCodes::Error;
+
+}
+
+const std::atomic_bool& GPIO_Controller::getShouldThreadExit() const {
+    return \
+        LEDController::getShouldThreadExit() &&
+        ButtonController::getShouldThreadExit();
+}
+
+
 ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const {
     // get required variables from flag mapping
     const auto& mode        {flags.at(CLI::Results::MODE)};
