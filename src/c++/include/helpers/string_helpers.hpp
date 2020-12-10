@@ -1,12 +1,12 @@
 #ifndef STRING_HELPERS_HPP
 #define STRING_HELPERS_HPP
 
-namespace Helpers {
-
 // Standard Includes
 #include <string>
 #include <vector>
 #include <algorithm>
+
+namespace Helpers {
 
 /**
  * @brief Splits a string into multiple elements within a vector
