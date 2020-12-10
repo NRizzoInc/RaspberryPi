@@ -31,7 +31,9 @@ LEDController::~LEDController() {
     if (getIsInit()) {
         cout << "Resetting LED Pins" << endl;
         for (auto& color_pin : color_to_leds) {
+            // set off and stop gpio pin
             softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
+            softPwmStop(color_pin.second);
         }
         isInit = false;
     }
