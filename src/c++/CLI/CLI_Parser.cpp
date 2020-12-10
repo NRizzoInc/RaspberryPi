@@ -69,16 +69,19 @@ ReturnCodes CLI_Parser::addFlags() {
     add_option("-i,--interval", cli_res[CLI::Results::INTERVAL])
         ->description("The interval (in ms) between changing LEDs' states")
         ->required(false)
+        ->default_val("1000")
         ;
 
     add_option("-d,--duration", cli_res[CLI::Results::DURATION])
         ->description("How long the program should run (in ms)")
         ->required(false)
+        ->default_val("-1")
         ;
 
     add_option("-r,--rate", cli_res[CLI::Results::RATE])
         ->description("How fast the LEDs' intensity should change (1x, 2x, 3x...)")
         ->required(false)
+        ->default_val("1")
         ;
 
     return ReturnCodes::Success;
