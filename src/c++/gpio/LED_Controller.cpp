@@ -34,13 +34,13 @@ LEDController::~LEDController() {
             softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
             softPwmStop(color_pin.second);
         }
-        isInit = false;
+        setIsInit(false);
     }
 }
 
 ReturnCodes LEDController::init() const {
     // if already init, stop now
-    if (isInit) return ReturnCodes::Success;
+    if (getIsInit()) return ReturnCodes::Success;
 
     // setup pins for their purpose
     if (wiringPiSetup() == -1) {
@@ -52,7 +52,7 @@ ReturnCodes LEDController::init() const {
         softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_RANGE);
     }
 
-    isInit = true;
+    setIsInit(true);
     return ReturnCodes::Success;
 }
 
@@ -96,7 +96,7 @@ void LEDController::blinkLEDs(
     const auto start_time = std::chrono::steady_clock::now();
 
     while (
-        !getShouldThreadExit() &&
+        !LEDController::getShouldThreadExit() &&
         // if duration == -1 : run forever
         (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
@@ -134,7 +134,7 @@ void LEDController::LEDIntensity(
     const unsigned int time_between_change {interval / cycles_per_change};
     unsigned int curr_brightness {Constants::LED_SOFT_PWM_MIN};
     while (
-        !getShouldThreadExit() &&
+        !LEDController::getShouldThreadExit() &&
         // if duration == -1 : run forever
         (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
