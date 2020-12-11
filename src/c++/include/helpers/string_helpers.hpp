@@ -9,6 +9,12 @@
 
 namespace Helpers {
 
+/// if printing a pair
+template<typename keyType, typename valType>
+std::ostream& operator<<(std::ostream& out, const std::pair<keyType, valType>& pair) {
+    return out << pair.first << ": " << pair.second; 
+}
+
 /**
  * @brief Splits a string into multiple elements within a vector
  * @param delim What to split by (not included in produced vectors' elements)

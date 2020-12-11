@@ -106,7 +106,8 @@ public:
 
 };
 
-/******************************************** Generic Helpers ********************************************/
+/******************************************** Get Keys ********************************************/
+
 // for ordered maps
 template<typename keyType, typename valType>
 inline std::vector<keyType> getMapKeys(const std::map<keyType, valType>& mapping) {
@@ -137,7 +138,27 @@ inline std::vector<std::string> getMapKeys(const ClassFnMap<classType> fnMapping
     return keys;
 }
 
+/******************************************** Get Entries ********************************************/
 
+// for ordered maps
+template<typename keyType, typename valType>
+std::vector<std::pair<keyType, valType>> getMapEntries(const std::map<keyType, valType>& mapping) {
+    std::vector<std::pair<keyType, valType>> entries;
+    for (auto& entry : mapping) {
+        entries.push_back(entry);
+    }
+    return entries;
+}
+
+// for unordered maps
+template<typename keyType, typename valType>
+inline std::vector<std::pair<keyType, valType>> getMapEntries(const std::unordered_map<keyType, valType>& mapping) {
+    std::vector<std::pair<keyType, valType>> entries;
+    for (auto& entry : mapping) {
+        entries.push_back(entry);
+    }
+    return entries;
+}
 
 }; // end of map namespace
 
