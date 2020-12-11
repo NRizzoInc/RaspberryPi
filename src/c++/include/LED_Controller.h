@@ -112,7 +112,7 @@ class LEDController {
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number
-        const std::unordered_map<std::string, int> color_to_leds;
+        const std::unordered_map<std::string, const int> color_to_leds;
         /**
          * @brief Controls whether or not to stop blocking functions (i.e. blink)
          * @note Is mutable so that it can be modified in const functions safely

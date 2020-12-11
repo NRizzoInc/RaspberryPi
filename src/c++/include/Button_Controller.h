@@ -79,7 +79,7 @@ class ButtonController {
 
         // maps color to a buttons info: {"color": {pin#, isPressed}}
         // cannot be const because the bool "isPressed" needs to be able to change
-        mutable std::unordered_map<std::string, std::pair<int, bool>> color_to_btns;
+        mutable std::unordered_map<std::string, std::pair<const int, bool>> color_to_btns;
 
     private:
         /******************************************** Private Variables ********************************************/
