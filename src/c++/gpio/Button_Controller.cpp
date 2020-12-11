@@ -13,10 +13,11 @@ ButtonController::ButtonController()
     : color_to_btns ({
             // get mappings in terminal with `gpio readall`
             // go by "wPi" column
-            {"red",     8},
-            {"yellow",  9},
-            {"green",   7},
-            {"blue",    0}
+            // init each button as "unpressed" = false
+            {"red",     std::make_pair(8, false)},
+            {"yellow",  std::make_pair(9, false)},
+            {"green",   std::make_pair(7, false)},
+            {"blue",    std::make_pair(0, false)}
         })
     , stop_thread(false)
     , isInit(false)
@@ -44,8 +45,9 @@ ReturnCodes ButtonController::init() const {
     for (auto& btn_entry : color_to_btns) {
         // set pins as inputs
         // https://github.com/WiringPi/WiringPi/blob/master/examples/Gertboard/buttons.c
-        pinMode(btn_entry.second, INPUT);
-        pullUpDnControl(btn_entry.second, PUD_UP);
+        const int pin_num {btn_entry.second.first};
+        pinMode(pin_num, INPUT);
+        pullUpDnControl(pin_num, PUD_UP);
     }
 
     setIsInit(true);
@@ -94,9 +96,24 @@ void ButtonController::detectBtnPress(
         (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
         for (auto& btn_color : colors) {
-            const bool isPressed {isDepressed(color_to_btns.at(btn_color))};
-            if (isPressed) {
-                cout << "Pressed: " << btn_color << endl;
+            // get last state and compare with current state
+            // btn_status is not const incase need to change its pressed state
+            auto&           btn_status      {color_to_btns.at(btn_color)};
+            const int&      pin_num         {btn_status.first};
+            const bool&     last_state      {btn_status.second};
+            const bool&     is_pressed      {isDepressed(pin_num)};
+            const bool&     state_changed   {last_state != is_pressed};
+
+            // only change state value in storage if there was a change (reduce number of writes)
+            if (state_changed) {
+                // update status in regiser
+                color_to_btns[btn_color].second = is_pressed;
+                
+                if (is_pressed) {
+                    cout << "Pressed: " << btn_color << endl;
+                } else {
+                    cout << "Released: " << btn_color << endl;
+                }
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
