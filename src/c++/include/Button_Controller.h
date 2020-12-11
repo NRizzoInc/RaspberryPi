@@ -76,14 +76,12 @@ class ButtonController {
             __attribute__((unused)) const unsigned int& rate=1
         ) const;
 
-
+    private:
+        /******************************************** Private Variables ********************************************/
         // maps color to a buttons info: {"color": {pin#, isPressed}}
         // cannot be const because the bool "isPressed" needs to be able to change
         mutable std::unordered_map<std::string, std::pair<const int, bool>> color_to_btns;
 
-    private:
-        /******************************************** Private Variables ********************************************/
-        // Map each color to a button's corresponding pin number
         /**
          * @brief Controls whether or not to stop blocking functions (i.e. blink)
          * @note Is mutable so that it can be modified in const functions safely
