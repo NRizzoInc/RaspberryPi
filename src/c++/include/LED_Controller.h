@@ -92,6 +92,23 @@ class LEDController {
             const unsigned int& rate=1
         ) const;
 
+        /**
+         * @brief Turns a specific LED On/Off
+         * @param pin_num The pin # of the LED to change
+         * @param new_state true = ON, false = OFF
+         * @return ReturnCodes 
+         * @note Sets to binary of HIGH/LOW and does not deal with inbetween brightnesses
+         */
+        ReturnCodes setLED(const int pin_num, const bool new_state) const;
+        /**
+         * @brief Turns a specific LED On/Off
+         * @param led_color The the color of the LED to change
+         * @param new_state true = ON, false = OFF
+         * @return ReturnCodes 
+         * @note Sets to binary of HIGH/LOW and does not deal with inbetween brightnesses
+         */
+        ReturnCodes setLED(const std::string& led_color, const bool new_state) const;
+
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number

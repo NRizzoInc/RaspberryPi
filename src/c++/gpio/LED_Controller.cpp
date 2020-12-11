@@ -82,6 +82,19 @@ ReturnCodes LEDController::setIsInit(const bool new_state) const {
 
 /********************************************* LED Functions *********************************************/
 
+ReturnCodes LEDController::setLED(const std::string& led_color, const bool new_state) const {
+    // call overloaded version which accepts the pin number
+    return setLED(color_to_leds.at(led_color), new_state);
+}
+
+ReturnCodes LEDController::setLED(const int pin_num, const bool new_state) const {
+    // true = on, false = off
+    const int on_off_val {new_state ? Constants::LED_SOFT_PWM_MAX : Constants::LED_SOFT_PWM_MIN};
+    softPwmWrite(pin_num, on_off_val);
+    return ReturnCodes::Success;
+}
+
+
 void LEDController::blinkLEDs(
     const std::vector<std::string>& colors,
     const unsigned int& interval,
@@ -102,13 +115,13 @@ void LEDController::blinkLEDs(
     ) {
         // on
         for (auto& to_blink : colors) {
-            softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MAX);
+            setLED(to_blink, true);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
         // off
         for (auto& to_blink : colors) {
-            softPwmWrite(color_to_leds.at(to_blink), Constants::LED_SOFT_PWM_MIN);
+            setLED(to_blink, false);
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
