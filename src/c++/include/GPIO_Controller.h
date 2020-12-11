@@ -79,7 +79,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         const std::unordered_map<std::string, int> color_to_led_btn_pairs;
         // maps a string (mode name) to a gpio function
         // TODO: figure out how to make this constant
-        Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
+        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
 
         /********************************************* Helper Functions ********************************************/
         /**
