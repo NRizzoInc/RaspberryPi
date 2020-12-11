@@ -26,7 +26,7 @@ class CLI_Parser : public CLI::App {
         /**
          * @brief Create the gpio parser with all required info
          * @param _argc The number of arguments
-         * @param _argv An array of string-literals containing each argument\
+         * @param _argv An array of string-literals containing each argument
          * @param mode_list A list of acceptable modes
          * @param color_list A list of available LEDs & Buttons to use
          * @param name The name of the parser (has a default)
