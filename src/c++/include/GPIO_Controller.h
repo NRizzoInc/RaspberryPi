@@ -65,12 +65,6 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         ReturnCodes setShouldThreadExit(const bool new_status) const override;
 
         /**
-         * @brief Get whether the thread should stop
-         * @return std::atomic_bool 
-         */
-        const std::atomic_bool& getShouldThreadExit() const override;
-
-        /**
          * @brief Handles the execution of the selected function
          * @param flags Mapping contianing all command line flag values needed to call
          * correct function with correct params
@@ -84,7 +78,8 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         /******************************************** Private Variables ********************************************/
         const std::unordered_map<std::string, int> color_to_led_btn_pairs;
         // maps a string (mode name) to a gpio function
-        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
+        // TODO: figure out how to make this constant
+        Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
 
         /********************************************* Helper Functions ********************************************/
         /**

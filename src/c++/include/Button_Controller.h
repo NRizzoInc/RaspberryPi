@@ -6,11 +6,15 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <thread>
+#include <chrono>
 #include <atomic>
 
 // Our Includes
 #include "map_helpers.hpp"
 #include "constants.h"
+#include "string_helpers.hpp"
+#include "timing.hpp"
 
 // 3rd Party Includes
 #include <wiringPi.h>
@@ -59,12 +63,24 @@ class ButtonController {
         virtual const std::atomic_bool& getShouldThreadExit() const;
 
         /******************************************** Button Functions ********************************************/
+        
+        /**
+         * @brief Scans all buttons specified to see if they are pressed
+         * @param colors The colors/buttons to watch for 
+         * @param duration How long to run for in ms (-1 = infinite)
+         */
+        void detectBtnPress(
+            const std::vector<std::string>& colors,
+            __attribute__((unused)) const unsigned int& interval=1000,
+            const int& duration=-1,
+            __attribute__((unused)) const unsigned int& rate=1
+        ) const;
 
 
+        const std::unordered_map<std::string, int> color_to_btns;
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a button's corresponding pin number
-        const std::unordered_map<std::string, int> color_to_btns;
         /**
          * @brief Controls whether or not to stop blocking functions (i.e. blink)
          * @note Is mutable so that it can be modified in const functions safely
@@ -74,6 +90,14 @@ class ButtonController {
 
 
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Determines if the button is being pushed
+         * @param pin The pin number corresponding to the button (use color_to_btns to get)
+         * @return true If is pushed
+         * @return false If is not pushed
+         */
+        bool isDepressed(const int pin) const;
 
 }; // end of ButtonController class
 

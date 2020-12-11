@@ -47,8 +47,8 @@ public:
      * @param fn_str The string to map to a specific function
      * @param fn_ref The function the string should map to 
      */
-    template<typename T>
-    void insert(const std::string& fn_str, T fn_ref) {
+    template<typename keyType>
+    void insert(const std::string& fn_str, keyType fn_ref) {
         ClassFnMapType<classType>::insert(
             std::make_pair(
                 fn_str,

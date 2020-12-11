@@ -16,9 +16,12 @@ GPIO_Controller::GPIO_Controller()
     , color_to_led_btn_pairs ({
             //stub
         })
-    , mode_to_action (createFnMap())
+    // , mode_to_action (createFnMap())
 {
-    // stub
+    // TODO: Figure out way to make reinterpret_cast automatic/ can make map obj const
+    mode_to_action["Blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
+    mode_to_action["Intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
+    mode_to_action["Btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
 }
 
 GPIO_Controller::~GPIO_Controller() {
@@ -68,12 +71,6 @@ ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
 
 }
 
-const std::atomic_bool& GPIO_Controller::getShouldThreadExit() const {
-    return \
-        LEDController::getShouldThreadExit() &&
-        ButtonController::getShouldThreadExit();
-}
-
 
 ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const {
     // get required variables from flag mapping
@@ -109,9 +106,11 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const 
 // std::unordered_map<std::string, int> GPIO_Controller::generateLedBtnPairs() {}
 
 Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
+    // TODO: figure out if can copy init stuff in constructor into here
     Helpers::Map::ClassFnMap<GPIO_Controller> to_rtn;
-    to_rtn.insert("Blink",      &GPIO_Controller::blinkLEDs     );
+    to_rtn.insert("Blink",      &LEDController::blinkLEDs       );
     to_rtn.insert("Intensity",  &LEDController::LEDIntensity    );
+    to_rtn.insert("Btns",       &ButtonController::detectBtnPress  );
     
     return to_rtn;
 }
