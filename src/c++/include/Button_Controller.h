@@ -28,7 +28,7 @@ using BtnMapVal = std::pair<const int, bool>;
 using BtnMap = std::unordered_map<std::string, BtnMapVal>;
 
 // the type of the callback used when a button's state has changed
-using BtnCallback = std::function<void(const std::string color, const bool btn_state)>;
+using BtnCallback = std::function<void(const std::string& color, const bool btn_state)>;
 
 /**
  * @brief Handles all button operations

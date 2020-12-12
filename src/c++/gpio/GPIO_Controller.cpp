@@ -54,6 +54,13 @@ ReturnCodes GPIO_Controller::init() const {
         return ReturnCodes::Error;
     }
 
+    // set callback so that when the button is pressed, the LED's state changes
+    ButtonController::setBtnCallback([&](const std::string& color, const bool btn_state){
+        if(setLED(color, btn_state) != ReturnCodes::Success) {
+            cerr << "Failed to set LED " << color << " to " << btn_state << endl;
+        }
+    });
+
     return ReturnCodes::Success;
 }
 
