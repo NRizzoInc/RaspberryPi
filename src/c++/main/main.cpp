@@ -2,6 +2,7 @@
 #include <iostream>
 #include <functional>
 #include <csignal>
+#include <thread>
 
 // Our Includes
 #include "GPIO_Controller.h"
@@ -46,7 +47,15 @@ int main(int argc, char* argv[]) {
 
     /* ========================================== Initialize & Start ========================================= */
     gpio_handler.init();
-    gpio_handler.run(parse_res);
+    std::thread run_proc(
+        [&]() {
+            gpio_handler.run(parse_res);
+        }
+    );
+
+    if (run_proc.joinable()) {
+        run_proc.join();
+    }
 
     return EXIT_SUCCESS;
 }
