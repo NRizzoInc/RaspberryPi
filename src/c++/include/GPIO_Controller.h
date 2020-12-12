@@ -20,6 +20,14 @@
 
 namespace gpio {
 
+using MapParentMaps = std::unordered_map<
+    std::string,
+    std::pair<
+        const LED::LEDMapVal&,         // led pin#
+        const Button::BtnMapVal&       // button
+    >
+>;
+
 /**
  * @brief Handles all GPIO related operations
  */
@@ -76,7 +84,17 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
 
     private:
         /******************************************** Private Variables ********************************************/
-        const std::unordered_map<std::string, int> color_to_led_btn_pairs;
+        /**
+         * @brief Maps a color to the values in the parent maps
+         * {
+         *      "color": {
+         *          pin#, // leds
+         *          {pin#, pressed_state}  // buttons
+         *      }
+         * }
+         * 
+         */
+        const MapParentMaps color_to_led_btn_pairs;
         // maps a string (mode name) to a gpio function
         const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
 
@@ -85,7 +103,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @brief: Helps construct color_to_led_btn_pairs based on what colors they share
          * @returns: The constructed map of shared colors
          */
-        // std::unordered_map<std::string, int> generateLedBtnPairs();
+        MapParentMaps generateLedBtnPairs() const;
 
 
         /**

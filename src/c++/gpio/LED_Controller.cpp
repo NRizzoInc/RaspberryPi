@@ -61,6 +61,11 @@ std::vector<std::string> LEDController::getLedColorList() const {
     return Helpers::Map::getMapKeys(color_to_leds);
 }
 
+const LEDMap& LEDController::getLedMap() const {
+    return color_to_leds;
+}
+
+
 ReturnCodes LEDController::setShouldThreadExit(const bool new_status) const {
     stop_thread = new_status;
     return ReturnCodes::Success;

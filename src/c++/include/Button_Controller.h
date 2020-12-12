@@ -23,6 +23,9 @@
 namespace gpio {
 namespace Button {
 
+using BtnMapVal = std::pair<const int, bool>;
+using BtnMap = std::unordered_map<std::string, BtnMapVal>;
+
 /**
  * @brief Handles all button operations
  */
@@ -44,6 +47,8 @@ class ButtonController {
          * @returns: Vector<string> of each color
          */
         std::vector<std::string> getBtnColorList() const;
+
+        const BtnMap& getBtnMap() const;
 
         virtual bool getIsInit() const;
         ReturnCodes setIsInit(const bool new_state) const;
@@ -80,7 +85,7 @@ class ButtonController {
         /******************************************** Private Variables ********************************************/
         // maps color to a buttons info: {"color": {pin#, isPressed}}
         // cannot be const because the bool "isPressed" needs to be able to change
-        mutable std::unordered_map<std::string, std::pair<const int, bool>> color_to_btns;
+        mutable BtnMap color_to_btns;
 
         /**
          * @brief Controls whether or not to stop blocking functions (i.e. blink)

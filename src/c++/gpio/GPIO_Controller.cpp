@@ -13,9 +13,7 @@ GPIO_Controller::GPIO_Controller()
     , Button::ButtonController()
 
     // init vars
-    , color_to_led_btn_pairs ({
-            //stub
-        })
+    , color_to_led_btn_pairs (generateLedBtnPairs())
     , mode_to_action (createFnMap())
 {
     // stub
@@ -100,7 +98,27 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const 
 
 /********************************************* Helper Functions ********************************************/
 
-// std::unordered_map<std::string, int> GPIO_Controller::generateLedBtnPairs() {}
+MapParentMaps GPIO_Controller::generateLedBtnPairs() const {
+    MapParentMaps to_rtn;
+
+    // compile list of colors both LED & Buttons share
+    auto& led_mapping {getLedMap()};
+    auto& btn_mapping {getBtnMap()};
+
+    // only add to master list if both contain the string
+    for (std::string color : Helpers::Map::getMapKeys(led_mapping)) {
+        if (btn_mapping.find(color) != btn_mapping.end()) {
+            const auto to_insert = std::make_pair(
+                led_mapping.at(color),
+                btn_mapping.at(color)
+            );
+            // breaks with .insert()
+            to_rtn.emplace(color, to_insert);
+        }
+    }
+
+    return to_rtn;
+}
 
 Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
     Helpers::Map::ClassFnMap<GPIO_Controller> to_rtn;

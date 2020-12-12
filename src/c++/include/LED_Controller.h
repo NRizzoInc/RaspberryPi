@@ -23,6 +23,9 @@
 namespace gpio {
 namespace LED {
 
+using LEDMapVal = const int;
+using LEDMap = std::unordered_map<std::string, LEDMapVal>;
+
 /**
  * @brief Handles all LED operations
  */
@@ -44,6 +47,8 @@ class LEDController {
          * @returns: Vector<string> of each color
          */
         std::vector<std::string> getLedColorList() const;
+
+        const LEDMap& getLedMap() const;
 
         /**
          * @brief Set whether the thread should stop
@@ -112,7 +117,7 @@ class LEDController {
     private:
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number
-        const std::unordered_map<std::string, const int> color_to_leds;
+        const LEDMap color_to_leds;
         /**
          * @brief Controls whether or not to stop blocking functions (i.e. blink)
          * @note Is mutable so that it can be modified in const functions safely

@@ -59,6 +59,10 @@ std::vector<std::string> ButtonController::getBtnColorList() const {
     return Helpers::Map::getMapKeys(color_to_btns);
 }
 
+const BtnMap& ButtonController::getBtnMap() const {
+    return color_to_btns;
+}
+
 bool ButtonController::getIsInit() const {
     return isInit;
 }
