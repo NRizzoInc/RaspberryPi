@@ -1,3 +1,6 @@
 [submodule "WiringPi"]
 	path = extern/WiringPi
 	url = git@github.com:WiringPi/WiringPi
+[submodule "extern/CLI11"]
+	path = extern/CLI11
+	url = git@github.com:CLIUtils/CLI11.git
