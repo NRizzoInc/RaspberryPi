@@ -81,6 +81,12 @@ const std::atomic_bool& ButtonController::getShouldThreadExit() const {
     return stop_thread;
 }
 
+ReturnCodes ButtonController::setBtnCallback(const BtnCallback& callback) const {
+    btn_cb = callback;
+    return ReturnCodes::Success;
+}
+
+
 /******************************************** Button Functions ********************************************/
 void ButtonController::detectBtnPress(
     const std::vector<std::string>& colors,
@@ -113,10 +119,16 @@ void ButtonController::detectBtnPress(
                 // update status in regiser
                 color_to_btns[btn_color].second = is_pressed;
                 
+                // TODO: remove!! print to terminal temporarily for debugging
                 if (is_pressed) {
                     cout << "Pressed: " << btn_color << endl;
                 } else {
                     cout << "Released: " << btn_color << endl;
+                }
+
+                // use callback if provided
+                if (btn_cb) {
+                    btn_cb(btn_color, is_pressed);
                 }
             }
         }

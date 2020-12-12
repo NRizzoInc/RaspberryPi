@@ -9,6 +9,7 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <functional>
 
 // Our Includes
 #include "map_helpers.hpp"
@@ -25,6 +26,9 @@ namespace Button {
 
 using BtnMapVal = std::pair<const int, bool>;
 using BtnMap = std::unordered_map<std::string, BtnMapVal>;
+
+// the type of the callback used when a button's state has changed
+using BtnCallback = std::function<void(const std::string color, const bool btn_state)>;
 
 /**
  * @brief Handles all button operations
@@ -67,6 +71,17 @@ class ButtonController {
          */
         virtual const std::atomic_bool& getShouldThreadExit() const;
 
+        /**
+         * @brief Set the callback to occur when a button's state is changed
+         * (i.e. pressed => released or released => pressed)
+         * @arg Callback of format: std::function<void(const std::string color, const bool btn_state)>
+         * @arg Callback's "color" is string representing the color of the changed button
+         * @arg Callback's "btn_state" represents the button's new state (false = released, true = pressed)
+         * @return Callback should return void
+         * @return ReturnCodes Was setting it successful 
+         */
+        ReturnCodes setBtnCallback(const BtnCallback& callback) const;
+
         /******************************************** Button Functions ********************************************/
         
         /**
@@ -93,6 +108,9 @@ class ButtonController {
          */
         mutable std::atomic_bool stop_thread;
         mutable bool isInit;
+
+        // callback for when a button's state changes
+        mutable BtnCallback btn_cb;
 
 
         /********************************************* Helper Functions ********************************************/
