@@ -175,7 +175,7 @@ void TcpServer::runServer(const bool print_data) {
             // print the buf to the terminal(if told to)
             const json pkt {readPkt(buf)};
             if (print_data) {
-                cout << pkt.dump();
+                cout << pkt.dump() << endl;
             }
 
             // reset the buffer for a new read
