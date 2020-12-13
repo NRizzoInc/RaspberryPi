@@ -58,8 +58,19 @@ ReturnCodes TcpServer::acceptClient() {
     sockaddr_in client_addr;
     socklen_t addr_l = sizeof(client_addr);
 
-    // call the accept API on the socket and forward connection to data socket
-    data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
+
+    // wrap accept call in loop (due to timeout) to allow for program to be killed
+    // should stop looping when the connection has been made (i.e. data sock is positive)
+    while (!should_exit && data_sock_fd < 0) {
+        // call the accept API on the socket and forward connection to data socket
+        cout << "Waiting to accept connection (port " << listen_port << ")..." << endl;
+        data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
+    }
+
+    // if should exit, do not continue
+    if (should_exit) {
+        return ReturnCodes::Error;
+    }
 
     // if the data socket does not open successfully, close the listening socket
     if(data_sock_fd < 0) {
@@ -183,6 +194,13 @@ ReturnCodes TcpServer::optionsAndBind() {
     // set the options for the socket
     int option(1);
     setsockopt(listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+
+    // set receive timeout so that runServer loop can be stopped/killed
+    // without timeout accept connection might be blocking until a connection forms
+    struct timeval timeout;
+    timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
+    timeout.tv_usec = 0;
+    setsockopt(listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // init struct for address to bind socket
     sockaddr_in my_addr {};

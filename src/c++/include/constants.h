@@ -21,6 +21,7 @@ namespace Constants {
         constexpr std::size_t   MAX_DATA_SIZE   {512};
         constexpr char          PKT_ACK[]       {"Packet ACK\n"};
         constexpr int           RECV_TIMEOUT    {5}; // 5sec
+        constexpr int           ACPT_TIMEOUT    {10}; // 10sec
     } // end of Network namespace
 
 }; // end of constants namespace
