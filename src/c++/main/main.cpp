@@ -19,7 +19,7 @@ using std::endl;
 int main(int argc, char* argv[]) {
     /* ============================================ Create GPIO Obj =========================================== */
     // create single static gpio obj to controll rpi
-    // static needed so it can be accessed in lambda
+    // static needed so it can be accessed in ctrl+c lambda
     static const gpio::GPIO_Controller gpio_handler;
 
     /* ============================================ Parse CLI Flags =========================================== */
@@ -41,16 +41,17 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+    /* ============================================ Create Server  =========================================== */
+    // static needed so it can be accessed in ctrl+c lambda
+    static RPI::TcpServer server    {std::stoi(parse_res[CLI::Results::PORT])};
+
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
     std::signal(SIGINT, [](int signum) {
         cout << "Caught ctrl+c: " << signum << endl;
         gpio_handler.setShouldThreadExit(true);
+        server.setExitCode(true);
     });
-
-    /* ============================================ Create Server  =========================================== */
-    RPI::TcpServer server     {std::stoi(parse_res[CLI::Results::PORT])};
-
 
     /* ========================================== Initialize & Start ========================================= */
 
