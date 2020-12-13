@@ -84,6 +84,13 @@ ReturnCodes CLI_Parser::addFlags() {
         ->default_val("1")
         ;
 
+    add_option("-p,--port", cli_res[CLI::Results::PORT])
+        ->description("The server's listen port")
+        ->required(false)
+        ->default_val("55555")
+        ->check(CLI::Range(1024, 65535))
+        ;
+
     return ReturnCodes::Success;
 }
 

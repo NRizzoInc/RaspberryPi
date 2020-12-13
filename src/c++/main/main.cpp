@@ -7,6 +7,8 @@
 // Our Includes
 #include "GPIO_Controller.h"
 #include "CLI_Parser.h"
+#include "server.h"
+#include "constants.h"
 #include "string_helpers.hpp"
 
 using std::cout;
@@ -44,6 +46,10 @@ int main(int argc, char* argv[]) {
         cout << "Caught ctrl+c: " << signum << endl;
         gpio_handler.setShouldThreadExit(true);
     });
+
+    /* ============================================ Create Server  =========================================== */
+    const RPI::TcpServer server(std::stoi(parse_res[CLI::Results::PORT]));
+
 
     /* ========================================== Initialize & Start ========================================= */
     gpio_handler.init();

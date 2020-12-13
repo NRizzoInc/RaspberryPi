@@ -25,6 +25,7 @@ namespace CLI::Results {
     const std::string INTERVAL  { "interval" };
     const std::string RATE      { "rate"     };
     const std::string DURATION  { "duration" };
+    const std::string PORT      { "port" };
 }; // end of CLI::Results namespace
 
 #endif
