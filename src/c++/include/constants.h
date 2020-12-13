@@ -1,6 +1,9 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <string>
+#include <unordered_map>
+
 // Defines different possible returns rather than just success/fail
 enum class ReturnCodes {
     Success,

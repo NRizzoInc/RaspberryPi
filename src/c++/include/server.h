@@ -8,8 +8,10 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h> // for socket close()
 
 // Our Includes
+#include "constants.h"
 
 // 3rd Party Includes
 
@@ -38,9 +40,20 @@ class TcpServer {
         int data_sock_fd;       // tcp socket file descriptor to communciate data with client
         std::string ip_addr;    // ip address of connected client
         int listen_port;        // port number of client
-        bool end_conn;          // true if should exit/stop connection
+        bool should_exit;          // true if should exit/stop connection
 
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Set the socket options and bind.
+         * @return Error as soon as any of the operations it performs fails. Success if no issues
+         */
+        ReturnCodes optionsAndBind();
+
+        /**
+         * @brief Function called by the destructor to close the sockets
+         */
+        void quit();
 
 }; // end of TcpServer class
 
