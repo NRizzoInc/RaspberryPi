@@ -32,6 +32,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/c++/
 
 # Find the packages
 # find_package(BoostLib REQUIRED) # uses FindBoost.cmake in cmake dir
+find_package(JSON REQUIRED) # using https://github.com/nlohmann/json
 find_package(CLI11 REQUIRED) # using https://cliutils.gitlab.io/CLI11Tutorial/
 find_package(WiringPi REQUIRED)
 find_package(Threads REQUIRED) # stock package needed for WiringPi -- link ${CMAKE_THREAD_LIBS_INIT}
@@ -39,6 +40,7 @@ find_package(Threads REQUIRED) # stock package needed for WiringPi -- link ${CMA
 # Include the package's header files
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include") # contains OUR headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include/helpers")
+include_directories(${JSON_INCLUDE_DIR})
 include_directories(${CLI11_INCLUDE_DIR})
 include_directories(${WiringPi_INCLUDE_DIRS}) # pair with target_link_libraries(<projName> ${WiringPi_LIBS})
 
