@@ -129,7 +129,7 @@ MapParentMaps GPIO_Controller::generateLedBtnPairs() const {
 
 void GPIO_Controller::doNothing() const {
     // sometimes you just gotta be a bit sassy
-    cout << "You chose the option to do nothing... you should rethink your life choices" << endl;
+    // cout << "You chose the option to do nothing... you should rethink your life choices" << endl;
 }
 
 
