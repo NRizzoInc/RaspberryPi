@@ -29,6 +29,20 @@ class TcpServer {
         virtual ~TcpServer();
 
         /********************************************* Getters/Setters *********************************************/
+        
+        /**
+         * @brief Sets the exit code. 
+         * @note Useful for terminating runServer() from main thread
+         */
+        virtual ReturnCodes setExitCode(const bool new_exit) const;
+
+        /**
+         * @brief Get the current exit code status
+         * @return true TcpServer is ready to or should exit
+         * @return false TcpServer is still running and not ready to exit
+         */
+        virtual bool getExitCode() const;
+
 
         /********************************************* Server Functions ********************************************/
 
@@ -36,11 +50,11 @@ class TcpServer {
     private:
         /******************************************** Private Variables ********************************************/
 
-        int listen_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
-        int data_sock_fd;       // tcp socket file descriptor to communciate data with client
-        std::string ip_addr;    // ip address of connected client
-        int listen_port;        // port number of client
-        bool should_exit;          // true if should exit/stop connection
+        int             listen_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
+        int             data_sock_fd;       // tcp socket file descriptor to communciate data with client
+        std::string     ip_addr;            // ip address of connected client
+        int             listen_port;        // port number of client
+        mutable bool    should_exit;        // true if should exit/stop connection
 
         /********************************************* Helper Functions ********************************************/
 

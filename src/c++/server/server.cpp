@@ -41,6 +41,15 @@ TcpServer::~TcpServer() {
 
 /********************************************* Getters/Setters *********************************************/
 
+ReturnCodes TcpServer::setExitCode(const bool new_exit) const {
+    should_exit = new_exit;
+    return ReturnCodes::Success;
+}
+
+bool TcpServer::getExitCode() const {
+    return should_exit;
+}
+
 
 /********************************************* Server Functions ********************************************/
 
