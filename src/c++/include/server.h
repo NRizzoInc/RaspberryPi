@@ -53,6 +53,21 @@ class TcpServer {
          */
         ReturnCodes acceptClient();
 
+        /**
+         * @brief Receives data from remote host.
+         * @param buf buffer where the received data is stored
+         * @return number of bytes received (-1 if error occurred)
+         */
+        int recvData(char* buf);
+
+        /**
+         * @brief Send data to remote host.
+         * @param buf pointer to the buffer where the data to be sent is stored
+         * @param size_to_tx size to transmit
+         * @return number of bytes sent (-1 if error occurred)
+         */
+        int sendData(const char* buf, const size_t size_to_tx);
+
     private:
         /******************************************** Private Variables ********************************************/
 

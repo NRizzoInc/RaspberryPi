@@ -79,6 +79,52 @@ ReturnCodes TcpServer::acceptClient() {
     return ReturnCodes::Success;
 }
 
+int TcpServer::recvData(char* buf) {
+    // make sure data socket is open/valid first
+    if(data_sock_fd < 0) {
+        return -1;
+    }
+
+    // call the recv API
+    int rcv_size = ::recv(data_sock_fd, buf, Constants::MAX_DATA_SIZE, 0);
+
+    // check if the recv size is ok or not
+    if(rcv_size < 0) {
+        std::cout << "ERROR: Receive" << std::endl;
+
+        // close just the data socket bc done receiving from client
+        // but want to still listen for new connections
+        if(data_sock_fd >= 0) {
+            close(data_sock_fd);
+            data_sock_fd = -1;
+        }
+    }
+    return rcv_size;
+}
+
+int TcpServer::sendData(const char* buf, const size_t size_to_tx) {
+    // make sure data socket is open/valid first
+    if(data_sock_fd < 0) {
+        return -1;
+    }
+
+    // send the data through sckfd
+    const int sent_size = ::send(data_sock_fd, buf, size_to_tx, 0);
+
+    // error check (-1 in case of errors)
+    // if error close the socket and exit
+    if(sent_size < 0) {
+        std::cout << "ERROR: Send" << std::endl;
+        if(data_sock_fd >= 0) {
+            close(data_sock_fd);
+            data_sock_fd = -1;
+        }
+        return -4;
+    }
+    return sent_size;
+}
+
+
 ReturnCodes TcpServer::optionsAndBind() {
     // set the options for the socket
     int option(1);
