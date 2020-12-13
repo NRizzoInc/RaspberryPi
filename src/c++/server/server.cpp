@@ -71,6 +71,13 @@ ReturnCodes TcpServer::acceptClient() {
         return ReturnCodes::Error;
     }
 
+    // set receive timeout so that runServer loop can be stopped/killed
+    // without timeout recv might be blocking and loop might not end
+    struct timeval timeout;
+    timeout.tv_sec = Constants::Network::RECV_TIMEOUT;
+    timeout.tv_usec = 0;
+    setsockopt(data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+
     // Print the client address (convert network address to char)
     cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << endl; 
 
@@ -176,7 +183,7 @@ ReturnCodes TcpServer::optionsAndBind() {
     // set the options for the socket
     int option(1);
     setsockopt(listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
-    
+
     // init struct for address to bind socket
     sockaddr_in my_addr {};
     my_addr.sin_family = AF_INET;                   // address family is AF_INET (IPV4)
