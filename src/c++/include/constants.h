@@ -13,9 +13,11 @@ enum class ReturnCodes {
 
 namespace Constants {
     // http://wiringpi.com/reference/software-pwm-library/
-    const int LED_SOFT_PWM_MIN = 0;
-    const int LED_SOFT_PWM_MAX = 100;
-    const int LED_SOFT_PWM_RANGE = LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN;
+    constexpr int LED_SOFT_PWM_MIN      {0};
+    constexpr int LED_SOFT_PWM_MAX      {100};
+    constexpr int LED_SOFT_PWM_RANGE    {LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN};
+
+    constexpr std::size_t MAX_DATA_SIZE {512};
 
 }; // end of constants namespace
 
@@ -23,12 +25,13 @@ namespace CLI::Results {
     // shortening of parse results mapping
     using ParseResults = std::unordered_map<std::string, std::string>;
 
-    const std::string MODE      { "mode"     };
-    const std::string COLORS    { "names"    };
-    const std::string INTERVAL  { "interval" };
-    const std::string RATE      { "rate"     };
-    const std::string DURATION  { "duration" };
-    const std::string PORT      { "port" };
+    // cannot use std::string in constexpr (auto == char[])
+    constexpr auto MODE      = "mode"       ;
+    constexpr auto COLORS    = "names"      ;
+    constexpr auto INTERVAL  = "interval"   ;
+    constexpr auto RATE      = "rate"       ;
+    constexpr auto DURATION  = "duration"   ;
+    constexpr auto PORT      = "port"       ;
 }; // end of CLI::Results namespace
 
 #endif
