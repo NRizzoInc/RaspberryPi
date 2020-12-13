@@ -283,7 +283,7 @@ void TcpServer::GetPublicIp(char* buffer, std::size_t buf_size) const {
 std::string TcpServer::formatIpAddr() const {
     char ip_buf[16];
     GetPublicIp(ip_buf, sizeof(ip_buf));
-    return ip_buf + ':' + std::to_string(listen_port);
+    return {std::string(ip_buf) + ":" + std::to_string(listen_port)};
 }
 
 
