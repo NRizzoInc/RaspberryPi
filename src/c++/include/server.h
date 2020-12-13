@@ -46,13 +46,19 @@ class TcpServer {
 
         /********************************************* Server Functions ********************************************/
 
+        /**
+         * @brief Accept a new connection and stores the IP of the client
+         * @return Success if connected successfully
+         * @return Error if failed to connect to client
+         */
+        ReturnCodes acceptClient();
 
     private:
         /******************************************** Private Variables ********************************************/
 
         int             listen_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
         int             data_sock_fd;       // tcp socket file descriptor to communciate data with client
-        std::string     ip_addr;            // ip address of connected client
+        std::string     client_ip;          // ip address of connected client
         int             listen_port;        // port number of client
         mutable bool    should_exit;        // true if should exit/stop connection
 

@@ -12,7 +12,7 @@ namespace RPI {
 TcpServer::TcpServer(const int port_num)
     : listen_sock_fd{-1}            // init to invalid
     , data_sock_fd{-1}              // init to invalid
-    , ip_addr{}                     // empty string bc no client yet
+    , client_ip{}                     // empty string bc no client yet
     , listen_port{port_num}         // wait to accept connections at this port
     , should_exit{false}               // not ready to end connection yet
 {
@@ -53,6 +53,31 @@ bool TcpServer::getExitCode() const {
 
 /********************************************* Server Functions ********************************************/
 
+ReturnCodes TcpServer::acceptClient() {
+    // prepare the struct to store the client address
+    sockaddr_in client_addr;
+    socklen_t addr_l = sizeof(client_addr);
+
+    // call the accept API on the socket and forward connection to data socket
+    data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
+
+    // if the data socket does not open successfully, close the listening socket
+    if(data_sock_fd < 0) {
+        cout << "ERROR: Failed to accept connect" << endl;
+        if(data_sock_fd >= 0) {
+            close(data_sock_fd);
+            data_sock_fd = - 1;
+        }
+        return ReturnCodes::Error;
+    }
+
+    // Print the client address (convert network address to char)
+    cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << endl; 
+
+    // save the client IP in the m_ip string
+    client_ip = inet_ntoa(client_addr.sin_addr);
+    return ReturnCodes::Success;
+}
 
 ReturnCodes TcpServer::optionsAndBind() {
     // set the options for the socket
