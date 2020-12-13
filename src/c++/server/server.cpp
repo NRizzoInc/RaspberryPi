@@ -5,11 +5,11 @@ namespace RPI {
 
 /********************************************** Constructors **********************************************/
 
-Server::Server() {
+TcpServer::TcpServer() {
     // stub
 }
 
-Server::~Server() {
+TcpServer::~TcpServer() {
     // stub
 }
 

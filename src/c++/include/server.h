@@ -4,6 +4,10 @@
 // Standard Includes
 #include <iostream>
 #include <string>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 // Our Includes
 
@@ -11,11 +15,11 @@
 
 namespace RPI {
 
-class Server {
+class TcpServer {
     public:
         /********************************************** Constructors **********************************************/
-        Server();
-        virtual ~Server();
+        TcpServer();
+        virtual ~TcpServer();
 
         /********************************************* Getters/Setters *********************************************/
 
@@ -27,7 +31,7 @@ class Server {
 
         /********************************************* Helper Functions ********************************************/
 
-}; // end of server class
+}; // end of TcpServer class
 
 
 } // end of RPI namespace
