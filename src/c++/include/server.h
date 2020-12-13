@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h> // for socket close()
+#include <cstring> // for memset
 
 // Our Includes
 #include "constants.h"
@@ -67,6 +68,12 @@ class TcpServer {
          * @return number of bytes sent (-1 if error occurred)
          */
         int sendData(const char* buf, const size_t size_to_tx);
+
+        /**
+         * @brief Blocking function to start the server listener
+         * @param print_data Should received data be printed?
+         */
+        void runServer(const bool print_data);
 
     private:
         /******************************************** Private Variables ********************************************/

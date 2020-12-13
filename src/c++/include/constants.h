@@ -17,7 +17,10 @@ namespace Constants {
     constexpr int LED_SOFT_PWM_MAX      {100};
     constexpr int LED_SOFT_PWM_RANGE    {LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN};
 
-    constexpr std::size_t MAX_DATA_SIZE {512};
+    namespace Network {
+        constexpr std::size_t   MAX_DATA_SIZE {512};
+        constexpr char          PKT_ACK[]     {"Packet ACK\n"};
+    } // end of Network namespace
 
 }; // end of constants namespace
 

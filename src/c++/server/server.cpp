@@ -86,7 +86,7 @@ int TcpServer::recvData(char* buf) {
     }
 
     // call the recv API
-    int rcv_size = ::recv(data_sock_fd, buf, Constants::MAX_DATA_SIZE, 0);
+    int rcv_size = ::recv(data_sock_fd, buf, Constants::Network::MAX_DATA_SIZE, 0);
 
     // check if the recv size is ok or not
     if(rcv_size < 0) {
@@ -122,6 +122,53 @@ int TcpServer::sendData(const char* buf, const size_t size_to_tx) {
         return -4;
     }
     return sent_size;
+}
+
+void TcpServer::runServer(const bool print_data) {
+    // create a char buffer called buf, of size C_MTU
+    char buf[Constants::Network::MAX_DATA_SIZE];
+
+    // wait for a client to connect
+    if(acceptClient() == ReturnCodes::Success) {
+
+        // loop to receive data and send application ACKs to this client
+        while(!should_exit) {
+
+            // call recvData, passing buf, to receive data
+            // save the return value of recvData in a data_size variable
+            const int data_size {recvData(buf)};
+
+            // check if the data_size is smaller than 0
+            // (if so, time to end loop & exit)
+            if (data_size < 0) {
+                cout << "Terminate - socket recv error" << endl;
+                should_exit = true;
+                break;
+            }
+
+            // check if the data_size is equal to 0 (time to exit)
+            else if (data_size == 0) {
+                cout << "Terminate - the other endpoint has closed the socket" << endl;
+                should_exit = true;
+                break;
+            } 
+
+            // print the buf to the terminal(if told to)
+            if (print_data) {
+                cout << buf;
+            }
+
+            // reset the buffer for a new read
+            memset(buf, 0, sizeof(buf));
+
+            // send an application ACK to the other endpoint
+            // negative return == error
+            if(sendData(Constants::Network::PKT_ACK, sizeof(Constants::Network::PKT_ACK)) < 0) {
+                should_exit = true;
+                break;
+            }
+        }
+    }
 }
 
 
