@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
     /* ============================================ Create Server  =========================================== */
     // static needed so it can be accessed in ctrl+c lambda
-    static RPI::TcpServer server    {std::stoi(parse_res[CLI::Results::PORT])};
+    static Network::TcpServer server    {std::stoi(parse_res[CLI::Results::PORT])};
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads

@@ -4,17 +4,18 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-namespace RPI {
+namespace Network {
 
 
 /********************************************** Constructors **********************************************/
 
 TcpServer::TcpServer(const int port_num)
-    : listen_sock_fd{-1}            // init to invalid
+    : Packet{}
+    , listen_sock_fd{-1}            // init to invalid
     , data_sock_fd{-1}              // init to invalid
-    , client_ip{}                     // empty string bc no client yet
+    , client_ip{}                   // empty string bc no client yet
     , listen_port{port_num}         // wait to accept connections at this port
-    , should_exit{false}               // not ready to end connection yet
+    , should_exit{false}            // not ready to end connection yet
 {
     // open the listen socket of type SOCK_STREAM (TCP)
     listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -247,4 +248,4 @@ void TcpServer::quit() {
 
 /********************************************* Helper Functions ********************************************/
 
-} // end of RPI namespace
+} // end of Network namespace

@@ -13,12 +13,13 @@
 
 // Our Includes
 #include "constants.h"
+#include "packet.h"
 
 // 3rd Party Includes
 
-namespace RPI {
+namespace Network {
 
-class TcpServer {
+class TcpServer : public Packet {
     public:
         /********************************************** Constructors **********************************************/
 
@@ -100,6 +101,6 @@ class TcpServer {
 }; // end of TcpServer class
 
 
-} // end of RPI namespace
+} // end of Network namespace
 
 #endif
