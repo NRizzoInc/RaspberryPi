@@ -1,6 +1,7 @@
 // Standard Includes
 #include <iostream>
 #include <functional>
+#include <vector>
 #include <csignal>
 #include <thread>
 
@@ -48,19 +49,37 @@ int main(int argc, char* argv[]) {
     });
 
     /* ============================================ Create Server  =========================================== */
-    const RPI::TcpServer server(std::stoi(parse_res[CLI::Results::PORT]));
+    RPI::TcpServer server     {std::stoi(parse_res[CLI::Results::PORT])};
 
 
     /* ========================================== Initialize & Start ========================================= */
+
+    // keep track of all threads to wait for
+    std::vector<std::thread> thread_list;
+
+    // start up gpio handler now that we have parse results
     gpio_handler.init();
-    std::thread run_proc(
+
+    // run the selected gpio functionality 
+    thread_list.push_back(std::thread{
         [&]() {
             gpio_handler.run(parse_res);
         }
-    );
+    });
 
-    if (run_proc.joinable()) {
-        run_proc.join();
+    // startup the tcp server in a thread to communicate with client
+    thread_list.push_back(std::thread{
+        [&]() {
+            // TODO: set to false to not print data to terminal
+            server.runServer(true);
+        }
+    });
+
+    // make sure all threads complete
+    for (auto& proc : thread_list) {
+        if (proc.joinable()) {
+            proc.join();
+        }
     }
 
     return EXIT_SUCCESS;
