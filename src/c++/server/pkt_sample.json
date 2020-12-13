@@ -1,8 +1,11 @@
 {
-    "LEDs": {
-        "red":      0,
-        "yellow":   0,
-        "green":    0,
-        "blue":     0
-    }
+    "Control": {
+        "LEDs": {
+            "red":      0,
+            "yellow":   0,
+            "green":    0,
+            "blue":     0
+        }
+    },
+    "Ack": true
 }
