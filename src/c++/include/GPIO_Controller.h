@@ -112,6 +112,12 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          */
         Helpers::Map::ClassFnMap<GPIO_Controller> createFnMap() const;
 
+        /**
+         * @brief Helper function that ... literally does nothing
+         * @note Needed for map to have an option to test other features/do nothing
+         */
+        void doNothing() const;
+
 };
 
 

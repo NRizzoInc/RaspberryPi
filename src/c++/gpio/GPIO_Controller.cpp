@@ -127,12 +127,19 @@ MapParentMaps GPIO_Controller::generateLedBtnPairs() const {
     return to_rtn;
 }
 
+void GPIO_Controller::doNothing() const {
+    // sometimes you just gotta be a bit sassy
+    cout << "You chose the option to do nothing... you should rethink your life choices" << endl;
+}
+
+
 Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
     Helpers::Map::ClassFnMap<GPIO_Controller> to_rtn;
     // TODO: Figure out way to make reinterpret_cast automatic
     to_rtn["Blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
     to_rtn["Intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
     to_rtn["Btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
+    to_rtn["None"]        = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     return to_rtn;
 }
 
