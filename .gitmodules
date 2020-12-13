@@ -4,3 +4,6 @@
 [submodule "extern/CLI11"]
 	path = extern/CLI11
 	url = git@github.com:CLIUtils/CLI11.git
+[submodule "extern/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi"]
+	path = extern/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi
+	url = git@github.com:Freenove/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi.git
