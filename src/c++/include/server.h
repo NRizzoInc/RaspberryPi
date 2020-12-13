@@ -98,6 +98,20 @@ class TcpServer : public Packet {
          */
         void quit();
 
+        /**
+         * @brief Get the Public Ip object and stores it in buf
+         * @param buffer The buffer to hold the public ip address
+         * @param buf_size The size of the buffer (>=16)
+         * @credit: https://stackoverflow.com/a/3120382/13933174
+         */
+        void GetPublicIp(char* buffer, std::size_t buf_size) const;
+
+        /**
+         * @brief Creates a string of format: <ip>:<port>
+         * @return The string containing the formatted address
+         */
+        std::string formatIpAddr() const;
+
 }; // end of TcpServer class
 
 
