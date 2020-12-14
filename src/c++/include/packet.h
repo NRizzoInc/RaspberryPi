@@ -48,9 +48,9 @@ class Packet {
 
         /********************************************* Getters/Setters *********************************************/
 
-        const CommonPkt& getCurrentPkt() const;
+        virtual const CommonPkt& getCurrentPkt() const;
 
-        ReturnCodes updatePkt(const CommonPkt& updated_pkt);
+        virtual ReturnCodes updatePkt(const CommonPkt& updated_pkt);
 
         /*************************************** Packet Read/Write Functions ***************************************/
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson

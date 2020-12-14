@@ -13,6 +13,7 @@ TcpClient::TcpClient(const std::string& ip_addr, const int port_num, const bool 
     , client_sock_fd{-1}        // init to invalid
     , server_ip{ip_addr}        // ip address to try to reach server
     , server_port{port_num}     // port the client tries to reach the server at
+    , is_first_msg{true}        // will be set false immediately after sending first message
 {
     // first check if should not init
     if (!should_init) return;
@@ -33,6 +34,20 @@ TcpClient::~TcpClient() {
 /********************************************* Getters/Setters *********************************************/
 
 
+ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
+    // inform client that pkt has been updated and needs to be sent
+    std::unique_lock<std::mutex> lk(data_mutex);
+    auto rtn_code {Packet::updatePkt(updated_pkt)};
+    lk.unlock();
+    has_new_msg.notify_one();
+
+    // wait for pkt to be sent by worker
+    has_new_msg.wait(lk);
+
+    // can return now that packet was sent
+    return rtn_code;
+}
+
 /********************************************* Client Functions ********************************************/
 
 void TcpClient::runNetAgent(const bool print_data) {
@@ -44,6 +59,16 @@ void TcpClient::runNetAgent(const bool print_data) {
 
     // loop to receive data and send data to server
     while(!getExitCode()) {
+        // wait until there is a new message (or first message)
+        // or until server is about to timeout
+        std::unique_lock<std::mutex> data_lock(data_mutex);
+        has_new_msg.wait_for(
+            data_lock,
+            std::chrono::seconds(Constants::Network::RECV_TIMEOUT-1),
+            [&](){return is_first_msg;}
+        );
+        // prevent predicate from being triggered in future iterations
+        is_first_msg = false;
 
         /********************************* Sending To Server ********************************/
         // client starts by sending data to other endpoint
@@ -64,6 +89,10 @@ void TcpClient::runNetAgent(const bool print_data) {
 
         // client does not need to receive from server (YET)
         // TODO: implement method to receive camera data from server
+
+        // inform updatePkt function that packet has been sent
+        data_lock.unlock();
+        has_new_msg.notify_one();
     }
 }
 

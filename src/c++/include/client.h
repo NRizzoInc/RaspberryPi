@@ -10,6 +10,9 @@
 #include <netinet/in.h>
 #include <unistd.h> // for socket close()
 #include <cstring> // for memset
+#include <chrono> // send packet every right before server timeout
+#include <mutex>
+#include <condition_variable> // block with mutex until new data set
 
 // Our Includes
 #include "constants.h"
@@ -34,6 +37,13 @@ class TcpClient : public TcpBase {
 
         /********************************************* Getters/Setters *********************************************/
 
+        /**
+         * @brief Wraps the base updater with a lock & notifies client to send it
+         * @param updated_pkt The up to date packet to send
+         * @return ReturnCodes Success if it worked
+         */
+        ReturnCodes updatePkt(const CommonPkt& updated_pkt) override;
+
 
         /********************************************* Client Functions ********************************************/
 
@@ -46,10 +56,12 @@ class TcpClient : public TcpBase {
     private:
         /******************************************** Private Variables ********************************************/
 
-        int             client_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
-        std::string     server_ip;          // ip address of the server
-        int             server_port;        // port number of the server
-        bool            is_first_msg;       // need to send an initization message for first packet
+        int                         client_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
+        std::string                 server_ip;          // ip address of the server
+        int                         server_port;        // port number of the server
+        bool                        is_first_msg;       // need to send an initization message for first packet
+        std::mutex                  data_mutex;
+        std::condition_variable     has_new_msg;        // true if client needs to tell the server something
 
         /********************************************* Helper Functions ********************************************/
 
