@@ -136,10 +136,10 @@ void GPIO_Controller::doNothing() const {
 Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
     Helpers::Map::ClassFnMap<GPIO_Controller> to_rtn;
     // TODO: Figure out way to make reinterpret_cast automatic
-    to_rtn["Blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
-    to_rtn["Intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
-    to_rtn["Btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
-    to_rtn["None"]        = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
+    to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
+    to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
+    to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
+    to_rtn["client"]        = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     return to_rtn;
 }
 
