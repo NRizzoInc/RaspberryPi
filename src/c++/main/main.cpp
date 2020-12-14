@@ -1,9 +1,6 @@
 // Standard Includes
 #include <iostream>
-#include <functional>
-#include <vector>
-#include <csignal>
-#include <thread>
+#include <csignal> // for ctrl+c signal handling
 
 // Our Includes
 #include "GPIO_Controller.h"
