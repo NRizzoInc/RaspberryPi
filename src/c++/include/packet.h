@@ -56,19 +56,11 @@ class Packet {
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
 
         /**
-         * @brief Interprets a received char buffer packet (stringified json)
-         * @param pkt_buf A char array containing a stringified json
-         * @return The packet in json form
-         */
-        json readPkt(const char* pkt_buf) const;
-
-        /**
          * @brief Interprets a received packet and translates it to an easier type to deal with
-         * Best paired with readPkt()
-         * @param recv_json_pkt A json containing the received packet
+         * @param pkt_buf A char array containing a stringified json
          * @return The packet translated into the struct
          */
-        CommonPkt interpretPkt(const json& recv_pkt) const;
+        CommonPkt readPkt(const char* pkt_buf) const;
 
 
         /**

@@ -31,16 +31,9 @@ ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
 
 /*************************************** Packet Read/Write Functions ***************************************/
 
-json Packet::readPkt(const char* pkt_buf) const {
-    return json::parse(pkt_buf);
-}
-
-CommonPkt Packet::interpretPkt(const json& recv_pkt) const {
-    // HACK: Somehow during transit between functions,
-    // json object is wrapped by array (where json is only element)
-    // I spent way too much time on this so just do everything from [0]
+CommonPkt Packet::readPkt(const char* pkt_buf) const {
+    const json& data = json::parse(pkt_buf);
     CommonPkt translated_pkt;
-    const json& data = recv_pkt[0];
 
     // see pkt_sample.json for format
     const json& control             = data["control"];

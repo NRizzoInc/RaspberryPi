@@ -118,11 +118,9 @@ void TcpServer::runNetAgent(const bool print_data) {
             }
 
             // convert stringified json to json so it can be parsed into struct
-            const json json_pkt {readPkt(buf)};
-
             // TODO: Add lock/mutex to make sure gpio reads from this (or callback?)
             try {
-                if(updatePkt(interpretPkt(json_pkt)) != ReturnCodes::Success) {
+                if(updatePkt(readPkt(buf)) != ReturnCodes::Success) {
                     cerr << "Failed to update from client info" << endl;
                 }
             } catch (std::exception& err) {
