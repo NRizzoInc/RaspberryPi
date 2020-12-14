@@ -18,6 +18,23 @@ namespace Network {
 using json = nlohmann::json;
 using bson = std::vector<std::uint8_t>;
 
+// packet structure follows format found @pkt_sample.json
+struct led_pkt_t {
+    bool red;
+    bool yellow;
+    bool green;
+    bool blue;
+}; // end of led_pkt_t
+
+struct control_t {
+    led_pkt_t led;
+}; // end of control_t
+
+struct CommonPkt {
+    control_t cntrl;
+    bool ACK;
+}; // end of CommonPkt
+
 /**
  * @brief This class is responsible for writing and reading packets
  * 
@@ -41,11 +58,20 @@ class Packet {
         json readPkt(const char* pkt_buf) const;
 
         /**
-         * @brief Construct & serialize a json packet
-         * @param pkt_to_send The json packet to send
+         * @brief Interprets a received packet and translates it to an easier type to deal with
+         * Best paired with readPkt()
+         * @param recv_json_pkt A json containing the received packet
+         * @return The packet translated into the struct
+         */
+        CommonPkt interpretPkt(const json& recv_pkt) const;
+
+
+        /**
+         * @brief Construct & serialize a serialized json packet to easily send over network
+         * @param pkt_to_send The packet to send
          * @return The serialized char array to send
          */
-        const char* writePkt(const json pkt_to_send) const;
+        const char* writePkt(const CommonPkt& pkt_to_send) const;
 
     private:
         /******************************************** Private Variables ********************************************/

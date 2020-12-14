@@ -173,9 +173,10 @@ void TcpServer::runServer(const bool print_data) {
             } 
 
             // print the buf to the terminal(if told to)
-            const json pkt {readPkt(buf)};
+            const json json_pkt {readPkt(buf)};
+            const CommonPkt pkt {interpretPkt(json_pkt)};
             if (print_data) {
-                cout << pkt.dump() << endl;
+                cout << json_pkt.dump() << endl;
             }
 
             // reset the buffer for a new read
@@ -183,7 +184,9 @@ void TcpServer::runServer(const bool print_data) {
 
             // send an application ACK to the other endpoint
             // negative return == error
-            if(sendData(Constants::Network::PKT_ACK, sizeof(Constants::Network::PKT_ACK)) < 0) {
+            // TODO: Remove return-to-sender duplicate
+            const char* send_pkt {writePkt(pkt)};
+            if(sendData(send_pkt, sizeof(send_pkt)) < 0) {
                 should_exit = true;
                 break;
             }
