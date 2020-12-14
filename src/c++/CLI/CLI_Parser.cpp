@@ -90,7 +90,10 @@ ReturnCodes CLI_Parser::addFlags() {
     /**************************************** Networking Flags ****************************************/
     // this mode will only ever take 1 argument
     // require both port and ip for client
-    const bool is_client {mode_opt->results()[0] == "client"};
+
+    // use lazy eval & check that mode was provided before checking if client
+    auto mode_res {mode_opt->results()};
+    const bool is_client {mode_res.size() > 0 && mode_res[0] == "client"};
 
     add_option("-a,--ip", cli_res[CLI::Results::IP])
         ->description("The server's ip address")
