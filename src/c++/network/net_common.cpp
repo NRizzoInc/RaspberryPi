@@ -10,7 +10,8 @@ using std::endl;
 /********************************************** Constructors **********************************************/
 
 NetCommon::NetCommon()
-    : should_exit{false}
+    : Packet{}
+    , should_exit{false}
 {
     // stub
 }

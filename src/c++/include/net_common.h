@@ -14,6 +14,7 @@
 
 // Our Includes
 #include "constants.h"
+#include "packet.h"
 
 // 3rd Party Includes
 
@@ -23,7 +24,7 @@ namespace Network {
  * @brief Implements common features shared between server & client
  * 
  */
-class NetCommon {
+class NetCommon : public Packet {
     public:
         /********************************************** Constructors **********************************************/
 

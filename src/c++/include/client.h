@@ -13,14 +13,13 @@
 
 // Our Includes
 #include "constants.h"
-#include "packet.h"
 #include "net_common.h"
 
 // 3rd Party Includes
 
 namespace Network {
 
-class TcpClient : public Packet, public NetCommon {
+class TcpClient : public NetCommon {
     public:
         /********************************************** Constructors **********************************************/
 
