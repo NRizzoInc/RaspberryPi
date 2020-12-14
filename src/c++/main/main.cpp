@@ -10,6 +10,7 @@
 #include "CLI_Parser.h"
 #include "server.h"
 #include "client.h"
+#include "tcp_base.h"
 #include "constants.h"
 #include "string_helpers.hpp"
 
@@ -46,9 +47,10 @@ int main(int argc, char* argv[]) {
 
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
-    // if is_client, do not init the server
-    static Network::TcpServer server    {std::stoi(parse_res[CLI::Results::PORT]), is_client};
-    static Network::TcpClient client    {parse_res[CLI::Results::IP], std::stoi(parse_res[CLI::Results::PORT])};
+    // if is_client, do not init the server (and vice-versa)
+    const int port {std::stoi(parse_res[CLI::Results::PORT])}; // dont convert this twice
+    static Network::TcpServer server{port, !is_client};
+    static Network::TcpClient client{parse_res[CLI::Results::IP], port, is_client};
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
@@ -77,18 +79,19 @@ int main(int argc, char* argv[]) {
                 gpio_handler.run(parse_res);
             }
         });
+    }
 
-        // startup the tcp server in a thread to communicate with client
-        thread_list.push_back(std::thread{
-            [&]() {
-                // TODO: set to false to not print data to terminal
+    // startup network agent in a thread
+    thread_list.push_back(std::thread{
+        [&]() {
+            // TODO: set to false to not print data to terminal
+            if (is_client) {
+                client.runNetAgent(true);
+            } else {
                 server.runNetAgent(true);
             }
-        });
-    } else {
-        // is client
-        
-    }
+        }
+    });
 
     // make sure all threads complete
     for (auto& proc : thread_list) {

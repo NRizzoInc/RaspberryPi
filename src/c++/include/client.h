@@ -27,8 +27,9 @@ class TcpClient : public TcpBase {
          * @brief Construct a new Tcp Client object
          * @param ip_addr The ip address of the server
          * @param port_num The port number of the server
+         * @param should_init False: do not init (most likely bc should run server)
          */
-        TcpClient(const std::string& ip_addr, const int port_num);
+        TcpClient(const std::string& ip_addr, const int port_num, const bool should_init);
         virtual ~TcpClient();
 
         /********************************************* Getters/Setters *********************************************/

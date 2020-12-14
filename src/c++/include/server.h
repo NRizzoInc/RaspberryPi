@@ -26,9 +26,9 @@ class TcpServer : public TcpBase {
         /**
          * @brief Construct a new Tcp Server object
          * @param port_num The port number for the listen port
-         * @param should_init False: do not init (most likely bc is client)
+         * @param should_init False: do not init (most likely bc should run client)
          */
-        TcpServer(const int port_num, const bool should_init=true);
+        TcpServer(const int port_num, const bool should_init);
         virtual ~TcpServer();
 
         /********************************************* Getters/Setters *********************************************/
