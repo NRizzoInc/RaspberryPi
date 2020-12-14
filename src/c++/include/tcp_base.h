@@ -11,6 +11,7 @@
 #include <unistd.h> // for socket close()
 #include <cstring> // for memset
 #include <cassert> // for assert
+#include <atomic> // for exit variable
 
 // Our Includes
 #include "constants.h"
@@ -103,7 +104,7 @@ class TcpBase : public Packet {
     private:
         /******************************************** Private Variables ********************************************/
 
-        mutable bool    should_exit;        // true if should exit/stop connection
+        mutable std::atomic_bool should_exit;        // true if should exit/stop connection
 
 
 }; // end of TcpClient class

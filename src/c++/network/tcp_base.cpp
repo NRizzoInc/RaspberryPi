@@ -23,12 +23,12 @@ TcpBase::~TcpBase() {
 /********************************************* Getters/Setters *********************************************/
 
 ReturnCodes TcpBase::setExitCode(const bool new_exit) const {
-    should_exit = new_exit;
+    should_exit.store(new_exit);
     return ReturnCodes::Success;
 }
 
 bool TcpBase::getExitCode() const {
-    return should_exit;
+    return should_exit.load();
 }
 
 

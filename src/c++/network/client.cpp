@@ -65,10 +65,10 @@ void TcpClient::runNetAgent(const bool print_data) {
         has_new_msg.wait_for(
             data_lock,
             std::chrono::seconds(Constants::Network::RECV_TIMEOUT-1),
-            [&](){return is_first_msg;}
+            [&](){return is_first_msg.load();}
         );
         // prevent predicate from being triggered in future iterations
-        is_first_msg = false;
+        is_first_msg.store(false);
 
         /********************************* Sending To Server ********************************/
         // client starts by sending data to other endpoint
