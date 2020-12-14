@@ -47,6 +47,8 @@ class Packet {
 
         /********************************************* Getters/Setters *********************************************/
 
+        const CommonPkt& getCurrentPkt() const;
+
         /*************************************** Packet Read/Write Functions ***************************************/
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
 
@@ -75,6 +77,7 @@ class Packet {
 
     private:
         /******************************************** Private Variables ********************************************/
+        CommonPkt msg_pkt;  // holds the most up to date information from client
 
 
         /********************************************* Helper Functions ********************************************/

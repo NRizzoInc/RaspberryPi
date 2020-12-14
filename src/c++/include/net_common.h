@@ -36,7 +36,7 @@ class NetCommon : public Packet {
 
         /**
          * @brief Sets the exit code. 
-         * @note Useful for terminating runServer() from main thread
+         * @note Useful for terminating runNetAgent() from main thread
          */
         virtual ReturnCodes setExitCode(const bool new_exit) const;
 
@@ -46,6 +46,12 @@ class NetCommon : public Packet {
          * @return false TcpServer is still running and not ready to exit
          */
         virtual bool getExitCode() const;
+
+        /**
+         * @brief Blocking function to start the server/client
+         * @param print_data Should received data be printed?
+         */
+        virtual void runNetAgent(const bool print_data) = 0;
 
     protected:
         /****************************************** Shared Common Functions ****************************************/

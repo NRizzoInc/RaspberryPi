@@ -32,6 +32,62 @@ TcpClient::~TcpClient() {
 
 /********************************************* Client Functions ********************************************/
 
+void TcpClient::runNetAgent(const bool print_data) {
+    /********************************* Connect Setup  ********************************/
+    // create a char buffer that hold the max allowed size
+    char buf[Constants::Network::MAX_DATA_SIZE];
+
+    // connect to server (if failed to connect, just stop)
+    if(connectToServer() != ReturnCodes::Success) {
+        return;
+    }
+
+    // loop to receive data and send data to server
+    while(!getExitCode()) {
+
+        /********************************* Sending To Server ********************************/
+        // client starts by sending data to other endpoint
+        // on first transfer will be sending zeroed out struct
+        // the client should be continuously updating the packet so it is ready to send
+        const char* send_pkt {writePkt(getCurrentPkt())};
+        if(sendData(client_sock_fd, send_pkt, sizeof(send_pkt)) < 0) {
+            setExitCode(true);
+            break;
+        }
+
+        /****************************** Receiving From Server ******************************/
+        // call recvData, passing buf, to receive data
+        // save the return value of recvData in a data_size variable
+        const int data_size {recvData(client_sock_fd, buf)};
+
+        // check if the data_size is smaller than 0
+        // (if so, time to end loop & exit)
+        if (data_size < 0) {
+            cout << "Terminate - socket recv error" << endl;
+            setExitCode(true);
+            break;
+        }
+
+        // check if the data_size is equal to 0 (time to exit)
+        else if (data_size == 0) {
+            cout << "Terminate - the other endpoint has closed the socket" << endl;
+            setExitCode(true);
+            break;
+        } 
+
+        // print the buf to the terminal(if told to)
+        const json json_pkt {readPkt(buf)};
+        const CommonPkt pkt {interpretPkt(json_pkt)};
+        if (print_data) {
+            cout << json_pkt.dump() << endl;
+        }
+
+        // reset the buffer for a new read
+        memset(buf, 0, sizeof(buf));
+    }
+}
+
+
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     client_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -46,27 +102,12 @@ ReturnCodes TcpClient::initSock() {
     int option(1);
     setsockopt(client_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
-    // set receive timeout so that runServer loop can be stopped/killed
+    // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
     timeout.tv_usec = 0;
     setsockopt(client_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-
-    // init struct for address to connect to
-    sockaddr_in server_addr {};
-    server_addr.sin_family      = AF_INET;                      // address family is AF_INET (IPV4)
-    server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert str ip to binary ip representation
-    server_addr.sin_port        = htons(server_port);           // convert server_port to network number format
-
-    // connect to server
-    if (connect(client_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) { 
-        cout << "ERROR: Failed to connect to server" << endl;
-        if(client_sock_fd >= 0) {
-            close(client_sock_fd);
-        }
-        return ReturnCodes::Error;
-    }
 
     return ReturnCodes::Success;
 }
@@ -80,6 +121,24 @@ void TcpClient::quit() {
         close(client_sock_fd);
         client_sock_fd = -1;
     }
+}
+
+ReturnCodes TcpClient::connectToServer() {
+    // init struct for address to connect to
+    sockaddr_in server_addr {};
+    server_addr.sin_family      = AF_INET;                      // address family is AF_INET (IPV4)
+    server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert str ip to binary ip representation
+    server_addr.sin_port        = htons(server_port);           // convert server_port to network number format
+
+    if (connect(client_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) { 
+        cout << "ERROR: Failed to connect to server" << endl;
+        if(client_sock_fd >= 0) {
+            close(client_sock_fd);
+        }
+        return ReturnCodes::Error;
+    }
+
+    return ReturnCodes::Success;
 }
 
 

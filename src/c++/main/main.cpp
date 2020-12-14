@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
         thread_list.push_back(std::thread{
             [&]() {
                 // TODO: set to false to not print data to terminal
-                server.runServer(true);
+                server.runNetAgent(true);
             }
         });
     } else {

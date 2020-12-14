@@ -47,7 +47,7 @@ class TcpServer : public NetCommon {
          * @brief Blocking function to start the server listener
          * @param print_data Should received data be printed?
          */
-        void runServer(const bool print_data);
+        void runNetAgent(const bool print_data) override;
 
     private:
         /******************************************** Private Variables ********************************************/

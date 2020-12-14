@@ -36,20 +36,34 @@ class TcpClient : public NetCommon {
 
         /********************************************* Client Functions ********************************************/
 
+        /**
+         * @brief Blocking function to start the client messager to server
+         * @param print_data Should received data be printed?
+         */
+        void runNetAgent(const bool print_data) override;
+
     private:
         /******************************************** Private Variables ********************************************/
 
         int             client_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
         std::string     server_ip;          // ip address of the server
         int             server_port;        // port number of the server
+        bool            is_first_msg;       // need to send an initization message for first packet
 
         /********************************************* Helper Functions ********************************************/
 
         /**
-         * @brief Creates the socket, sets options, & connects to server.
+         * @brief Creates the socket, sets options, & makes everything ready to connect to server.
          * @return Error as soon as any of the operations it performs fails. Success if no issues
          */
         ReturnCodes initSock() override;
+
+        /**
+         * @brief Responsible for connecting to server prior to communicating with server
+         * 
+         * @return ReturnCodes 
+         */
+        ReturnCodes connectToServer();
 
         /**
          * @brief Function called by the destructor to close the sockets

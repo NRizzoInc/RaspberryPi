@@ -3,7 +3,9 @@
 namespace Network {
 
 /********************************************** Constructors **********************************************/
-Packet::Packet() {
+Packet::Packet() 
+    : msg_pkt{0}    // init pkt to all zeros
+{
     // stub
 }
 
@@ -12,6 +14,10 @@ Packet::~Packet() {
 }
 
 /********************************************* Getters/Setters *********************************************/
+
+const CommonPkt& Packet::getCurrentPkt() const {
+    return msg_pkt;
+}
 
 
 /*************************************** Packet Read/Write Functions ***************************************/

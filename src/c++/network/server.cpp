@@ -69,7 +69,7 @@ ReturnCodes TcpServer::acceptClient() {
         return ReturnCodes::Error;
     }
 
-    // set receive timeout so that runServer loop can be stopped/killed
+    // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout recv might be blocking and loop might not end
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::RECV_TIMEOUT;
@@ -84,14 +84,14 @@ ReturnCodes TcpServer::acceptClient() {
     return ReturnCodes::Success;
 }
 
-void TcpServer::runServer(const bool print_data) {
-    // create a char buffer called buf, of size C_MTU
+void TcpServer::runNetAgent(const bool print_data) {
+    // create a char buffer that hold the max allowed size
     char buf[Constants::Network::MAX_DATA_SIZE];
 
     // wait for a client to connect
     if(acceptClient() == ReturnCodes::Success) {
 
-        // loop to receive data and send application ACKs to this client
+        // loop to receive data and send data with client
         while(!getExitCode()) {
 
             // call recvData, passing buf, to receive data
@@ -150,7 +150,7 @@ ReturnCodes TcpServer::initSock() {
     int option(1);
     setsockopt(listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
-    // set receive timeout so that runServer loop can be stopped/killed
+    // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
