@@ -7,6 +7,7 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <thread>
 
 // Our Includes
 #include "string_helpers.hpp"
@@ -73,7 +74,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         ReturnCodes setShouldThreadExit(const bool new_status) const override;
 
         /**
-         * @brief Handles the execution of the selected function
+         * @brief Handles the execution of the selected function in a thread
          * @param flags Mapping contianing all command line flag values needed to call
          * correct function with correct params
          * @param args Additional args to unpack for the function call
@@ -94,9 +95,9 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * }
          * 
          */
-        const MapParentMaps color_to_led_btn_pairs;
-        // maps a string (mode name) to a gpio function
-        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
+        const MapParentMaps                             color_to_led_btn_pairs;
+        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;         // maps a mode name to a gpio function
+        mutable std::thread                             run_thread;             // thread that contains run()
 
         /********************************************* Helper Functions ********************************************/
         /**

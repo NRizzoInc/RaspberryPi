@@ -15,12 +15,16 @@ GPIO_Controller::GPIO_Controller()
     // init vars
     , color_to_led_btn_pairs (generateLedBtnPairs())
     , mode_to_action (createFnMap())
+    , run_thread{}
 {
     // stub
 }
 
 GPIO_Controller::~GPIO_Controller() {
-    // destructor stub
+    // block until thread is done executing
+    if (run_thread.joinable()) {
+        run_thread.join();
+    }
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -90,15 +94,18 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const 
                                 )
                             };
 
-    mode_to_action.searchAndCall<void>(
-        *this, // need to pass reference to this object
-        mode, // key to the function to call
-        // pass the actual params needed by functions
-        colors,
-        interval,
-        duration,
-        rate
-    );
+    // start up selected function based on mode in a thread (joined in destructor)
+    run_thread = std::thread{[&](){
+        mode_to_action.searchAndCall<void>(
+            *this, // need to pass reference to this object
+            mode, // key to the function to call
+            // pass the actual params needed by functions
+            colors,
+            interval,
+            duration,
+            rate
+        );
+    }};
 
     return ReturnCodes::Success;
 }

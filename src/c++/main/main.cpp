@@ -66,34 +66,18 @@ int main(int argc, char* argv[]) {
 
     /* ========================================== Initialize & Start ========================================= */
 
-    // keep track of all threads to wait for
-    std::vector<std::thread> thread_list;
-
     // if not the client: init and run gpio functionality
     if (!is_client) {
         // start up gpio handler now that we have parse results
         gpio_handler.init();
 
-        // run the selected gpio functionality 
-    // run the selected gpio functionality 
-        // run the selected gpio functionality 
-        thread_list.push_back(std::thread{
-            [&]() {
-                gpio_handler.run(parse_res);
-            }
-        });
+        // run the selected gpio functionality (non-blocking thread handled by class)
+        gpio_handler.run(parse_res);
     }
 
     // startup client or server in a thread
     // TODO: set to false to not print data to terminal
     net_agent->runNetAgent(true);
-
-    // make sure all threads complete
-    for (auto& proc : thread_list) {
-        if (proc.joinable()) {
-            proc.join();
-        }
-    }
 
     return EXIT_SUCCESS;
 }
