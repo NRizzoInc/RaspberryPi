@@ -52,8 +52,8 @@ std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
     // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
     // key-values are seperated by commas not ':'
     json json_pkt = {{
-        "Control", {{
-            "LEDs", {
+        "control", {{
+            "led", {
                 {"red",      pkt_to_send.cntrl.led.red},
                 {"yellow",   pkt_to_send.cntrl.led.yellow},
                 {"green",    pkt_to_send.cntrl.led.green},
