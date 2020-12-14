@@ -8,5 +8,5 @@ add_executable(rpi_driver
 target_link_libraries(rpi_driver
     GPIO_Controller
     GPIO_CLI_Parser
-    RPI_Server
+    RPI_Network
 )
