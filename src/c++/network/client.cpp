@@ -74,16 +74,17 @@ void TcpClient::runNetAgent(const bool print_data) {
         // client starts by sending data to other endpoint
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
-        const std::string json_str {writePkt(getCurrentPkt())};
-        const char* send_pkt {json_str.c_str()};
+        const std::string   json_str    {writePkt(getCurrentPkt())};
+        const char*         send_pkt    {json_str.c_str()};
+        const std::size_t   pkt_size    {json_str.size()};
 
         // print the stringified json if told to
         if (print_data) {
-            cout << "Sending: \n" << send_pkt << endl;
+            cout << "Sending (" << pkt_size << "Bytes): " << send_pkt << endl;
         }
 
         // send the stringified json to the server
-        if(sendData(client_sock_fd, send_pkt, sizeof(send_pkt)) < 0) {
+        if(sendData(client_sock_fd, send_pkt, pkt_size) < 0) {
             setExitCode(true);
             break;
         }
