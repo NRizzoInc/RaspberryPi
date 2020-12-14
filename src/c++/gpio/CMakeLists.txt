@@ -12,3 +12,7 @@ target_link_libraries(GPIO_Controller
     crypt   # for undefined reference to `crypt'
     rt      # for undefined reference to `shm_open'
 )
+
+target_compile_options(GPIO_Controller
+    PRIVATE
+)

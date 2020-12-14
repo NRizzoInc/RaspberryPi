@@ -41,7 +41,7 @@ find_package(Threads REQUIRED) # stock package needed for WiringPi -- link ${CMA
 # Include the package's header files
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include") # contains OUR headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include/helpers")
-include_directories(${JSON_INCLUDE_DIR})
+include_directories(${JSON_INCLUDE_DIR} SYSTEM PUBLIC) # use system to ingore release warnings from this library
 include_directories(${CLI11_INCLUDE_DIR})
 include_directories(${WiringPi_INCLUDE_DIRS}) # pair with target_link_libraries(<projName> ${WiringPi_LIBS})
 

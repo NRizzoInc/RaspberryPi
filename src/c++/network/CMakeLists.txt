@@ -8,3 +8,8 @@ add_library(RPI_Network
 
 target_link_libraries(RPI_Network
 )
+
+target_compile_options(RPI_Network
+    PRIVATE
+)
+
