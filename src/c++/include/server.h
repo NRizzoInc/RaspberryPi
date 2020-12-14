@@ -14,12 +14,13 @@
 // Our Includes
 #include "constants.h"
 #include "packet.h"
+#include "net_common.h"
 
 // 3rd Party Includes
 
 namespace Network {
 
-class TcpServer : public Packet {
+class TcpServer : public Packet, public NetCommon {
     public:
         /********************************************** Constructors **********************************************/
 
@@ -32,19 +33,6 @@ class TcpServer : public Packet {
         virtual ~TcpServer();
 
         /********************************************* Getters/Setters *********************************************/
-        
-        /**
-         * @brief Sets the exit code. 
-         * @note Useful for terminating runServer() from main thread
-         */
-        virtual ReturnCodes setExitCode(const bool new_exit) const;
-
-        /**
-         * @brief Get the current exit code status
-         * @return true TcpServer is ready to or should exit
-         * @return false TcpServer is still running and not ready to exit
-         */
-        virtual bool getExitCode() const;
 
 
         /********************************************* Server Functions ********************************************/
@@ -84,7 +72,6 @@ class TcpServer : public Packet {
         int             data_sock_fd;       // tcp socket file descriptor to communciate data with client
         std::string     client_ip;          // ip address of connected client
         int             listen_port;        // port number of client
-        mutable bool    should_exit;        // true if should exit/stop connection
 
         /********************************************* Helper Functions ********************************************/
 
@@ -99,19 +86,6 @@ class TcpServer : public Packet {
          */
         void quit();
 
-        /**
-         * @brief Get the Public Ip object and stores it in buf
-         * @param buffer The buffer to hold the public ip address
-         * @param buf_size The size of the buffer (>=16)
-         * @credit: https://stackoverflow.com/a/3120382/13933174
-         */
-        void GetPublicIp(char* buffer, std::size_t buf_size) const;
-
-        /**
-         * @brief Creates a string of format: <ip>:<port>
-         * @return The string containing the formatted address
-         */
-        std::string formatIpAddr() const;
 
 }; // end of TcpServer class
 

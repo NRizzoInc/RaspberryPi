@@ -14,12 +14,13 @@
 // Our Includes
 #include "constants.h"
 #include "packet.h"
+#include "net_common.h"
 
 // 3rd Party Includes
 
 namespace Network {
 
-class TcpClient : public Packet {
+class TcpClient : public Packet, public NetCommon {
     public:
         /********************************************** Constructors **********************************************/
 
@@ -43,7 +44,6 @@ class TcpClient : public Packet {
         int             client_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
         std::string     server_ip;          // ip address of the server
         int             server_port;        // port number of the server
-        mutable bool    should_exit;        // true if should exit/stop connection
 
         /********************************************* Helper Functions ********************************************/
 

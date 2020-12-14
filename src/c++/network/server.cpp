@@ -11,11 +11,11 @@ namespace Network {
 
 TcpServer::TcpServer(const int port_num, const bool should_init)
     : Packet{}
+    , NetCommon{}
     , listen_sock_fd{-1}            // init to invalid
     , data_sock_fd{-1}              // init to invalid
     , client_ip{}                   // empty string bc no client yet
     , listen_port{port_num}         // wait to accept connections at this port
-    , should_exit{false}            // not ready to end connection yet
 {
     // first check if should not init
     if (!should_init) return;
@@ -45,15 +45,6 @@ TcpServer::~TcpServer() {
 
 /********************************************* Getters/Setters *********************************************/
 
-ReturnCodes TcpServer::setExitCode(const bool new_exit) const {
-    should_exit = new_exit;
-    return ReturnCodes::Success;
-}
-
-bool TcpServer::getExitCode() const {
-    return should_exit;
-}
-
 
 /********************************************* Server Functions ********************************************/
 
@@ -65,14 +56,16 @@ ReturnCodes TcpServer::acceptClient() {
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
-    while (!should_exit && data_sock_fd < 0) {
+    while (!getExitCode() && data_sock_fd < 0) {
         // call the accept API on the socket and forward connection to data socket
-        cout << "Waiting to accept connection @" << formatIpAddr() << endl;
+        char ip_buf[16];
+        GetPublicIp(ip_buf, sizeof(ip_buf));
+        cout << "Waiting to accept connection @" << formatIpAddr(ip_buf, listen_port) << endl;
         data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
     }
 
     // if should exit, do not continue
-    if (should_exit) {
+    if (getExitCode()) {
         return ReturnCodes::Error;
     }
 
@@ -154,7 +147,7 @@ void TcpServer::runServer(const bool print_data) {
     if(acceptClient() == ReturnCodes::Success) {
 
         // loop to receive data and send application ACKs to this client
-        while(!should_exit) {
+        while(!getExitCode()) {
 
             // call recvData, passing buf, to receive data
             // save the return value of recvData in a data_size variable
@@ -164,14 +157,14 @@ void TcpServer::runServer(const bool print_data) {
             // (if so, time to end loop & exit)
             if (data_size < 0) {
                 cout << "Terminate - socket recv error" << endl;
-                should_exit = true;
+                setExitCode(true);
                 break;
             }
 
             // check if the data_size is equal to 0 (time to exit)
             else if (data_size == 0) {
                 cout << "Terminate - the other endpoint has closed the socket" << endl;
-                should_exit = true;
+                setExitCode(true);
                 break;
             } 
 
@@ -190,7 +183,7 @@ void TcpServer::runServer(const bool print_data) {
             // TODO: Remove return-to-sender duplicate
             const char* send_pkt {writePkt(pkt)};
             if(sendData(send_pkt, sizeof(send_pkt)) < 0) {
-                should_exit = true;
+                setExitCode(true);
                 break;
             }
         }
@@ -236,7 +229,7 @@ ReturnCodes TcpServer::optionsAndBind() {
 
 void TcpServer::quit() {
     // set exit status to be true
-    should_exit = true;
+    setExitCode(true);
 
     // if listen socket is open, close it and set to -1
     if(listen_sock_fd >= 0) {
@@ -254,44 +247,6 @@ void TcpServer::quit() {
 
 
 /********************************************* Helper Functions ********************************************/
-
-// Credit: https://stackoverflow.com/a/3120382/13933174
-void TcpServer::GetPublicIp(char* buffer, std::size_t buf_size) const {
-    assert(buf_size >= 16);
-
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sock < 0) {
-        cerr << "ERROR: Creating temp socket to get public ip" << endl;
-    }
-
-    const char* kGoogleDnsIp = "8.8.8.8";
-    uint16_t kDnsPort = 53;
-    struct sockaddr_in serv;
-    memset(&serv, 0, sizeof(serv));
-    serv.sin_family = AF_INET;
-    serv.sin_addr.s_addr = inet_addr(kGoogleDnsIp);
-    serv.sin_port = htons(kDnsPort);
-
-    int err = connect(sock, (const sockaddr*) &serv, sizeof(serv));
-    assert(err != -1);
-
-    sockaddr_in name;
-    socklen_t namelen = sizeof(name);
-    err = getsockname(sock, (sockaddr*) &name, &namelen);
-    assert(err != -1);
-
-    const char* p = inet_ntop(AF_INET, &name.sin_addr, buffer, buf_size);
-    assert(p);
-
-    close(sock);
-}
-
-std::string TcpServer::formatIpAddr() const {
-    char ip_buf[16];
-    GetPublicIp(ip_buf, sizeof(ip_buf));
-    return {std::string(ip_buf) + ":" + std::to_string(listen_port)};
-}
-
 
 
 } // end of Network namespace
