@@ -87,9 +87,7 @@ int TcpBase::sendData(int socket_fd, const char* buf, const size_t size_to_tx) {
 /********************************************* Helper Functions ********************************************/
 
 // Credit: https://stackoverflow.com/a/3120382/13933174
-void TcpBase::GetPublicIp(char* buffer, std::size_t buf_size) const {
-    assert(buf_size >= 16);
-
+std::string TcpBase::GetPublicIp() const {
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
         cerr << "ERROR: Creating temp socket to get public ip" << endl;
@@ -111,10 +109,13 @@ void TcpBase::GetPublicIp(char* buffer, std::size_t buf_size) const {
     err = getsockname(sock, (sockaddr*) &name, &namelen);
     assert(err != -1);
 
-    const char* p = inet_ntop(AF_INET, &name.sin_addr, buffer, buf_size);
+    char ip_buf[16];
+    const char* p = inet_ntop(AF_INET, &name.sin_addr, ip_buf, sizeof(ip_buf));
     assert(p);
 
     close(sock);
+
+    return std::string(ip_buf);
 }
 
 } // end of Network namespace

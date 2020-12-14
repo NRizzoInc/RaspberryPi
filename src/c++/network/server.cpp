@@ -48,9 +48,7 @@ ReturnCodes TcpServer::acceptClient() {
     // should stop looping when the connection has been made (i.e. data sock is positive)
     while (!getExitCode() && data_sock_fd < 0) {
         // call the accept API on the socket and forward connection to data socket
-        char ip_buf[16];
-        GetPublicIp(ip_buf, sizeof(ip_buf));
-        cout << "Waiting to accept connection @" << formatIpAddr(ip_buf, listen_port) << endl;
+        cout << "Waiting to accept connection @" << formatIpAddr(GetPublicIp(), listen_port) << endl;
         data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
     }
 
