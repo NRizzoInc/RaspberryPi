@@ -4,7 +4,6 @@ namespace Network {
 
 /********************************************** Constructors **********************************************/
 Packet::Packet() 
-    : msg_pkt{0}    // init pkt to all zeros
 {
     // stub
 }
@@ -17,6 +16,11 @@ Packet::~Packet() {
 
 const CommonPkt& Packet::getCurrentPkt() const {
     return msg_pkt;
+}
+
+ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
+    msg_pkt = updated_pkt;
+    return ReturnCodes::Success;
 }
 
 

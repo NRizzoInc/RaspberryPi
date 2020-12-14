@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 // Our Includes
+#include "constants.h"
 
 // 3rd Party Includes
 #include <json.hpp>
@@ -49,6 +50,8 @@ class Packet {
 
         const CommonPkt& getCurrentPkt() const;
 
+        ReturnCodes updatePkt(const CommonPkt& updated_pkt);
+
         /*************************************** Packet Read/Write Functions ***************************************/
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
 
@@ -77,7 +80,7 @@ class Packet {
 
     private:
         /******************************************** Private Variables ********************************************/
-        CommonPkt msg_pkt;  // holds the most up to date information from client
+        CommonPkt msg_pkt;  // holds the most up to date information from client (inits to all zeros)
 
 
         /********************************************* Helper Functions ********************************************/

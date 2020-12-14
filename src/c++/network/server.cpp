@@ -116,9 +116,11 @@ void TcpServer::runNetAgent(const bool print_data) {
 
             // print the buf to the terminal(if told to)
             const json json_pkt {readPkt(buf)};
-            const CommonPkt pkt {interpretPkt(json_pkt)};
             if (print_data) {
                 cout << json_pkt.dump() << endl;
+            }
+            if(updatePkt(interpretPkt(json_pkt)) != ReturnCodes::Success) {
+                cerr << "Failed to update from client info" << endl;
             }
 
             // reset the buffer for a new read
