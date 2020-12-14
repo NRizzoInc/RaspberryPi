@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
         cout << "Caught ctrl+c: " << signum << endl;
         gpio_handler.setShouldThreadExit(true);
         server.setExitCode(true);
-        // client.setExitCode(true);
+        client.setExitCode(true);
     });
 
     /* ========================================== Initialize & Start ========================================= */

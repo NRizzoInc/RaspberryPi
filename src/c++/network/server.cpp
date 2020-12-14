@@ -94,6 +94,7 @@ void TcpServer::runNetAgent(const bool print_data) {
         // loop to receive data and send data with client
         while(!getExitCode()) {
 
+            /********************************* Receiving From Server ********************************/
             // call recvData, passing buf, to receive data
             // save the return value of recvData in a data_size variable
             const int data_size {recvData(data_sock_fd, buf)};
@@ -123,14 +124,8 @@ void TcpServer::runNetAgent(const bool print_data) {
             // reset the buffer for a new read
             memset(buf, 0, sizeof(buf));
 
-            // send an application ACK to the other endpoint
-            // negative return == error
-            // TODO: Remove return-to-sender duplicate
-            const char* send_pkt {writePkt(pkt)};
-            if(sendData(data_sock_fd, send_pkt, sizeof(send_pkt)) < 0) {
-                setExitCode(true);
-                break;
-            }
+            // server does not need to send data to client (YET)
+            // TODO: implement method to send camera data to client
         }
     }
 }

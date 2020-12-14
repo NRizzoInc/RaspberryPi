@@ -34,9 +34,6 @@ TcpClient::~TcpClient() {
 
 void TcpClient::runNetAgent(const bool print_data) {
     /********************************* Connect Setup  ********************************/
-    // create a char buffer that hold the max allowed size
-    char buf[Constants::Network::MAX_DATA_SIZE];
-
     // connect to server (if failed to connect, just stop)
     if(connectToServer() != ReturnCodes::Success) {
         return;
@@ -50,40 +47,20 @@ void TcpClient::runNetAgent(const bool print_data) {
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
         const char* send_pkt {writePkt(getCurrentPkt())};
+
+        // print the stringified json if told to
+        if (print_data) {
+            cout << send_pkt << endl;
+        }
+
+        // send the stringified json to the server
         if(sendData(client_sock_fd, send_pkt, sizeof(send_pkt)) < 0) {
             setExitCode(true);
             break;
         }
 
-        /****************************** Receiving From Server ******************************/
-        // call recvData, passing buf, to receive data
-        // save the return value of recvData in a data_size variable
-        const int data_size {recvData(client_sock_fd, buf)};
-
-        // check if the data_size is smaller than 0
-        // (if so, time to end loop & exit)
-        if (data_size < 0) {
-            cout << "Terminate - socket recv error" << endl;
-            setExitCode(true);
-            break;
-        }
-
-        // check if the data_size is equal to 0 (time to exit)
-        else if (data_size == 0) {
-            cout << "Terminate - the other endpoint has closed the socket" << endl;
-            setExitCode(true);
-            break;
-        } 
-
-        // print the buf to the terminal(if told to)
-        const json json_pkt {readPkt(buf)};
-        const CommonPkt pkt {interpretPkt(json_pkt)};
-        if (print_data) {
-            cout << json_pkt.dump() << endl;
-        }
-
-        // reset the buffer for a new read
-        memset(buf, 0, sizeof(buf));
+        // client does not need to receive from server (YET)
+        // TODO: implement method to receive camera data from server
     }
 }
 
