@@ -67,6 +67,23 @@ class NetCommon : public Packet {
         std::string formatIpAddr(const std::string& ip, const int port) const;
 
         /**
+         * @brief Receives data from remote host.
+         * @param socket_fd The receiving socket's file descriptor
+         * @param buf buffer where the received data is stored
+         * @return number of bytes received (-1 if error occurred)
+         */
+        virtual int recvData(int socket_fd, char* buf);
+
+        /**
+         * @brief Send data to remote host.
+         * @param socket_fd The receiving socket's file descriptor
+         * @param buf pointer to the buffer where the data to be sent is stored
+         * @param size_to_tx size to transmit
+         * @return number of bytes sent (-1 if error occurred)
+         */
+        virtual int sendData(int socket_fd, const char* buf, const size_t size_to_tx);
+
+        /**
          * @brief Creates the socket, bind it & sets options. Override to be called in constructor
          * @return Error as soon as any of the operations it performs fails. Success if no issues
          */

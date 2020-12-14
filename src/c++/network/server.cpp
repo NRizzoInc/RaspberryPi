@@ -84,51 +84,6 @@ ReturnCodes TcpServer::acceptClient() {
     return ReturnCodes::Success;
 }
 
-int TcpServer::recvData(char* buf) {
-    // make sure data socket is open/valid first
-    if(data_sock_fd < 0) {
-        return -1;
-    }
-
-    // call the recv API
-    int rcv_size = ::recv(data_sock_fd, buf, Constants::Network::MAX_DATA_SIZE, 0);
-
-    // check if the recv size is ok or not
-    if(rcv_size < 0) {
-        std::cout << "ERROR: Receive" << std::endl;
-
-        // close just the data socket bc done receiving from client
-        // but want to still listen for new connections
-        if(data_sock_fd >= 0) {
-            close(data_sock_fd);
-            data_sock_fd = -1;
-        }
-    }
-    return rcv_size;
-}
-
-int TcpServer::sendData(const char* buf, const size_t size_to_tx) {
-    // make sure data socket is open/valid first
-    if(data_sock_fd < 0) {
-        return -1;
-    }
-
-    // send the data through sckfd
-    const int sent_size = ::send(data_sock_fd, buf, size_to_tx, 0);
-
-    // error check (-1 in case of errors)
-    // if error close the socket and exit
-    if(sent_size < 0) {
-        std::cout << "ERROR: Send" << std::endl;
-        if(data_sock_fd >= 0) {
-            close(data_sock_fd);
-            data_sock_fd = -1;
-        }
-        return -4;
-    }
-    return sent_size;
-}
-
 void TcpServer::runServer(const bool print_data) {
     // create a char buffer called buf, of size C_MTU
     char buf[Constants::Network::MAX_DATA_SIZE];
@@ -141,7 +96,7 @@ void TcpServer::runServer(const bool print_data) {
 
             // call recvData, passing buf, to receive data
             // save the return value of recvData in a data_size variable
-            const int data_size {recvData(buf)};
+            const int data_size {recvData(data_sock_fd, buf)};
 
             // check if the data_size is smaller than 0
             // (if so, time to end loop & exit)
@@ -172,7 +127,7 @@ void TcpServer::runServer(const bool print_data) {
             // negative return == error
             // TODO: Remove return-to-sender duplicate
             const char* send_pkt {writePkt(pkt)};
-            if(sendData(send_pkt, sizeof(send_pkt)) < 0) {
+            if(sendData(data_sock_fd, send_pkt, sizeof(send_pkt)) < 0) {
                 setExitCode(true);
                 break;
             }

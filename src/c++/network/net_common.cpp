@@ -38,6 +38,50 @@ std::string NetCommon::formatIpAddr(const std::string& ip, const int port) const
     return {ip + ":" + std::to_string(port)};
 }
 
+int NetCommon::recvData(int socket_fd, char* buf) {
+    // make sure data socket is open/valid first
+    if(socket_fd < 0) {
+        return -1;
+    }
+
+    // call the recv API
+    int rcv_size = ::recv(socket_fd, buf, Constants::Network::MAX_DATA_SIZE, 0);
+
+    // check if the recv size is ok or not
+    if(rcv_size < 0) {
+        std::cout << "ERROR: Receive" << std::endl;
+
+        // close just the data socket bc done receiving from client
+        // but want to still listen for new connections
+        if(socket_fd >= 0) {
+            close(socket_fd);
+            socket_fd = -1;
+        }
+    }
+    return rcv_size;
+}
+
+int NetCommon::sendData(int socket_fd, const char* buf, const size_t size_to_tx) {
+    // make sure data socket is open/valid first
+    if(socket_fd < 0) {
+        return -1;
+    }
+
+    // send the data through sckfd
+    const int sent_size = ::send(socket_fd, buf, size_to_tx, 0);
+
+    // error check (-1 in case of errors)
+    // if error close the socket and exit
+    if(sent_size < 0) {
+        std::cout << "ERROR: Send" << std::endl;
+        if(socket_fd >= 0) {
+            close(socket_fd);
+            socket_fd = -1;
+        }
+        return -4;
+    }
+    return sent_size;
+}
 
 
 /********************************************* Helper Functions ********************************************/

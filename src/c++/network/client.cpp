@@ -6,6 +6,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+/********************************************** Constructors **********************************************/
 
 TcpClient::TcpClient(const std::string& ip_addr, const int port_num)
     : NetCommon{}
@@ -26,6 +27,10 @@ TcpClient::~TcpClient() {
     quit();
 }
 
+/********************************************* Getters/Setters *********************************************/
+
+
+/********************************************* Client Functions ********************************************/
 
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
@@ -76,6 +81,9 @@ void TcpClient::quit() {
         client_sock_fd = -1;
     }
 }
+
+
+/********************************************* Helper Functions ********************************************/
 
 
 } // end of Network namespace
