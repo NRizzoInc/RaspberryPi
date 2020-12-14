@@ -139,6 +139,7 @@ Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
     to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
     to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
     to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
+    to_rtn["server"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     to_rtn["client"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     to_rtn["none"]        = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     return to_rtn;
