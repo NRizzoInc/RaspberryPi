@@ -2,6 +2,11 @@
 
 namespace Network {
 
+// for convenience
+using std::cout;
+using std::cerr;
+using std::endl;
+
 /********************************************** Constructors **********************************************/
 Packet::Packet() 
 {
@@ -27,6 +32,7 @@ ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
 /*************************************** Packet Read/Write Functions ***************************************/
 
 json Packet::readPkt(const char* pkt_buf) const {
+    cout << "Recv: " << pkt_buf << endl;
     return json::parse(pkt_buf);
 }
 
@@ -41,20 +47,23 @@ CommonPkt Packet::interpretPkt(const json& recv_pkt) const {
     return translated_pkt;
 }
 
-const char* Packet::writePkt(const CommonPkt& pkt_to_send) const {
+std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
     // see pkt_sample.json for format
-    json json_pkt = {
-        "Control", {
+    // https://github.com/nlohmann/json#json-as-first-class-data-type
+    // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
+    // key-values are seperated by commas not ':'
+    json json_pkt = {{
+        "Control", {{
             "LEDs", {
-                "red",      pkt_to_send.cntrl.led.red,
-                "yellow",   pkt_to_send.cntrl.led.yellow,
-                "green",    pkt_to_send.cntrl.led.green,
-                "blue",     pkt_to_send.cntrl.led.blue
-            }
-        },
-        "ACK", pkt_to_send.ACK
+                {"red",      pkt_to_send.cntrl.led.red},
+                {"yellow",   pkt_to_send.cntrl.led.yellow},
+                {"green",    pkt_to_send.cntrl.led.green},
+                {"blue",     pkt_to_send.cntrl.led.blue}
+            }}
+        }},
+        {"ACK", pkt_to_send.ACK}
     };
-    return json_pkt.dump().c_str();
+    return json_pkt.dump();
 }
 
 

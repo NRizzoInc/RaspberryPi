@@ -74,9 +74,9 @@ class Packet {
         /**
          * @brief Construct & serialize a serialized json packet to easily send over network
          * @param pkt_to_send The packet to send
-         * @return The serialized char array to send
+         * @return The serialized json string to send
          */
-        const char* writePkt(const CommonPkt& pkt_to_send) const;
+        std::string writePkt(const CommonPkt& pkt_to_send) const;
 
     private:
         /******************************************** Private Variables ********************************************/
