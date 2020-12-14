@@ -32,7 +32,6 @@ ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
 /*************************************** Packet Read/Write Functions ***************************************/
 
 json Packet::readPkt(const char* pkt_buf) const {
-    cout << "Recv: " << pkt_buf << endl;
     return json::parse(pkt_buf);
 }
 
