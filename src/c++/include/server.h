@@ -75,15 +75,15 @@ class TcpServer : public NetCommon {
         /********************************************* Helper Functions ********************************************/
 
         /**
-         * @brief Set the socket options and bind.
+         * @brief Creates the socket, bind it & sets options. Starts listening for connections.
          * @return Error as soon as any of the operations it performs fails. Success if no issues
          */
-        ReturnCodes optionsAndBind();
+        ReturnCodes initSock() override;
 
         /**
          * @brief Function called by the destructor to close the sockets
          */
-        void quit();
+        void quit() override;
 
 
 }; // end of TcpServer class

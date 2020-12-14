@@ -34,7 +34,7 @@ class TcpClient : public NetCommon {
         /********************************************* Getters/Setters *********************************************/
 
 
-        /********************************************* Server Functions ********************************************/
+        /********************************************* Client Functions ********************************************/
 
 
     private:
@@ -46,6 +46,16 @@ class TcpClient : public NetCommon {
 
         /********************************************* Helper Functions ********************************************/
 
+        /**
+         * @brief Creates the socket, sets options, & connects to server.
+         * @return Error as soon as any of the operations it performs fails. Success if no issues
+         */
+        ReturnCodes initSock() override;
+
+        /**
+         * @brief Function called by the destructor to close the sockets
+         */
+        void quit() override;
 
 }; // end of TcpClient class
 

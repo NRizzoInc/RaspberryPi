@@ -47,6 +47,7 @@ class NetCommon : public Packet {
          */
         virtual bool getExitCode() const;
 
+    protected:
         /****************************************** Shared Common Functions ****************************************/
 
         /**
@@ -64,6 +65,18 @@ class NetCommon : public Packet {
          * @return The string containing the formatted address
          */
         std::string formatIpAddr(const std::string& ip, const int port) const;
+
+        /**
+         * @brief Creates the socket, bind it & sets options. Override to be called in constructor
+         * @return Error as soon as any of the operations it performs fails. Success if no issues
+         */
+        virtual ReturnCodes initSock() = 0;
+
+        /**
+         * @brief Function called by the destructor to close the sockets
+         * @note Override for it to be called by destructor
+         */
+        virtual void quit() = 0;
 
     private:
         /******************************************** Private Variables ********************************************/

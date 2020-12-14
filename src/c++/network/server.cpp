@@ -19,20 +19,11 @@ TcpServer::TcpServer(const int port_num, const bool should_init)
     // first check if should not init
     if (!should_init) return;
 
-    // open the listen socket of type SOCK_STREAM (TCP)
-    listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    // check if the socket creation was successful
-    if (listen_sock_fd < 0){ 
-        cout << "ERROR: Opening Listen Socket" << endl;
-        return;
-    }
-
-    // call the function to set the options and bind,
+    // call the function to create socket, set the options and bind,
     // and close the socket and return if not successful
-    if(optionsAndBind() != ReturnCodes::Success) {
-        cout << "ERROR: Binding Listen Socket" << endl;
-        close(listen_sock_fd);
+    if(initSock() != ReturnCodes::Success) {
+        cout << "ERROR: Initializing Server Socket" << endl;
+        quit();
         return;
     }
 }
@@ -190,7 +181,16 @@ void TcpServer::runServer(const bool print_data) {
 }
 
 
-ReturnCodes TcpServer::optionsAndBind() {
+ReturnCodes TcpServer::initSock() {
+    // open the listen socket of type SOCK_STREAM (TCP)
+    listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    // check if the socket creation was successful
+    if (listen_sock_fd < 0){ 
+        cout << "ERROR: Opening Listen Socket" << endl;
+        return ReturnCodes::Error;
+    }
+
     // set the options for the socket
     int option(1);
     setsockopt(listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
@@ -205,12 +205,12 @@ ReturnCodes TcpServer::optionsAndBind() {
     // init struct for address to bind socket
     sockaddr_in my_addr {};
     my_addr.sin_family = AF_INET;                   // address family is AF_INET (IPV4)
-    my_addr.sin_port = htons(listen_port);          // convert m_port to network number format
+    my_addr.sin_port = htons(listen_port);          // convert listen_port to network number format
     my_addr.sin_addr.s_addr = htonl(INADDR_ANY);    // accept conn from all Network Interface Cards (NIC)
 
     // bind the socket to the port
     if (bind(listen_sock_fd, (struct sockaddr*)&my_addr, sizeof(my_addr)) < 0) { 
-        std::cout << "ERROR: Failed to bind socket" << std::endl;
+        cout << "ERROR: Failed to bind socket" << endl;
         if(listen_sock_fd>=0) {
             close(listen_sock_fd);
         }
@@ -220,7 +220,7 @@ ReturnCodes TcpServer::optionsAndBind() {
     // accept at most 1 client at a time, and set the socket in a listening state
     if (listen(listen_sock_fd, 1) < 0) { 
         cout << "ERROR: Failed to listen to socket" << endl;
-        
+        close(listen_sock_fd);
         return ReturnCodes::Error;
     }
     return ReturnCodes::Success;
