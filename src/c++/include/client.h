@@ -13,7 +13,7 @@
 
 // Our Includes
 #include "constants.h"
-#include "net_common.h"
+#include "tcp_base.h"
 
 // 3rd Party Includes
 
