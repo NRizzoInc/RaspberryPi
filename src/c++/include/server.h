@@ -43,11 +43,13 @@ class TcpServer : public TcpBase {
          */
         ReturnCodes acceptClient();
 
+    protected:
+
         /**
-         * @brief Blocking function to start the server listener
+         * @brief Starts up a non-blocking function to start the server listener
          * @param print_data Should received data be printed?
          */
-        void runNetAgent(const bool print_data) override;
+        virtual void netAgentFn(const bool print_data) override;
 
     private:
         /******************************************** Private Variables ********************************************/

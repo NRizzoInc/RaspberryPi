@@ -48,11 +48,13 @@ class TcpClient : public TcpBase {
 
         /********************************************* Client Functions ********************************************/
 
+    protected:
+
         /**
-         * @brief Blocking function to start the client messager to server
+         * @brief Starts up a non-blocking function to start sending messages to server
          * @param print_data Should received data be printed?
          */
-        void runNetAgent(const bool print_data) override;
+        virtual void netAgentFn(const bool print_data) override;
 
     private:
         /******************************************** Private Variables ********************************************/

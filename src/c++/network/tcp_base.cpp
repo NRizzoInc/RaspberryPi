@@ -12,12 +12,16 @@ using std::endl;
 TcpBase::TcpBase()
     : Packet{}
     , should_exit{false}
+    , net_agent_thread{}
 {
     // stub
 }
 
 TcpBase::~TcpBase() {
-    // stub
+    // block until thread ends
+    if (net_agent_thread.joinable()) {
+        net_agent_thread.join();
+    }
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -33,6 +37,11 @@ bool TcpBase::getExitCode() const {
 
 
 /****************************************** Shared Common Functions ****************************************/
+
+void TcpBase::runNetAgent(const bool print_data) {
+    // startup client/server agent in a thread
+    net_agent_thread = std::thread{&TcpBase::netAgentFn, this, print_data};
+}
 
 std::string TcpBase::formatIpAddr(const std::string& ip, const int port) const {
     return {ip + ":" + std::to_string(port)};

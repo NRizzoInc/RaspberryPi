@@ -50,7 +50,7 @@ ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
 
 /********************************************* Client Functions ********************************************/
 
-void TcpClient::runNetAgent(const bool print_data) {
+void TcpClient::netAgentFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
     if(connectToServer() != ReturnCodes::Success) {

@@ -12,6 +12,7 @@
 #include <cstring> // for memset
 #include <cassert> // for assert
 #include <atomic> // for exit variable
+#include <thread> // to store thread object
 
 // Our Includes
 #include "constants.h"
@@ -49,10 +50,11 @@ class TcpBase : public Packet {
         virtual bool getExitCode() const;
 
         /**
-         * @brief Blocking function to start the server/client
+         * @brief Starts up a non-blocking read for the server/client
+         * @note Calls netAgentFn() in a thread
          * @param print_data Should received data be printed?
          */
-        virtual void runNetAgent(const bool print_data) = 0;
+        virtual void runNetAgent(const bool print_data);
 
     protected:
         /****************************************** Shared Common Functions ****************************************/
@@ -96,6 +98,13 @@ class TcpBase : public Packet {
         virtual ReturnCodes initSock() = 0;
 
         /**
+         * @brief The function to run when starting up the TCP server/client
+         * (override so that it can be called by runNetAgent() in a thread)
+         * @param print_data Should received data be printed?
+         */
+        virtual void netAgentFn(const bool print_data) = 0;
+
+        /**
          * @brief Function called by the destructor to close the sockets
          * @note Override for it to be called by destructor
          */
@@ -104,7 +113,8 @@ class TcpBase : public Packet {
     private:
         /******************************************** Private Variables ********************************************/
 
-        mutable std::atomic_bool should_exit;        // true if should exit/stop connection
+        mutable std::atomic_bool    should_exit;        // true if should exit/stop connection
+        std::thread                 net_agent_thread;   // holds the thread proc for runNetAgent()
 
 
 }; // end of TcpClient class

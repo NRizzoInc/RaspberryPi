@@ -82,7 +82,7 @@ ReturnCodes TcpServer::acceptClient() {
     return ReturnCodes::Success;
 }
 
-void TcpServer::runNetAgent(const bool print_data) {
+void TcpServer::netAgentFn(const bool print_data) {
     // create a char buffer that hold the max allowed size
     char buf[Constants::Network::MAX_DATA_SIZE];
 

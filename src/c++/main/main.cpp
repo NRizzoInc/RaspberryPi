@@ -84,14 +84,9 @@ int main(int argc, char* argv[]) {
         });
     }
 
-    // startup network agent in a thread
-    thread_list.push_back(std::thread{
-        [&]() {
-            // run either the client or server
-            // TODO: set to false to not print data to terminal
-            net_agent->runNetAgent(true);
-        }
-    });
+    // startup client or server in a thread
+    // TODO: set to false to not print data to terminal
+    net_agent->runNetAgent(true);
 
     // make sure all threads complete
     for (auto& proc : thread_list) {
