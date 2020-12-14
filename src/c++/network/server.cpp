@@ -10,7 +10,7 @@ namespace Network {
 /********************************************** Constructors **********************************************/
 
 TcpServer::TcpServer(const int port_num, const bool should_init)
-    : NetCommon{}
+    : TcpBase{}
     , listen_sock_fd{-1}            // init to invalid
     , data_sock_fd{-1}              // init to invalid
     , client_ip{}                   // empty string bc no client yet

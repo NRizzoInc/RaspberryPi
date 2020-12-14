@@ -9,36 +9,36 @@ using std::endl;
 
 /********************************************** Constructors **********************************************/
 
-NetCommon::NetCommon()
+TcpBase::TcpBase()
     : Packet{}
     , should_exit{false}
 {
     // stub
 }
 
-NetCommon::~NetCommon() {
+TcpBase::~TcpBase() {
     // stub
 }
 
 /********************************************* Getters/Setters *********************************************/
 
-ReturnCodes NetCommon::setExitCode(const bool new_exit) const {
+ReturnCodes TcpBase::setExitCode(const bool new_exit) const {
     should_exit = new_exit;
     return ReturnCodes::Success;
 }
 
-bool NetCommon::getExitCode() const {
+bool TcpBase::getExitCode() const {
     return should_exit;
 }
 
 
 /****************************************** Shared Common Functions ****************************************/
 
-std::string NetCommon::formatIpAddr(const std::string& ip, const int port) const {
+std::string TcpBase::formatIpAddr(const std::string& ip, const int port) const {
     return {ip + ":" + std::to_string(port)};
 }
 
-int NetCommon::recvData(int socket_fd, char* buf) {
+int TcpBase::recvData(int socket_fd, char* buf) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
         return -1;
@@ -61,7 +61,7 @@ int NetCommon::recvData(int socket_fd, char* buf) {
     return rcv_size;
 }
 
-int NetCommon::sendData(int socket_fd, const char* buf, const size_t size_to_tx) {
+int TcpBase::sendData(int socket_fd, const char* buf, const size_t size_to_tx) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
         return -1;
@@ -87,7 +87,7 @@ int NetCommon::sendData(int socket_fd, const char* buf, const size_t size_to_tx)
 /********************************************* Helper Functions ********************************************/
 
 // Credit: https://stackoverflow.com/a/3120382/13933174
-void NetCommon::GetPublicIp(char* buffer, std::size_t buf_size) const {
+void TcpBase::GetPublicIp(char* buffer, std::size_t buf_size) const {
     assert(buf_size >= 16);
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);

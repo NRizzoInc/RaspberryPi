@@ -19,7 +19,7 @@
 
 namespace Network {
 
-class TcpClient : public NetCommon {
+class TcpClient : public TcpBase {
     public:
         /********************************************** Constructors **********************************************/
 

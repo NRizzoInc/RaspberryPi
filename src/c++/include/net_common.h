@@ -24,12 +24,12 @@ namespace Network {
  * @brief Implements common features shared between server & client
  * 
  */
-class NetCommon : public Packet {
+class TcpBase : public Packet {
     public:
         /********************************************** Constructors **********************************************/
 
-        NetCommon();
-        virtual ~NetCommon();
+        TcpBase();
+        virtual ~TcpBase();
 
         /********************************************* Getters/Setters *********************************************/
 
