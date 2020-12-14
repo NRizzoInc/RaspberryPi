@@ -9,6 +9,7 @@
 #include "GPIO_Controller.h"
 #include "CLI_Parser.h"
 #include "server.h"
+#include "client.h"
 #include "constants.h"
 #include "string_helpers.hpp"
 
@@ -40,10 +41,14 @@ int main(int argc, char* argv[]) {
     } catch (std::runtime_error& e) {
         return EXIT_FAILURE;
     }
+    // determine if dealing with server or client
+    const bool is_client {parse_res[CLI::Results::MODE] == "client"};
 
-    /* ============================================ Create Server  =========================================== */
+    /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
-    static Network::TcpServer server    {std::stoi(parse_res[CLI::Results::PORT])};
+    // if is_client, do not init the server
+    static Network::TcpServer server    {std::stoi(parse_res[CLI::Results::PORT]), is_client};
+    static Network::TcpClient client    {parse_res[CLI::Results::IP], std::stoi(parse_res[CLI::Results::PORT])};
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
@@ -51,6 +56,7 @@ int main(int argc, char* argv[]) {
         cout << "Caught ctrl+c: " << signum << endl;
         gpio_handler.setShouldThreadExit(true);
         server.setExitCode(true);
+        // client.setExitCode(true);
     });
 
     /* ========================================== Initialize & Start ========================================= */
@@ -58,23 +64,31 @@ int main(int argc, char* argv[]) {
     // keep track of all threads to wait for
     std::vector<std::thread> thread_list;
 
-    // start up gpio handler now that we have parse results
-    gpio_handler.init();
+    // if not the client: init and run gpio functionality
+    if (!is_client) {
+        // start up gpio handler now that we have parse results
+        gpio_handler.init();
 
+        // run the selected gpio functionality 
     // run the selected gpio functionality 
-    thread_list.push_back(std::thread{
-        [&]() {
-            gpio_handler.run(parse_res);
-        }
-    });
+        // run the selected gpio functionality 
+        thread_list.push_back(std::thread{
+            [&]() {
+                gpio_handler.run(parse_res);
+            }
+        });
 
-    // startup the tcp server in a thread to communicate with client
-    thread_list.push_back(std::thread{
-        [&]() {
-            // TODO: set to false to not print data to terminal
-            server.runServer(true);
-        }
-    });
+        // startup the tcp server in a thread to communicate with client
+        thread_list.push_back(std::thread{
+            [&]() {
+                // TODO: set to false to not print data to terminal
+                server.runServer(true);
+            }
+        });
+    } else {
+        // is client
+        
+    }
 
     // make sure all threads complete
     for (auto& proc : thread_list) {

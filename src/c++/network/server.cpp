@@ -9,7 +9,7 @@ namespace Network {
 
 /********************************************** Constructors **********************************************/
 
-TcpServer::TcpServer(const int port_num)
+TcpServer::TcpServer(const int port_num, const bool should_init)
     : Packet{}
     , listen_sock_fd{-1}            // init to invalid
     , data_sock_fd{-1}              // init to invalid
@@ -17,6 +17,9 @@ TcpServer::TcpServer(const int port_num)
     , listen_port{port_num}         // wait to accept connections at this port
     , should_exit{false}            // not ready to end connection yet
 {
+    // first check if should not init
+    if (!should_init) return;
+
     // open the listen socket of type SOCK_STREAM (TCP)
     listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 

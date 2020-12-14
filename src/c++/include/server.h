@@ -26,8 +26,9 @@ class TcpServer : public Packet {
         /**
          * @brief Construct a new Tcp Server object
          * @param port_num The port number for the listen port
+         * @param should_init False: do not init (most likely bc is client)
          */
-        TcpServer(const int port_num);
+        TcpServer(const int port_num, const bool should_init=true);
         virtual ~TcpServer();
 
         /********************************************* Getters/Setters *********************************************/

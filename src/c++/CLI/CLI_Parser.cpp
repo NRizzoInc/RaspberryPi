@@ -47,10 +47,13 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes CLI_Parser::addFlags() {
-    add_option("-m,--mode", cli_res[CLI::Results::MODE])
+    auto mode_opt = add_option("-m,--mode", cli_res[CLI::Results::MODE])
         ->description("Which action to perform")
         ->required(true)
         ->check(CLI::IsMember(mode_list))
+        // make sure only 1 mode is ever taken
+        ->expected(1)
+        ->take_first()
         ;
 
     const char delim {','};
@@ -84,9 +87,21 @@ ReturnCodes CLI_Parser::addFlags() {
         ->default_val("1")
         ;
 
+    /**************************************** Networking Flags ****************************************/
+    // this mode will only ever take 1 argument
+    // require both port and ip for client
+    const bool is_client {mode_opt->results()[0] == "client"};
+
+    add_option("-a,--ip", cli_res[CLI::Results::IP])
+        ->description("The server's ip address")
+        ->required(is_client)
+        ->default_val("127.0.0.1")
+        ->check(CLI::ValidIPV4)
+        ;
+
     add_option("-p,--port", cli_res[CLI::Results::PORT])
-        ->description("The server's listen port")
-        ->required(false)
+        ->description("The server's/client's port number")
+        ->required(is_client)
         ->default_val("55555")
         ->check(CLI::Range(1024, 65535))
         ;

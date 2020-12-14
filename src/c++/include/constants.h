@@ -36,6 +36,7 @@ namespace CLI::Results {
     constexpr auto INTERVAL  = "interval"   ;
     constexpr auto RATE      = "rate"       ;
     constexpr auto DURATION  = "duration"   ;
+    constexpr auto IP        = "ip"         ;
     constexpr auto PORT      = "port"       ;
 }; // end of CLI::Results namespace
 
