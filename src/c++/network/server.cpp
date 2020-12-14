@@ -121,8 +121,14 @@ void TcpServer::runNetAgent(const bool print_data) {
             const json json_pkt {readPkt(buf)};
 
             // TODO: Add lock/mutex to make sure gpio reads from this (or callback?)
-            if(updatePkt(interpretPkt(json_pkt)) != ReturnCodes::Success) {
+            try {
+                if(updatePkt(interpretPkt(json_pkt)) != ReturnCodes::Success) {
+                    cerr << "Failed to update from client info" << endl;
+                }
+            } catch (std::exception& err) {
                 cerr << "Failed to update from client info" << endl;
+                cerr << err.what() << endl;
+                return; // stop when error
             }
 
             // reset the buffer for a new read
