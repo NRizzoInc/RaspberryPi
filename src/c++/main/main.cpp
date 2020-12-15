@@ -42,6 +42,8 @@ int main(int argc, char* argv[]) {
     }
     // determine if dealing with server or client
     const bool is_client {parse_res[CLI::Results::MODE] == "client"};
+    const bool is_server {parse_res[CLI::Results::MODE] == "server"};
+    const bool is_net    { is_client || is_server }; // true if client or server
 
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
@@ -73,8 +75,10 @@ int main(int argc, char* argv[]) {
     }
 
     // startup client or server in a thread
-    // TODO: set to false to not print data to terminal
-    net_agent->runNetAgent(true);
+    if (is_net) {
+        // TODO: set to false to not print data to terminal
+        net_agent->runNetAgent(true);
+    }
 
     /* =============================================== Cleanup =============================================== */
     if(net_agent->cleanup() != ReturnCodes::Success) {
