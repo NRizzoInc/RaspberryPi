@@ -47,7 +47,7 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes CLI_Parser::addFlags() {
-    auto mode_opt = add_option("-m,--mode", cli_res[CLI::Results::MODE])
+    add_option("-m,--mode", cli_res[CLI::Results::MODE])
         ->description("Which action to perform")
         ->required(true)
         ->check(CLI::IsMember(mode_list))
