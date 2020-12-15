@@ -60,9 +60,8 @@ ReturnCodes CLI_Parser::addFlags() {
     add_option("-c,--colors", cli_res[CLI::Results::COLORS])
         ->description("Which LEDs/Buttons to use (comma-seperated)")
         ->required(false)
-        ->default_val("")
         // method for taking in multiple args => str-represented vector
-        ->expected(0, color_list.size()-1)
+        ->expected(0, color_list.size())
         ->allow_extra_args() // allow mutliple inputs despite type=str
         ->delimiter(delim)
         ->check(CLI::IsMember(color_list))
@@ -88,23 +87,18 @@ ReturnCodes CLI_Parser::addFlags() {
         ;
 
     /**************************************** Networking Flags ****************************************/
-    // this mode will only ever take 1 argument
-    // require both port and ip for client
 
-    // use lazy eval & check that mode was provided before checking if client
-    auto mode_res {mode_opt->results()};
-    const bool is_client {mode_res.size() > 0 && mode_res[0] == "client"};
-
+    // mark them both as needing mode_opt bc its results impact them
     add_option("-a,--ip", cli_res[CLI::Results::IP])
         ->description("The server's ip address")
-        ->required(is_client)
+        ->required(false)
         ->default_val("127.0.0.1")
         ->check(CLI::ValidIPV4)
         ;
 
     add_option("-p,--port", cli_res[CLI::Results::PORT])
         ->description("The server's/client's port number")
-        ->required(is_client)
+        ->required(false)
         ->default_val("55555")
         ->check(CLI::Range(1024, 65535))
         ;

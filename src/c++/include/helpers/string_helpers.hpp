@@ -25,12 +25,19 @@ inline const std::vector<std::string> splitStr(const char delim, const std::stri
     std::vector<std::string> split_str;
 
     // iterate over string (backwards bc of push_back)
+    // check edge case of empty string (dont add to vector)
     std::string::size_type beg = 0;
     for (std::size_t end = 0; (end = to_split.find(delim, end)) != std::string::npos; ++end) {
-        split_str.push_back(to_split.substr(beg, end - beg));
+        const std::string& el = to_split.substr(beg, end - beg);
+        if (el.size() > 0) {
+            split_str.push_back(el);
+        }
         beg = end + 1;
     }
-    split_str.push_back(to_split.substr(beg));
+    const std::string& final_el {to_split.substr(beg)};
+    if (final_el.size() > 0) {
+        split_str.push_back(final_el);
+    }
 
     return std::move(split_str);
 }
