@@ -54,7 +54,7 @@ void TcpClient::netAgentFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
     if(connectToServer() != ReturnCodes::Success) {
-        cerr << "ERROR: Failed to connect to server" << endl;
+        cerr << "ERROR: Failed to connect to server @" << formatIpAddr(server_ip, server_port) << endl;
         return;
     } else {
         cout << "Success: Connect to server" << endl;
