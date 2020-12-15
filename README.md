@@ -23,6 +23,16 @@ For C++ you will need to run the install script found at `./install/setup.sh`.
 To build the C++ version of the code simply run `make` or `make release` (for optimized build).
 The resulting executable should be found at `./bin/rpi_driver`.
 
+## Issues
+
+In order for build to not freeze on RPI, you might need to increase the available swap size. You can use `htop` to monitor Processors, Memory, and Swap utilization during a build.
+Follow [this guide](https://pimylifeup.com/raspberry-pi-swap-file/) for how to do this. If some swap is not released after killing, completing, or stopping a build use the following commands to do it manually:
+
+``` bash
+sudo dphys-swapfile swapoff # turn swap off
+sudo dphys-swapfile swapon  # turn swap back on
+```
+
 ## GPIO Configuration
 
 See the `PinDiagrams` directory gain an understanding of my RPI's pin usage.
