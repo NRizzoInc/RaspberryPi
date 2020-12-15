@@ -76,5 +76,11 @@ int main(int argc, char* argv[]) {
     // TODO: set to false to not print data to terminal
     net_agent->runNetAgent(true);
 
+    /* =============================================== Cleanup =============================================== */
+    if(net_agent->cleanup() != ReturnCodes::Success) {
+        const std::string net_agent_name {is_client ? "client" : "server"};
+        cerr << "Failed to cleanup " << net_agent_name << " " << endl;
+    }
+
     return EXIT_SUCCESS;
 }

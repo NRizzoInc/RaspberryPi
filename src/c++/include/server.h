@@ -68,7 +68,7 @@ class TcpServer : public TcpBase {
         ReturnCodes initSock() override;
 
         /**
-         * @brief Function called by the destructor to close the sockets
+         * @brief Function called at end of running server to close the sockets
          */
         void quit() override;
 

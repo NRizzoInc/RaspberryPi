@@ -13,6 +13,10 @@
 #include <cassert> // for assert
 #include <atomic> // for exit variable
 #include <thread> // to store thread object
+// block destructor with mutex so that thread can be created prior to joining
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 // Our Includes
 #include "constants.h"
@@ -40,21 +44,28 @@ class TcpBase : public Packet {
          * @brief Sets the exit code. 
          * @note Useful for terminating runNetAgent() from main thread
          */
-        virtual ReturnCodes setExitCode(const bool new_exit) const;
+        ReturnCodes setExitCode(const bool new_exit);
 
         /**
          * @brief Get the current exit code status
          * @return true TcpServer is ready to or should exit
          * @return false TcpServer is still running and not ready to exit
          */
-        virtual bool getExitCode() const;
+        bool getExitCode() const;
 
         /**
          * @brief Starts up a non-blocking read for the server/client
          * @note Calls netAgentFn() in a thread
          * @param print_data Should received data be printed?
          */
-        virtual void runNetAgent(const bool print_data);
+        void runNetAgent(const bool print_data);
+
+        /**
+         * @brief Wrapper for wrapping and closing functions that need to be called
+         * before end object goes out of scope. (calls quit() & other required functions)
+         * @return ReturnCodes 
+         */
+        virtual ReturnCodes cleanup();
 
     protected:
         /****************************************** Shared Common Functions ****************************************/
@@ -106,16 +117,19 @@ class TcpBase : public Packet {
 
         /**
          * @brief Function called by the destructor to close the sockets
-         * @note Override for it to be called by destructor
+         * @note This should be called at beginining of derived quit()
          */
         virtual void quit() = 0;
 
     private:
         /******************************************** Private Variables ********************************************/
 
-        mutable std::atomic_bool    should_exit;        // true if should exit/stop connection
+        std::atomic_bool            should_exit;        // true if should exit/stop connection
         std::thread                 net_agent_thread;   // holds the thread proc for runNetAgent()
-
+        std::atomic_bool            started_thread;     // need to send an initization message for first packet
+        std::mutex                  thread_mutex;
+        std::condition_variable     thread_cv;          // true if client needs to tell the server something
+        bool                        has_cleaned_up;     // makes sure cleanup doesnt happen twice
 
 }; // end of TcpClient class
 

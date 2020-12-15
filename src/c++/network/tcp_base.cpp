@@ -13,20 +13,41 @@ TcpBase::TcpBase()
     : Packet{}
     , should_exit{false}
     , net_agent_thread{}
+    , started_thread{false}
+    , has_cleaned_up{false}
 {
     // stub
 }
 
 TcpBase::~TcpBase() {
+    // stub
+}
+
+ReturnCodes TcpBase::cleanup() {
+    // dont double cleanup
+    if (has_cleaned_up) return ReturnCodes::Success;
+
+    // wait to block until a thread has been setup
+    // otherwise thread is empty and joins immediately
+    std::unique_lock<std::mutex> lk{thread_mutex};
+    thread_cv.wait(lk, [&](){ return started_thread.load(); });
+
     // block until thread ends
     if (net_agent_thread.joinable()) {
         net_agent_thread.join();
     }
+
+    // call quit once thread for derived client/server is over
+    // quit should be overriden by derived classes for proper cleanup
+    quit();
+
+    has_cleaned_up = true;
+    return ReturnCodes::Success;
 }
 
 /********************************************* Getters/Setters *********************************************/
 
-ReturnCodes TcpBase::setExitCode(const bool new_exit) const {
+ReturnCodes TcpBase::setExitCode(const bool new_exit) {
     should_exit.store(new_exit);
     return ReturnCodes::Success;
 }
@@ -39,8 +60,22 @@ bool TcpBase::getExitCode() const {
 /****************************************** Shared Common Functions ****************************************/
 
 void TcpBase::runNetAgent(const bool print_data) {
+    // create a lock that prevents joiner from trying to join() before ready
+    // if thread is not initialized yet, join() will occur before thread is started
+    std::unique_lock<std::mutex> start_thread_lk{thread_mutex};
+
     // startup client/server agent in a thread
-    net_agent_thread = std::thread{&TcpBase::netAgentFn, this, print_data};
+    // cannot capture by reference in locally existing lambda
+    net_agent_thread = std::thread{[this, print_data]() mutable {
+        // dont pin fn to TcpBase since it should be overridden by derived classes
+        netAgentFn(print_data);
+    }};
+
+    // unlock & notify so joiner can continue
+    started_thread.store(true);
+    start_thread_lk.unlock();
+    thread_cv.notify_all();
+    
 }
 
 std::string TcpBase::formatIpAddr(const std::string& ip, const int port) const {
@@ -63,7 +98,7 @@ int TcpBase::recvData(int socket_fd, char* buf) {
         // close just the data socket bc done receiving from client
         // but want to still listen for new connections
         if(socket_fd >= 0) {
-            close(socket_fd);
+            ::close(socket_fd);
             socket_fd = -1;
         }
     }

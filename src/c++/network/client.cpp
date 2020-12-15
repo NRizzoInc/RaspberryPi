@@ -54,7 +54,10 @@ void TcpClient::netAgentFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
     if(connectToServer() != ReturnCodes::Success) {
+        cerr << "ERROR: Failed to connect to server" << endl;
         return;
+    } else {
+        cout << "Success: Connect to server" << endl;
     }
 
     // loop to receive data and send data to server
@@ -75,6 +78,7 @@ void TcpClient::netAgentFn(const bool print_data) {
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
         const std::string   json_str    {writePkt(getCurrentPkt())};
+        data_lock.unlock();             // unlock after leaving critical region
         const char*         send_pkt    {json_str.c_str()};
         const std::size_t   pkt_size    {json_str.size()};
 
@@ -94,7 +98,6 @@ void TcpClient::netAgentFn(const bool print_data) {
         // TODO: implement method to receive camera data from server
 
         // inform updatePkt function that packet has been sent
-        data_lock.unlock();
         has_new_msg.notify_one();
     }
 }
@@ -143,7 +146,6 @@ ReturnCodes TcpClient::connectToServer() {
     server_addr.sin_port        = htons(server_port);           // convert server_port to network number format
 
     if (connect(client_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) { 
-        cout << "ERROR: Failed to connect to server" << endl;
         if(client_sock_fd >= 0) {
             close(client_sock_fd);
         }

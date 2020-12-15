@@ -82,7 +82,7 @@ class TcpClient : public TcpBase {
         ReturnCodes connectToServer();
 
         /**
-         * @brief Function called by the destructor to close the sockets
+         * @brief Function called at the end of running client to close the sockets
          */
         void quit() override;
 
