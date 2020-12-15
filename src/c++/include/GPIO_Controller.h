@@ -79,7 +79,6 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * correct function with correct params
          * @param args Additional args to unpack for the function call
          * @return ReturnCodes
-         * @note Wrapper for FnMap's searchAndCall()
          */
         ReturnCodes run(const CLI::Results::ParseResults& flags) const;
 
@@ -118,6 +117,18 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @note Needed for map to have an option to test other features/do nothing
          */
         void doNothing() const;
+
+        /**
+         * @brief Wrapper for FnMap's searchAndCall() so that it can be bound for lambda
+         * @note Without this, would ahve to copy "this" object by value to pass into lambda
+         */
+        void callSelFn(
+            const std::string& mode,
+            const std::vector<std::string>& colors,
+            const unsigned int& interval,
+            const int& duration,
+            const unsigned int& rate
+        ) const;
 
 };
 

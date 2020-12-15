@@ -95,17 +95,16 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const 
                             };
 
     // start up selected function based on mode in a thread (joined in destructor)
-    run_thread = std::thread{[&](){
-        mode_to_action.searchAndCall<void>(
-            *this, // need to pass reference to this object
-            mode, // key to the function to call
-            // pass the actual params needed by functions
+    run_thread = std::thread{
+        std::bind(&GPIO_Controller::callSelFn, this,
+            // the actual arguments needed by the function
+            mode,
             colors,
             interval,
             duration,
             rate
-        );
-    }};
+        )
+    };
 
     return ReturnCodes::Success;
 }
@@ -137,6 +136,24 @@ MapParentMaps GPIO_Controller::generateLedBtnPairs() const {
 void GPIO_Controller::doNothing() const {
     // sometimes you just gotta be a bit sassy
     // cout << "You chose the option to do nothing... you should rethink your life choices" << endl;
+}
+
+void GPIO_Controller::callSelFn(
+    const std::string& mode,
+    const std::vector<std::string>& colors,
+    const unsigned int& interval,
+    const int& duration,
+    const unsigned int& rate
+) const {
+    mode_to_action.searchAndCall<void>(
+        *this, // need to pass reference to this object
+        mode, // key to the function to call
+        // pass the actual params needed by functions
+        colors,
+        interval,
+        duration,
+        rate
+    );
 }
 
 
