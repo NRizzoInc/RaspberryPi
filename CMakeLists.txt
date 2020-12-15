@@ -16,17 +16,6 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-psabi")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-# set number of Processors & % usage
-include(ProcessorCount)
-ProcessorCount(N)
-if(NOT N GREATER 1)
-    # always use 1 less than available to not soft freeze computer
-    math(EXPR PROC_TO_USE "${N}-1")
-    set(CTEST_BUILD_FLAGS -j${PROC_TO_USE})
-    set(ctest_test_args ${ctest_test_args} PARALLEL_LEVEL ${PROC_TO_USE})
-endif()
-
-
 # =================================== load Dependencies globally for all subdirs ===================================
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/c++/cmake")
