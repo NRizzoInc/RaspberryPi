@@ -4,6 +4,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+namespace RPI {
 namespace Network {
 
 
@@ -214,3 +215,5 @@ void TcpServer::quit() {
 
 
 } // end of Network namespace
+
+}; // end of RPI namespace

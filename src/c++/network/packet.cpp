@@ -1,5 +1,6 @@
 #include "packet.h"
 
+namespace RPI {
 namespace Network {
 
 // for convenience
@@ -74,3 +75,5 @@ std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
 
 
 } // end of Network namespace
+
+}; // end of RPI namespace

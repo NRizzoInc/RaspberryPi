@@ -17,6 +17,7 @@
 
 // 3rd Party Includes
 
+namespace RPI {
 namespace Network {
 
 class TcpServer : public TcpBase {
@@ -77,5 +78,7 @@ class TcpServer : public TcpBase {
 
 
 } // end of Network namespace
+
+}; // end of RPI namespace
 
 #endif

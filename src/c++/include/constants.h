@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+namespace RPI {
 // Defines different possible returns rather than just success/fail
 enum class ReturnCodes {
     Success,
@@ -39,5 +40,7 @@ namespace CLI::Results {
     constexpr auto IP        = "ip"         ;
     constexpr auto PORT      = "port"       ;
 }; // end of CLI::Results namespace
+
+}; // end of RPI namespace
 
 #endif

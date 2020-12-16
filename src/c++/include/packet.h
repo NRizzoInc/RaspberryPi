@@ -14,6 +14,7 @@
 // 3rd Party Includes
 #include <json.hpp>
 
+namespace RPI {
 namespace Network {
 
 // for convenience inside Network namespace
@@ -88,5 +89,7 @@ class Packet {
 
 
 } // end of Network namespace
+
+}; // end of RPI namespace
 
 #endif

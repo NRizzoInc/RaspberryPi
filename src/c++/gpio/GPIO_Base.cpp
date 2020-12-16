@@ -4,6 +4,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+namespace RPI {
 
 namespace gpio {
 
@@ -41,3 +42,5 @@ ReturnCodes GPIOBase::setIsInit(const bool new_state) const {
 }
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace

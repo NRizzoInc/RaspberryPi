@@ -1,5 +1,6 @@
 #include "tcp_base.h"
 
+namespace RPI {
 namespace Network {
 
 using std::cout;
@@ -172,3 +173,5 @@ std::string TcpBase::GetPublicIp() const {
 }
 
 } // end of Network namespace
+
+}; // end of RPI namespace

@@ -24,6 +24,7 @@
 
 // 3rd Party Includes
 
+namespace RPI {
 namespace Network {
 
 /**
@@ -147,5 +148,7 @@ class TcpBase : public Packet {
 
 
 } // end of Network namespace
+
+}; // end of RPI namespace
 
 #endif

@@ -4,6 +4,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+namespace RPI {
+
 namespace gpio {
 
 /********************************************** Constructors **********************************************/
@@ -193,3 +195,5 @@ Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
 
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace

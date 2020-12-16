@@ -20,11 +20,11 @@ int main(int argc, char* argv[]) {
     /* ============================================ Create GPIO Obj =========================================== */
     // create single static gpio obj to controll rpi
     // static needed so it can be accessed in ctrl+c lambda
-    static gpio::GPIO_Controller gpio_handler;
+    static RPI::gpio::GPIO_Controller gpio_handler;
 
     /* ============================================ Parse CLI Flags =========================================== */
     // object that parses the command line inputs
-    gpio::CLI_Parser cli_parser(
+    RPI::gpio::CLI_Parser cli_parser(
         argc,
         argv,
         gpio_handler.getModes(),
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     );
     // will have to convert string values to required type
     // note: will have to manually convert color str into list by splitting commas
-    CLI::Results::ParseResults parse_res;
+    RPI::CLI::Results::ParseResults parse_res;
 
     try {
         parse_res = cli_parser.parse_flags();
@@ -41,29 +41,29 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     // determine if dealing with server or client
-    const bool is_client {parse_res[CLI::Results::MODE] == "client"};
-    const bool is_server {parse_res[CLI::Results::MODE] == "server"};
+    const bool is_client {parse_res[RPI::CLI::Results::MODE] == "client"};
+    const bool is_server {parse_res[RPI::CLI::Results::MODE] == "server"};
     const bool is_net    { is_client || is_server }; // true if client or server
 
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
     // if is_client, do not init the server (and vice-versa)
-    const int port {std::stoi(parse_res[CLI::Results::PORT])}; // dont convert this twice
-    static std::unique_ptr<Network::TcpBase> net_agent {
+    const int port {std::stoi(parse_res[RPI::CLI::Results::PORT])}; // dont convert this twice
+    static std::unique_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
-            (Network::TcpBase*) new Network::TcpClient{parse_res[CLI::Results::IP], port, is_client} :
-            (Network::TcpBase*) new Network::TcpServer{port, !is_client}
+            (RPI::Network::TcpBase*) new RPI::Network::TcpClient{parse_res[RPI::CLI::Results::IP], port, is_client} :
+            (RPI::Network::TcpBase*) new RPI::Network::TcpServer{port, !is_client}
     };
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
     std::signal(SIGINT, [](int signum) {
         cout << "Caught ctrl+c: " << signum << endl;
-        if(gpio_handler.setShouldThreadExit(true) != ReturnCodes::Success) {
+        if(gpio_handler.setShouldThreadExit(true) != RPI::ReturnCodes::Success) {
             cerr << "Error: Failed to stop gpio thread" << endl;
         }
         
-        if(net_agent->setExitCode(true) != ReturnCodes::Success) {
+        if(net_agent->setExitCode(true) != RPI::ReturnCodes::Success) {
             cerr << "Error: Failed to stop network thread" << endl;
         }
     });
@@ -87,12 +87,12 @@ int main(int argc, char* argv[]) {
     }
 
     /* =============================================== Cleanup =============================================== */
-    if(net_agent->cleanup() != ReturnCodes::Success) {
+    if(net_agent->cleanup() != RPI::ReturnCodes::Success) {
         const std::string net_agent_name {is_client ? "client" : "server"};
         cerr << "Failed to cleanup " << net_agent_name << " " << endl;
         return EXIT_FAILURE;
     }
-    if(gpio_handler.cleanup() != ReturnCodes::Success) {
+    if(gpio_handler.cleanup() != RPI::ReturnCodes::Success) {
         cerr << "Failed to cleanup gpio" << endl;
         return EXIT_FAILURE;
     }

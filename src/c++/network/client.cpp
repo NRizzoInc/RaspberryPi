@@ -1,5 +1,6 @@
 #include "client.h"
 
+namespace RPI {
 namespace Network {
 
 using std::cout;
@@ -160,3 +161,5 @@ ReturnCodes TcpClient::connectToServer() {
 
 
 } // end of Network namespace
+
+}; // end of RPI namespace

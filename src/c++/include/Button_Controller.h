@@ -21,6 +21,7 @@
 #include <wiringPi.h>
 
 
+namespace RPI {
 namespace gpio {
 namespace Button {
 
@@ -104,5 +105,7 @@ class ButtonController : public GPIOBase {
 
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace
 
 #endif

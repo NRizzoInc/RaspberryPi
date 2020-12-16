@@ -23,6 +23,7 @@
 // 3rd Party Includes
 #include <wiringPi.h>
 
+namespace RPI {
 namespace gpio {
 
 using MapParentMaps = std::unordered_map<
@@ -149,5 +150,7 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
 
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace
 
 #endif

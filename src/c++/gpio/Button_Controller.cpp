@@ -5,6 +5,7 @@ using std::cerr;
 using std::endl;
 
 
+namespace RPI {
 namespace gpio {
 namespace Button {
 
@@ -123,3 +124,5 @@ bool ButtonController::isDepressed(const int pin) const {
 }; // end of Button namespace
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace

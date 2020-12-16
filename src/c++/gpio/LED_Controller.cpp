@@ -6,6 +6,7 @@ using std::cerr;
 using std::endl;
 
 
+namespace RPI {
 namespace gpio {
 namespace LED {
 
@@ -151,3 +152,5 @@ void LEDController::LEDIntensity(
 }; // end of LED namespace
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace

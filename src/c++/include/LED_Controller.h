@@ -20,6 +20,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 
+namespace RPI {
 namespace gpio {
 namespace LED {
 
@@ -113,5 +114,6 @@ class LEDController : public GPIOBase {
 }; // end of LED namespace
 
 }; // end of gpio namespace
+}; // end of RPI namespace
 
 #endif

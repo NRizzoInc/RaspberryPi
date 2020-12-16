@@ -11,6 +11,7 @@
 
 // 3rd Party Includes
 
+namespace RPI {
 namespace gpio {
 
 /**
@@ -58,5 +59,6 @@ class GPIOBase {
 
 }; // end of gpio namespace
 
+}; // end of RPI namespace
 
 #endif
