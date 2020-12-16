@@ -19,6 +19,7 @@
 #include "constants.h"
 #include "LED_Controller.h"
 #include "Button_Controller.h"
+#include "packet.h"
 
 // 3rd Party Includes
 #include <wiringPi.h>
@@ -93,6 +94,8 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @return ReturnCodes 
          */
         virtual ReturnCodes cleanup();
+
+        ReturnCodes gpioHandlePkt(const Network::CommonPkt& pkt) const;
 
     private:
         /******************************************** Private Variables ********************************************/

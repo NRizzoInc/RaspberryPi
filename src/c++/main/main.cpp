@@ -77,6 +77,12 @@ int main(int argc, char* argv[]) {
 
         // run the selected gpio functionality (non-blocking thread handled by class)
         gpio_handler.run(parse_res);
+
+        // set recv to handle when getting packets
+        net_agent->setRecvCallback([&](const RPI::Network::CommonPkt& pkt)->RPI::ReturnCodes{
+            return gpio_handler.gpioHandlePkt(pkt);
+        });
+
     }
 
     // startup client or server in a thread

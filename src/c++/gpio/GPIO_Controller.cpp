@@ -101,6 +101,15 @@ ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
 
 }
 
+ReturnCodes GPIO_Controller::gpioHandlePkt(const Network::CommonPkt& pkt) const {
+    const auto& leds_status {pkt.cntrl.led};
+    setLED("blue",          leds_status.blue);
+    setLED("green",         leds_status.green);
+    setLED("red",           leds_status.red);
+    setLED("yellow",        leds_status.yellow);
+    return ReturnCodes::Success;
+}
+
 
 ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
     // get required variables from flag mapping
