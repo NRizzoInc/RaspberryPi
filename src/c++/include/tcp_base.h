@@ -37,6 +37,13 @@ class TcpBase : public Packet {
         TcpBase();
         virtual ~TcpBase();
 
+        /**
+         * @brief Wrapper for wrapping and closing functions that need to be called
+         * before end object goes out of scope. (calls quit() & other required functions)
+         * @return ReturnCodes 
+         */
+        virtual ReturnCodes cleanup();
+
         /********************************************* Getters/Setters *********************************************/
 
 
@@ -60,12 +67,6 @@ class TcpBase : public Packet {
          */
         void runNetAgent(const bool print_data);
 
-        /**
-         * @brief Wrapper for wrapping and closing functions that need to be called
-         * before end object goes out of scope. (calls quit() & other required functions)
-         * @return ReturnCodes 
-         */
-        virtual ReturnCodes cleanup();
 
     protected:
         /****************************************** Shared Common Functions ****************************************/
