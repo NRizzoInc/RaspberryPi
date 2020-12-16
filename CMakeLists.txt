@@ -35,8 +35,14 @@ include_directories(${CLI11_INCLUDE_DIR})
 include_directories(${WiringPi_INCLUDE_DIRS}) # pair with target_link_libraries(<projName> ${WiringPi_LIBS})
 
 # ============================================ Build individual subdirs ============================================
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin) # store produce binaries in RaspberryPi/bin/*
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin) # store produce binaries in RaspberryPi/bin/*
+endif(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+
+if(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+endif(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+
 
 # add more folders here as needed
 # these trigger the CMakeLists.txt file to be called in the listed dirs
