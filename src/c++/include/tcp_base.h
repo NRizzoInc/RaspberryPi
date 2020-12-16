@@ -46,6 +46,13 @@ class TcpBase : public Packet {
 
         /********************************************* Getters/Setters *********************************************/
 
+        /**
+         * @brief Set the callback function for when a packet is received
+         * @param recv_callback The function that accepts a reference to the received pkt
+         * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
+         * @return ReturnCodes 
+         */
+        void setRecvCallback(const RecvPktCallback& recv_callback);
 
         /**
          * @brief Sets the exit code. 
@@ -121,6 +128,10 @@ class TcpBase : public Packet {
          * @note This should be called at beginining of derived quit()
          */
         virtual void quit() = 0;
+
+        /***************************** Protected Variables (Both Client/Server Can Use) *****************************/
+    protected:
+        RecvPktCallback             recv_cb;            // callback for when a packet is received
 
     private:
         /******************************************** Private Variables ********************************************/

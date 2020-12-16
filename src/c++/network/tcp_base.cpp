@@ -61,6 +61,10 @@ bool TcpBase::getExitCode() const {
     return should_exit.load();
 }
 
+void TcpBase::setRecvCallback(const RecvPktCallback& recv_callback) {
+    recv_cb = recv_callback;
+}
+
 
 /****************************************** Shared Common Functions ****************************************/
 

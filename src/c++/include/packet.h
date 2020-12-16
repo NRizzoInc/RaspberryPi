@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <functional>
 
 // Our Includes
 #include "constants.h"
@@ -35,6 +36,12 @@ struct CommonPkt {
     control_t cntrl;
     bool ACK;
 }; // end of CommonPkt
+
+/**
+ * @brief Type for a callback function that accepts a reference to the received pkt
+ * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
+ */
+using RecvPktCallback = std::function<ReturnCodes(const CommonPkt&)>;
 
 /**
  * @brief This class is responsible for writing and reading packets
