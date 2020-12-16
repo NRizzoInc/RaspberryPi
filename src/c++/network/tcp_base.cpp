@@ -29,10 +29,11 @@ ReturnCodes TcpBase::cleanup() {
 
     // wait to block until a thread has been setup
     // otherwise thread is empty and joins immediately
+    // but max out time to wait or else program gets blocked here if thread is never started
     std::unique_lock<std::mutex> lk{thread_mutex};
     thread_cv.wait_for(
         lk,
-        std::chrono::seconds(1),
+        std::chrono::milliseconds(200),
         [&](){ return started_thread.load(); }
     );
 
