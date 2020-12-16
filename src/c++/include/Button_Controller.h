@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <thread>
 #include <chrono>
-#include <atomic>
 #include <functional>
 
 // Our Includes
@@ -16,6 +15,7 @@
 #include "constants.h"
 #include "string_helpers.hpp"
 #include "timing.hpp"
+#include "GPIO_Base.h"
 
 // 3rd Party Includes
 #include <wiringPi.h>
@@ -33,7 +33,7 @@ using BtnCallback = std::function<void(const std::string& color, const bool btn_
 /**
  * @brief Handles all button operations
  */
-class ButtonController {
+class ButtonController : public GPIOBase {
     public:
         /********************************************** Constructors **********************************************/
         ButtonController();
@@ -53,23 +53,6 @@ class ButtonController {
         std::vector<std::string> getBtnColorList() const;
 
         const BtnMap& getBtnMap() const;
-
-        virtual bool getIsInit() const;
-        ReturnCodes setIsInit(const bool new_state) const;
-
-        /**
-         * @brief Set whether the thread should stop
-         * @param new_status The new status (true = stop, false = keep going) 
-         * @return ReturnCodes
-         * @note can be const because underlying bool is mutable
-         */
-        virtual ReturnCodes setShouldThreadExit(const bool new_status) const;
-
-        /**
-         * @brief Get whether the thread should stop
-         * @return True if thread should exit
-         */
-        virtual bool getShouldThreadExit() const;
 
         /**
          * @brief Set the callback to occur when a button's state is changed 
@@ -100,13 +83,6 @@ class ButtonController {
         // maps color to a buttons info: {"color": {pin#, isPressed}}
         // cannot be const because the bool "isPressed" needs to be able to change
         mutable BtnMap color_to_btns;
-
-        /**
-         * @brief Controls whether or not to stop blocking functions (i.e. blink)
-         * @note Is mutable so that it can be modified in const functions safely
-         */
-        mutable std::atomic_bool stop_thread;
-        mutable bool isInit;
 
         // callback for when a button's state changes
         mutable BtnCallback btn_cb;
