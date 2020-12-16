@@ -73,12 +73,12 @@ ReturnCodes ButtonController::setIsInit(const bool new_state) const {
 }
 
 ReturnCodes ButtonController::setShouldThreadExit(const bool new_status) const {
-    stop_thread = new_status;
+    stop_thread.store(new_status);
     return ReturnCodes::Success;
 }
 
-const std::atomic_bool& ButtonController::getShouldThreadExit() const {
-    return stop_thread;
+bool ButtonController::getShouldThreadExit() const {
+    return stop_thread.load();
 }
 
 ReturnCodes ButtonController::setBtnCallback(const BtnCallback& callback) const {

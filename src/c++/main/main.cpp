@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     /* ============================================ Create GPIO Obj =========================================== */
     // create single static gpio obj to controll rpi
     // static needed so it can be accessed in ctrl+c lambda
-    static const gpio::GPIO_Controller gpio_handler;
+    static gpio::GPIO_Controller gpio_handler;
 
     /* ============================================ Parse CLI Flags =========================================== */
     // object that parses the command line inputs
@@ -59,8 +59,13 @@ int main(int argc, char* argv[]) {
     // setup ctrl+c handler w/ callback to stop threads
     std::signal(SIGINT, [](int signum) {
         cout << "Caught ctrl+c: " << signum << endl;
-        gpio_handler.setShouldThreadExit(true);
-        net_agent->setExitCode(true);
+        if(gpio_handler.setShouldThreadExit(true) != ReturnCodes::Success) {
+            cerr << "Error: Failed to stop gpio thread" << endl;
+        }
+        
+        if(net_agent->setExitCode(true) != ReturnCodes::Success) {
+            cerr << "Error: Failed to stop network thread" << endl;
+        }
     });
 
     /* ========================================== Initialize & Start ========================================= */
@@ -77,6 +82,7 @@ int main(int argc, char* argv[]) {
     // startup client or server in a thread
     if (is_net) {
         // TODO: set to false to not print data to terminal
+        cout << "Started net agent" << endl;
         net_agent->runNetAgent(true);
     }
 
@@ -84,7 +90,11 @@ int main(int argc, char* argv[]) {
     if(net_agent->cleanup() != ReturnCodes::Success) {
         const std::string net_agent_name {is_client ? "client" : "server"};
         cerr << "Failed to cleanup " << net_agent_name << " " << endl;
+        return EXIT_FAILURE;
     }
-
+    if(gpio_handler.cleanup() != ReturnCodes::Success) {
+        cerr << "Failed to cleanup gpio" << endl;
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }

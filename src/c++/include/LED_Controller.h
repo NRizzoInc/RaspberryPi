@@ -59,9 +59,9 @@ class LEDController {
         virtual ReturnCodes setShouldThreadExit(const bool new_status) const;
         /**
          * @brief Get whether the thread should stop
-         * @return std::atomic_bool 
+         * @return True if thread should exit
          */
-        virtual const std::atomic_bool& getShouldThreadExit() const;
+        virtual bool getShouldThreadExit() const;
 
         virtual bool getIsInit() const;
         ReturnCodes setIsInit(const bool new_state) const;

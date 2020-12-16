@@ -67,9 +67,9 @@ class ButtonController {
 
         /**
          * @brief Get whether the thread should stop
-         * @return std::atomic_bool 
+         * @return True if thread should exit
          */
-        virtual const std::atomic_bool& getShouldThreadExit() const;
+        virtual bool getShouldThreadExit() const;
 
         /**
          * @brief Set the callback to occur when a button's state is changed 

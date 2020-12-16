@@ -67,12 +67,12 @@ const LEDMap& LEDController::getLedMap() const {
 
 
 ReturnCodes LEDController::setShouldThreadExit(const bool new_status) const {
-    stop_thread = new_status;
+    stop_thread.store(new_status);
     return ReturnCodes::Success;
 }
 
-const std::atomic_bool& LEDController::getShouldThreadExit() const {
-    return stop_thread;
+bool LEDController::getShouldThreadExit() const {
+    return stop_thread.load();
 }
 
 bool LEDController::getIsInit() const {

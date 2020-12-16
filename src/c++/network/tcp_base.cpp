@@ -30,7 +30,11 @@ ReturnCodes TcpBase::cleanup() {
     // wait to block until a thread has been setup
     // otherwise thread is empty and joins immediately
     std::unique_lock<std::mutex> lk{thread_mutex};
-    thread_cv.wait(lk, [&](){ return started_thread.load(); });
+    thread_cv.wait_for(
+        lk,
+        std::chrono::seconds(1),
+        [&](){ return started_thread.load(); }
+    );
 
     // block until thread ends
     if (net_agent_thread.joinable()) {

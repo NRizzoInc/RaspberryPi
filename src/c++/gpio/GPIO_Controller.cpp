@@ -16,15 +16,41 @@ GPIO_Controller::GPIO_Controller()
     , color_to_led_btn_pairs (generateLedBtnPairs())
     , mode_to_action (createFnMap())
     , run_thread{}
+    , started_thread{false}
+    , has_cleaned_up{false}
 {
     // stub
 }
 
 GPIO_Controller::~GPIO_Controller() {
     // block until thread is done executing
+    cout << "GPIO join()" << endl;
     if (run_thread.joinable()) {
         run_thread.join();
     }
+    cout << "GPIO finished join()" << endl;
+}
+
+ReturnCodes GPIO_Controller::cleanup() {
+    // dont double cleanup
+    if (has_cleaned_up) return ReturnCodes::Success;
+
+    // wait to block until a thread has been setup
+    // otherwise thread is empty and joins immediately
+    std::unique_lock<std::mutex> lk{thread_mutex};
+    thread_cv.wait_for(
+        lk,
+        std::chrono::seconds(1),
+        [&](){ return started_thread.load(); }
+    );
+
+    // block until thread ends
+    if (run_thread.joinable()) {
+        run_thread.join();
+    }
+
+    has_cleaned_up = true;
+    return ReturnCodes::Success;
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -78,7 +104,7 @@ ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
 }
 
 
-ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const {
+ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
     // get required variables from flag mapping
     const auto& mode        {flags.at(CLI::Results::MODE)};
     const auto& colors      {Helpers::splitStr(',', flags.at(CLI::Results::COLORS))};
