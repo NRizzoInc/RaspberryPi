@@ -23,12 +23,7 @@ GPIO_Controller::GPIO_Controller()
 }
 
 GPIO_Controller::~GPIO_Controller() {
-    // block until thread is done executing
-    cout << "GPIO join()" << endl;
-    if (run_thread.joinable()) {
-        run_thread.join();
-    }
-    cout << "GPIO finished join()" << endl;
+    // stub
 }
 
 ReturnCodes GPIO_Controller::cleanup() {
