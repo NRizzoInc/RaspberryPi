@@ -5,14 +5,14 @@
 // 3rd Party Includes
 
 // Our Includes
+#include "constants.h"
+#include "string_helpers.hpp"
 #include "GPIO_Controller.h"
 #include "CLI_Parser.h"
 #include "server.h"
 #include "client.h"
 #include "tcp_base.h"
-#include "tcp_base.h"
-#include "constants.h"
-#include "string_helpers.hpp"
+#include "EventListener.h"
 
 using std::cout;
 using std::cerr;
@@ -51,11 +51,14 @@ int main(int argc, char* argv[]) {
     // static needed so it can be accessed in ctrl+c lambda
     // if is_client, do not init the server (and vice-versa)
     const int port {std::stoi(parse_res[RPI::CLI::Results::PORT])}; // dont convert this twice
-    static std::unique_ptr<RPI::Network::TcpBase> net_agent {
+    static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
             (RPI::Network::TcpBase*) new RPI::Network::TcpClient{parse_res[RPI::CLI::Results::IP], port, is_client} :
             (RPI::Network::TcpBase*) new RPI::Network::TcpServer{port, !is_client}
     };
+
+    // Create UI Event Listener to interact with client
+    RPI::UI::EventListener net_ui{net_agent};
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads

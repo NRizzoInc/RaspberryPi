@@ -6,6 +6,7 @@
 #include <string>
 
 // Our Includes
+#include "tcp_base.h" // shared_ptr to base class (for updatePkt())
 
 // 3rd Party Includes
 #include <gainput/gainput.h>
@@ -17,7 +18,7 @@ namespace UI {
 class EventListener {
     public:
         /********************************************** Constructors **********************************************/
-        EventListener();
+        EventListener(const std::shared_ptr<RPI::Network::TcpBase> tcp_client);
         virtual ~EventListener();
 
         /********************************************* Getters/Setters *********************************************/
@@ -28,7 +29,9 @@ class EventListener {
 
     private:
         /******************************************** Private Variables ********************************************/
-        
+
+        // shared pointer to the base casted TcpClient object (used to call updatePkt to trigger a send)
+        std::shared_ptr<RPI::Network::TcpBase> client_ptr;
 
         /********************************************* Helper Functions ********************************************/
 
