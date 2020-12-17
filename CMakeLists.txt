@@ -30,10 +30,10 @@ find_package(Gainput REQUIRED) # keyboard/device event listener
 # Include the package's header files
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include") # contains OUR headers
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include/helpers")
-include_directories(${JSON_INCLUDE_DIR} SYSTEM PUBLIC) # use system to ingore release warnings from this library
+include_directories(${JSON_INCLUDE_DIR}) # use system to ingore release warnings from this library
 include_directories(${CLI11_INCLUDE_DIR})
 include_directories(${WiringPi_INCLUDE_DIR}) # pair with target_link_libraries(<projName> ${WiringPi_LIBS})
-include_directories(${Gainput_INCLUDE_DIR}) # pair with Gainput_LIBS
+include_directories(SYSTEM ${Gainput_INCLUDE_DIR}) # pair with Gainput_LIBS (ignore its warnings)
 
 # ============================================ Build individual subdirs ============================================
 if(NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
