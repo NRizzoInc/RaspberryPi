@@ -43,6 +43,7 @@ class TcpClient : public TcpBase {
          * @brief Wraps the base updater with a lock & notifies client to send it
          * @param updated_pkt The up to date packet to send
          * @return ReturnCodes Success if it worked
+         * @note Get the current pkt with getCurrentPkt()
          */
         ReturnCodes updatePkt(const CommonPkt& updated_pkt) override;
 
