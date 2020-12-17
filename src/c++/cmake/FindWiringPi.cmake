@@ -13,7 +13,7 @@ if (NOT WiringPi_INCLUDE_DIRS)
     message(WARNING "WiringPi library not found -- calling build script")
     execute_process(
         # call from helper directly to avoid using sudo
-        COMMAND ${CMAKE_SOURCE_DIR}/install/helpers/WiringPi.sh --mode install
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/install/helpers/WiringPi.sh --mode install
     )
     # try to find again now that it was installed
     find_library(WiringPi_LIBS NAMES wiringPi)
@@ -21,5 +21,13 @@ if (NOT WiringPi_INCLUDE_DIRS)
 endif()
 
 
+# include other necessary libs
+find_package(Threads REQUIRED) # stock package needed for WiringPi -- link ${CMAKE_THREAD_LIBS_INIT}
+set(WiringPi_LIBS 
+    ${WiringPi_LIBS}
+    ${CMAKE_THREAD_LIBS_INIT}
+    crypt   # for undefined reference to `crypt'
+    rt      # for undefined reference to `shm_open'
+)
 
 MARK_AS_ADVANCED(WiringPi_LIBS WiringPi_INCLUDE_DIRS)
