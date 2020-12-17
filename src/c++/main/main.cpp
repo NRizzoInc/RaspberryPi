@@ -2,6 +2,9 @@
 #include <iostream>
 #include <csignal> // for ctrl+c signal handling
 
+// 3rd Party Includes
+#include <gainput/gainput.h>
+
 // Our Includes
 #include "GPIO_Controller.h"
 #include "CLI_Parser.h"

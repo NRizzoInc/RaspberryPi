@@ -7,3 +7,6 @@
 [submodule "extern/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi"]
 	path = extern/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi
 	url = git@github.com:Freenove/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi.git
+[submodule "extern/gainput"]
+	path = extern/gainput
+	url = git@github.com:jkuhlmann/gainput.git

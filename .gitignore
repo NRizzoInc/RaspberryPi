@@ -33,8 +33,8 @@
 bin/
 build/
 release/
-
 __pycache__/
+lib/
 build/
 dist/
 
