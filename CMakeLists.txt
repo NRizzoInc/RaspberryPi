@@ -47,7 +47,8 @@ endif(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
 # add more folders here as needed (order matters, executable last with most independent first)
 # these trigger the CMakeLists.txt file to be called in the listed dirs
+add_subdirectory(src/c++/network)
 add_subdirectory(src/c++/gpio)
 add_subdirectory(src/c++/CLI)
-add_subdirectory(src/c++/network)
+add_subdirectory(src/c++/UI)
 add_subdirectory(src/c++/main) # executable
