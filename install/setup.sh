@@ -30,7 +30,6 @@ print_flags () {
     echo "    -p | --linux-pkgs: Install all the required linux packages"
     echo "    -s | --submodules: Fetch & Update all the git submodules in this repo"
     echo "    -g | --gpio: Build and Install the c++ gpio library from source"
-    echo "    -e | --event-listener: Build and Install the c++ event listener (keyboard, mouse, etc)"
     echo "    -c | --crow: Build and Install the c++ web-app library \"crow\" to capture keyboard input for client"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
@@ -38,7 +37,6 @@ print_flags () {
 
 # parse command line args
 installGPIO=false
-installGainput=false
 installCrow=false
 updateSubmodules=false
 linuxPkgs=false
@@ -61,11 +59,6 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -s | --submodules )
             updateSubmodules=true
-            installAll=false
-            break
-            ;;
-        -e | --event-listener )
-            installGainput=true
             installAll=false
             break
             ;;
@@ -94,7 +87,6 @@ helpersDir="${INSTALL_DIR}/helpers"
 
 # Get helper script paths
 crowScript="${helpersDir}/Crow.sh"
-gainputScript="${helpersDir}/Gainput.sh"
 wiringPiScript="${helpersDir}/WiringPi.sh"
 submoduleScript="${helpersDir}/submodules.sh"
 linuxPkgsScript="${helpersDir}/linux_pkgs.sh"
@@ -116,12 +108,6 @@ fi
 # external scripts
 if [[ ${installGPIO} == true || ${installAll} == true ]]; then
     bash "${wiringPiScript}" \
-        --extern-dir "${externDir}"
-fi
-
-if [[ ${installGainput} == true || ${installAll} == true ]]; then
-    bash "${gainputScript}" \
-        --mode "install" \
         --extern-dir "${externDir}"
 fi
 

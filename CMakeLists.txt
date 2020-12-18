@@ -26,7 +26,6 @@ find_package(JSON REQUIRED) # using https://github.com/nlohmann/json
 find_package(CLI11 REQUIRED) # using https://cliutils.gitlab.io/CLI11Tutorial/
 find_package(WiringPi REQUIRED)
 find_package(Crow REQUIRED)
-find_package(Gainput REQUIRED) # keyboard/device event listener
 
 # Include the package's header files
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include") # contains OUR headers
