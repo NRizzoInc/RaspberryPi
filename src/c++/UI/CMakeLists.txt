@@ -5,6 +5,7 @@ add_library(RPI_UI
 
 target_link_libraries(RPI_UI
     ${Gainput_LIBS}
+    ${Boost_LIBRARIES}
 )
 
 target_compile_options(RPI_UI

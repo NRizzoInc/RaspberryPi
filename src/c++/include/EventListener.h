@@ -11,6 +11,7 @@
 
 // 3rd Party Includes
 #include <gainput/gainput.h>
+#include <crow.h>
 
 namespace RPI {
 

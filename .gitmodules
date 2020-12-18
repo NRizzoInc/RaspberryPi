@@ -10,3 +10,6 @@
 [submodule "extern/gainput"]
 	path = extern/gainput
 	url = git@github.com:jkuhlmann/gainput.git
+[submodule "extern/crow"]
+	path = extern/crow
+	url = git@github.com:ipkn/crow.git
