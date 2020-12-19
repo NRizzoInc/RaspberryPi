@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     // store handler to chain with other potential handlers due to other libraries (ahem... crow)
     // using their own signal handler that would overwrite mine
     // reference: https://stackoverflow.com/a/10701909/13933174
-    auto my_sig_handler = [](int signum) {
+    std::signal(SIGINT, [](int signum) {
         cout << "Caught ctrl+c: " << signum << endl;
         if(gpio_handler.setShouldThreadExit(true) != RPI::ReturnCodes::Success) {
             cerr << "Error: Failed to stop gpio thread" << endl;
@@ -78,8 +78,7 @@ int main(int argc, char* argv[]) {
         }
 
         net_ui.stopWebApp();
-    };
-    std::signal(SIGINT, my_sig_handler); // returns old signal
+    });
 
     /* ========================================== Initialize & Start ========================================= */
 
@@ -116,7 +115,6 @@ int main(int argc, char* argv[]) {
 
     /* =============================================== Cleanup =============================================== */
     // make sure signal handler is up to date
-    std::signal(SIGINT, my_sig_handler);
 
     if(net_agent->cleanup() != RPI::ReturnCodes::Success) {
         const std::string net_agent_name {is_client ? "client" : "server"};
