@@ -1,6 +1,8 @@
 // Standard Includes
 #include <iostream>
 #include <csignal> // for ctrl+c signal handling
+#include <thread>  // TODO: remove after web app self manages thread
+#include <vector>  // TODO: remove after web app self manages thread
 
 // 3rd Party Includes
 
@@ -12,7 +14,7 @@
 #include "server.h"
 #include "client.h"
 #include "tcp_base.h"
-#include "EventListener.h"
+#include "backend.h"
 
 using std::cout;
 using std::cerr;
@@ -58,7 +60,7 @@ int main(int argc, char* argv[]) {
     };
 
     // Create UI Event Listener to interact with client
-    RPI::UI::EventListener net_ui{net_agent};
+    RPI::UI::WebApp net_ui{net_agent};
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
@@ -75,6 +77,9 @@ int main(int argc, char* argv[]) {
 
     /* ========================================== Initialize & Start ========================================= */
 
+    // TODO: Remove and replace with RAII in classes
+    std::vector<std::thread> thread_list;
+
     // if not the client: init and run gpio functionality
     if (!is_client) {
         // start up gpio handler now that we have parse results
@@ -88,6 +93,13 @@ int main(int argc, char* argv[]) {
             return gpio_handler.gpioHandlePkt(pkt);
         });
 
+    } else {
+        // is client (startup web app interface for receiving commands)
+        thread_list.push_back(std::thread{
+            [&](){
+                net_ui.startWebApp();
+            }
+        });
     }
 
     // startup client or server in a thread
@@ -107,5 +119,13 @@ int main(int argc, char* argv[]) {
         cerr << "Failed to cleanup gpio" << endl;
         return EXIT_FAILURE;
     }
+
+    // TODO: Remove 
+    for (auto& proc : thread_list) {
+        if (proc.joinable()) {
+            proc.join();
+        }
+    }
+
     return EXIT_SUCCESS;
 }

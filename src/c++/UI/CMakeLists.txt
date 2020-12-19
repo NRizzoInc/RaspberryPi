@@ -1,6 +1,6 @@
 # use this to find in main dir
 add_library(RPI_UI
-    EventListener.cpp
+    backend.cpp
 ) 
 
 target_link_libraries(RPI_UI

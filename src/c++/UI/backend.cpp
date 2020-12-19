@@ -1,4 +1,4 @@
-#include "EventListener.h"
+#include "backend.h"
 
 
 namespace RPI {
@@ -11,29 +11,31 @@ using std::endl;
 
 /********************************************** Constructors **********************************************/
 
-EventListener::EventListener(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port)
+WebApp::WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port)
     : client_ptr{tcp_client}
     , web_port{port}
     , web_app{}
 {
-    setupSites();
+    if(setupSites() != ReturnCodes::Success) {
+        cerr << "ERROR: Failed to setup web app" << endl;
+    }
 }
 
-EventListener::~EventListener() {
+WebApp::~WebApp() {
     // stub
 }
 
 /********************************************* Getters/Setters *********************************************/
 
 
-void EventListener::startWebApp() {
+void WebApp::startWebApp() {
     // start running the web app
     web_app.port(web_port).run();
 }
 
 /********************************************* Helper Functions ********************************************/
 
-ReturnCodes EventListener::setupSites() {
+ReturnCodes WebApp::setupSites() {
     web_app.route_dynamic(Constants::UI::URL_MAIN)
     ([]() {
         return "Hello world!";

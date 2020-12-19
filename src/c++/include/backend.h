@@ -19,7 +19,7 @@ namespace UI {
 /**
  * @brief Class that extends the Crow Web App API to manage all the routes
  */
-class EventListener {
+class WebApp {
     public:
         /********************************************** Constructors **********************************************/
 
@@ -29,8 +29,8 @@ class EventListener {
          * @param tcp_client ptr to the tcp client
          * @param port The port to run the client at (defaults to 8080)
          */
-        EventListener(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port=8080);
-        virtual ~EventListener();
+        WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port=8080);
+        virtual ~WebApp();
 
         /********************************************* Getters/Setters *********************************************/
 
@@ -59,7 +59,7 @@ class EventListener {
         ReturnCodes setupSites();
 
 
-}; // end of EventListener class
+}; // end of WebApp class
 
 }; // end of UI namespace
 
