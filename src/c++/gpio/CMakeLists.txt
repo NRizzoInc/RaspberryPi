@@ -7,7 +7,7 @@ add_library(GPIO_Controller
 ) 
 
 target_link_libraries(GPIO_Controller
-    ${WiringPi_LIBS}
+    ${WiringPi_LIBRARIES}
 )
 
 target_compile_options(GPIO_Controller
