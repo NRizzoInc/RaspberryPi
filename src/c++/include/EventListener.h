@@ -22,25 +22,41 @@ namespace UI {
 class EventListener {
     public:
         /********************************************** Constructors **********************************************/
-        EventListener(const std::shared_ptr<RPI::Network::TcpBase> tcp_client);
+
+        /**
+         * @brief Construct a new Event Listener object
+         * 
+         * @param tcp_client ptr to the tcp client
+         * @param port The port to run the client at (defaults to 8080)
+         */
+        EventListener(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port=8080);
         virtual ~EventListener();
 
         /********************************************* Getters/Setters *********************************************/
 
 
-        /********************************************* Event Functions *********************************************/
+        /********************************************* Web UI Functions *********************************************/
 
+        /**
+         * @brief Blocking function that starts up the web app
+         */
+        void startWebApp();
 
     private:
         /******************************************** Private Variables ********************************************/
 
         // shared pointer to the base casted TcpClient object (used to call updatePkt to trigger a send)
         std::shared_ptr<RPI::Network::TcpBase> client_ptr;
-
-        /******************************************** Web UI Variables *********************************************/
-
+        const int web_port;                 // port the web app should use
+        crow::SimpleApp web_app;            // the web app object
 
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Function called by constructor to help setup all the app's webpages
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes setupSites();
 
 
 }; // end of EventListener class
