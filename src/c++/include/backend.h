@@ -59,6 +59,11 @@ class WebApp {
          */
         void startWebApp(const bool print_urls=true);
 
+        /**
+         * @brief Responsible for stopping the web app (if started it will run forever)
+         */
+        void stopWebApp();
+
     private:
         /******************************************** Private Variables ********************************************/
 
@@ -67,6 +72,7 @@ class WebApp {
         const int           web_port;           // port the web app should use
         const std::string   web_url;            // full url to base page (i.e. http://<ip>:<port>/)
         crow::SimpleApp     web_app;            // the web app object
+        bool                is_running;         // true when web app is running
 
         /********************************************* Helper Functions ********************************************/
 

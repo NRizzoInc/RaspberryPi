@@ -9,4 +9,4 @@
 	url = git@github.com:Freenove/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi.git
 [submodule "extern/crow"]
 	path = extern/crow
-	url = git@github.com:ipkn/crow.git
+	url = git@github.com:NRizzoInc/crow.git

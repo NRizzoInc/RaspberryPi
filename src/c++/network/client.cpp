@@ -101,6 +101,7 @@ void TcpClient::netAgentFn(const bool print_data) {
         // inform updatePkt function that packet has been sent
         has_new_msg.notify_one();
     }
+    cout << "Exiting client" << endl;
 }
 
 
