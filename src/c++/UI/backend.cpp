@@ -14,7 +14,7 @@ using std::endl;
 WebApp::WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port)
     : client_ptr{tcp_client}
     , web_port{port}
-    , web_url{URL_BASE + '/' + std::to_string(web_port)}
+    , web_url{std::string(URL_BASE) + "/" + std::to_string(web_port)}
     , web_app{}
 {
     if(setupSites() != ReturnCodes::Success) {
@@ -62,7 +62,7 @@ ReturnCodes WebApp::setupSites() {
 }
 
 void WebApp::printUrls() const {
-    cout << "Web App's Url's: " << endl;
+    cout << "Web App's Urls: " << endl;
     for(auto& url : WebAppUrls) {
         cout << web_url << url.second << endl;
     }
