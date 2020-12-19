@@ -11,10 +11,26 @@
 
 // 3rd Party Includes
 #include <crow.h>
+#include <json.hpp>
 
 namespace RPI {
 
 namespace UI {
+
+// TODO: convert to variable that can be changed with input
+constexpr char URL_BASE[] {"http://127.0.0.1"};
+
+// used by WebAppUrls as keys to select specific urls
+enum class WebAppUrlsNames {
+    MAIN_PAGE,
+    LANDING_PAGE
+};
+
+// contains actual urls as values
+const std::unordered_map<WebAppUrlsNames, std::string> WebAppUrls {
+    {WebAppUrlsNames::LANDING_PAGE, "/"},
+    {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"}
+};
 
 /**
  * @brief Class that extends the Crow Web App API to manage all the routes
@@ -39,16 +55,18 @@ class WebApp {
 
         /**
          * @brief Blocking function that starts up the web app
+         * @param print_urls True if should print out created available web app urls (default=true)
          */
-        void startWebApp();
+        void startWebApp(const bool print_urls=true);
 
     private:
         /******************************************** Private Variables ********************************************/
 
         // shared pointer to the base casted TcpClient object (used to call updatePkt to trigger a send)
         std::shared_ptr<RPI::Network::TcpBase> client_ptr;
-        const int web_port;                 // port the web app should use
-        crow::SimpleApp web_app;            // the web app object
+        const int           web_port;           // port the web app should use
+        const std::string   web_url;            // full url to base page (i.e. http://<ip>:<port>/)
+        crow::SimpleApp     web_app;            // the web app object
 
         /********************************************* Helper Functions ********************************************/
 
@@ -58,6 +76,11 @@ class WebApp {
          */
         ReturnCodes setupSites();
 
+
+        /**
+         * @brief Prints full urls listed in WebAppUrls
+         */
+        void printUrls() const;
 
 }; // end of WebApp class
 

@@ -25,11 +25,6 @@ namespace Constants {
         constexpr int           ACPT_TIMEOUT    {5}; // ctrl+c takes 5 sec to work pre-connect
     } // end of Network namespace
 
-    namespace UI {
-        constexpr char          URL_MAIN[]       {"RPI-Client"};
-        
-    } // end of UI namespace
-
 }; // end of constants namespace
 
 namespace CLI::Results {

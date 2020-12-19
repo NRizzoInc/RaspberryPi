@@ -104,9 +104,8 @@ int main(int argc, char* argv[]) {
 
     // startup client or server in a thread
     if (is_net) {
-        // TODO: set to false to not print data to terminal
         cout << "Started net agent" << endl;
-        net_agent->runNetAgent(true);
+        net_agent->runNetAgent(false);
     }
 
     /* =============================================== Cleanup =============================================== */
