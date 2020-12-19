@@ -1,5 +1,5 @@
-#ifndef EVENT_LISTENER_H
-#define EVENT_LISTENER_H
+#ifndef RPI_BACKEND_H
+#define RPI_BACKEND_H
 
 // Standard Includes
 #include <iostream>
