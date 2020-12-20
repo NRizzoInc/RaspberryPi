@@ -42,9 +42,6 @@ ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
     lk.unlock();
     has_new_msg.notify_one();
 
-    // wait for pkt to be sent by worker
-    has_new_msg.wait(lk);
-
     // can return now that packet was sent
     return rtn_code;
 }
