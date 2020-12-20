@@ -57,6 +57,8 @@ class TcpBase : public Packet {
 
         /**
          * @brief Sets the exit code. 
+         * @param new_exit true TcpServer is should exit
+         * @param new_exit false TcpServer should still run and not ready to exit
          * @note Useful for terminating runNetAgent() from main thread
          */
         ReturnCodes setExitCode(const bool new_exit);
