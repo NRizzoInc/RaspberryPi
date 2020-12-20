@@ -19,7 +19,7 @@ namespace RPI {
 namespace UI {
 
 // TODO: convert to variable that can be changed with input
-constexpr char URL_BASE[] {"http://127.0.0.1"};
+constexpr char URL_BASE_IP[] {"http://127.0.0.1"};
 
 // used by WebAppUrls as keys to select specific urls
 enum class WebAppUrlsNames {
@@ -71,7 +71,7 @@ class WebApp {
         // shared pointer to the base casted TcpClient object (used to call updatePkt to trigger a send)
         std::shared_ptr<RPI::Network::TcpBase> client_ptr;
         const int                   web_port;           // port the web app should use
-        const std::string           web_url;            // full url to base page (i.e. http://<ip>:<port>/)
+        const std::string           web_url_root;       // full url to base page (i.e. http://<ip>:<port>/)
         Pistache::Http::Endpoint    web_app;            // the web app object
         bool                        is_running;         // true when web app is running
 
