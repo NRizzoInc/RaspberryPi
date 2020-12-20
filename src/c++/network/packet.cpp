@@ -104,7 +104,6 @@ rtnType Packet::findIfExists(const json& json_to_check, const std::vector<std::s
     json curr_pkt  = convertPktToJson(getCurrentPkt());    // valid json of current stored pkt (source of truth)
 
     // loop condition checkers
-    bool key_dne = false; // if true, end up returning the current packet's values
     const std::size_t len_keys {keys.size()};
     std::size_t idx_counter {0};
 
@@ -112,16 +111,12 @@ rtnType Packet::findIfExists(const json& json_to_check, const std::vector<std::s
         // go deeper into json (select key and ignore rest)
         curr_pkt = curr_pkt[key]; // no worries with this not existing
         recv_curr = recv_curr.contains(key) ? recv_curr[key] : curr_pkt; // if dne, just use curr pkt (which has already zeroed in on the key)
-        // recv_curr = key_dne ? *curr_pkt.begin() : *recv_curr.find(key); // if does not exist, just use curr pkt
         ++idx_counter;
 
         // first check that this is not the element to return
         // at the end of the key list
         if(idx_counter == len_keys) {
             return recv_curr.get<rtnType>();
-        } else if(key_dne) {
-            // if already couldnt find key, move on so can just return current packet
-            continue;
         }
     }
     // never going to reach this point
