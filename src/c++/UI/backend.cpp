@@ -54,9 +54,10 @@ void WebApp::stopWebApp() {
     web_app.shutdown();
 }
 
-/********************************************* Helper Functions ********************************************/
+/******************************************** Web/Route Functions *******************************************/
 
 ReturnCodes WebApp::setupSites() {
+    // see https://github.com/pistacheio/pistache/blob/master/examples/rest_server.cc
     // setup web app options
     auto opts = Pistache::Http::Endpoint::options().threads(1);
     web_app.init(opts);
@@ -65,11 +66,44 @@ ReturnCodes WebApp::setupSites() {
     // WebAppUrls.at(WebAppUrlsNames::LANDING_PAGE) => WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE)
 
     // actual main page
-    // WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE)
-    web_app.setHandler(std::make_shared<Handlers::HelloHandler>());
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE),
+        Pistache::Rest::Routes::bind(&WebApp::recvMainData, this)
+    );
+
+
+    // shutdown/close page
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::SHUTDOWN_PAGE),
+        Pistache::Rest::Routes::bind(&WebApp::handleShutdown, this)
+    );
+
+    // use the default routing handler to manage the routing of multiple sites/routes
+    web_app.setHandler(web_app_router.handler());
 
     return ReturnCodes::Success;
 }
+
+void WebApp::recvMainData(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    // TODO: actually parse request to get data to send via client
+    res.send(Pistache::Http::Code::Ok, "Successfully received data!\n");
+}
+
+void WebApp::handleShutdown(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    client_ptr->setExitCode(true);
+    res.send(Pistache::Http::Code::Ok, "Stopping Web App Server\n");
+}
+
+/********************************************* Helper Functions ********************************************/
+
 
 void WebApp::printUrls() const {
     cout << "Web App's Urls: " << endl;

@@ -35,7 +35,7 @@ class HelloHandler : public Pistache::Http::Handler {
             const Pistache::Http::Request& request,
             Pistache::Http::ResponseWriter response
         ) override;
-};
+}; // end of HelloHander (hello world example w/o route -- single page)
 
 
 }; // end of Handlers namespace

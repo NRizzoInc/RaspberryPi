@@ -12,7 +12,8 @@
 
 // 3rd Party Includes
 #include <json.hpp>
-#include "pistache/endpoint.h"
+#include "pistache/endpoint.h" // for actually web app server
+#include "pistache/router.h" // to be able to make routes
 
 namespace RPI {
 
@@ -24,13 +25,15 @@ constexpr char URL_BASE_IP[] {"http://127.0.0.1"};
 // used by WebAppUrls as keys to select specific urls
 enum class WebAppUrlsNames {
     MAIN_PAGE,
-    LANDING_PAGE
+    LANDING_PAGE,
+    SHUTDOWN_PAGE,
 };
 
 // contains actual urls as values
 const std::unordered_map<WebAppUrlsNames, std::string> WebAppUrls {
     {WebAppUrlsNames::LANDING_PAGE, "/"},
-    {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"}
+    {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"},
+    {WebAppUrlsNames::SHUTDOWN_PAGE, "/Shutdown"},
 };
 
 /**
@@ -73,9 +76,23 @@ class WebApp {
         const int                   web_port;           // port the web app should use
         const std::string           web_url_root;       // full url to base page (i.e. http://<ip>:<port>/)
         Pistache::Http::Endpoint    web_app;            // the web app object
+        Pistache::Rest::Router      web_app_router;     // default route handler for creation & routing of multi sites
         bool                        is_running;         // true when web app is running
 
-        /********************************************* Helper Functions ********************************************/
+        /******************************************** Web/Route Functions *******************************************/
+
+        /**
+         * @brief Responsible for managing the data that comes in when user utilizes the main page of the web app
+         * (updates packet for client to be sent to server)
+         */
+        void recvMainData(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
+
+
+        /**
+         * @brief Responsible for closing web server & telling client to stop
+         * 
+         */
+        void handleShutdown(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
 
         /**
          * @brief Function called by constructor to help setup all the app's webpages
@@ -83,6 +100,7 @@ class WebApp {
          */
         ReturnCodes setupSites();
 
+        /********************************************* Helper Functions ********************************************/
 
         /**
          * @brief Prints full urls listed in WebAppUrls
