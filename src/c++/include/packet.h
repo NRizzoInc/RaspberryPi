@@ -77,6 +77,8 @@ class Packet {
         CommonPkt readPkt(json pkt_json) const;
 
 
+        json convertPktToJson(const CommonPkt& pkt) const;
+
         /**
          * @brief Construct & serialize a serialized json packet to easily send over network
          * @param pkt_to_send The packet to send
@@ -90,6 +92,15 @@ class Packet {
 
 
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Helper function that returns the values if the key exists 
+         * (if dne, sets field to current packet's values)
+         * @param json_to_check The json to check if the key exists 
+         * @param keys List of keys needed to access element (in order from root to branch of json)
+         * @return The found json element (can be bool, string, int, etc -- just listed as json at compile time)
+         */
+        json findIfExists(const json& json_to_check, const std::vector<std::string>& keys) const;
 
 }; // end of packet class
 

@@ -93,6 +93,7 @@ void WebApp::recvMainData(
         client_ptr->updatePkt(updated_pkt);
         res.send(Pistache::Http::Code::Ok, "Successfully received data!\n");
     } catch (std::exception& err) {
+        cout << "ERROR: Bad web app data: " << err.what() << endl;
         res.send(Pistache::Http::Code::Bad_Request, "Bad Data Sent!\n");
     }
 }
