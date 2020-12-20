@@ -98,9 +98,11 @@ class Packet {
          * (if dne, sets field to current packet's values)
          * @param json_to_check The json to check if the key exists 
          * @param keys List of keys needed to access element (in order from root to branch of json)
-         * @return The found json element (can be bool, string, int, etc -- just listed as json at compile time)
+         * @return The found element
+         * @tparam rtnType The desired type for the return to be
          */
-        json findIfExists(const json& json_to_check, const std::vector<std::string>& keys) const;
+        template<typename rtnType>
+        rtnType findIfExists(const json& json_to_check, const std::vector<std::string>& keys) const;
 
 }; // end of packet class
 

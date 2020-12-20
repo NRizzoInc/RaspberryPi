@@ -46,11 +46,12 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
 
     // const json& control             = data["control"];
     // const json& led                 = control["led"];
-    translated_pkt.cntrl.led.red    = findIfExists(data, {"control", "led", "red"});
-    translated_pkt.cntrl.led.yellow = findIfExists(data, {"control", "led", "yellow"});
-    translated_pkt.cntrl.led.green  = findIfExists(data, {"control", "led", "green"});
-    translated_pkt.cntrl.led.blue   = findIfExists(data, {"control", "led", "blue"});
-    translated_pkt.ACK              = findIfExists(data, {"ACK"});
+    translated_pkt.cntrl.led.red    = findIfExists<bool>(data, {"control", "led", "red"});
+    translated_pkt.cntrl.led.yellow = findIfExists<bool>(data, {"control", "led", "yellow"});
+    translated_pkt.cntrl.led.green  = findIfExists<bool>(data, {"control", "led", "green"});
+    translated_pkt.cntrl.led.blue   = findIfExists<bool>(data, {"control", "led", "blue"});
+    translated_pkt.ACK              = findIfExists<bool>(data, {"ACK"});
+
     return translated_pkt;
 }
 
@@ -91,7 +92,8 @@ std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
 
 /********************************************* Helper Functions ********************************************/
 
-json Packet::findIfExists(const json& json_to_check, const std::vector<std::string>& keys) const {
+template<typename rtnType>
+rtnType Packet::findIfExists(const json& json_to_check, const std::vector<std::string>& keys) const {
     // use current packet to fill in missing values
     // make copies of jsons to recur through
     // as parse thru keys, move deeper into the jsons so researching not needed
@@ -116,7 +118,7 @@ json Packet::findIfExists(const json& json_to_check, const std::vector<std::stri
         // first check that this is not the element to return
         // at the end of the key list
         if(idx_counter == len_keys) {
-            return recv_curr;
+            return recv_curr.get<rtnType>();
         } else if(key_dne) {
             // if already couldnt find key, move on so can just return current packet
             continue;
