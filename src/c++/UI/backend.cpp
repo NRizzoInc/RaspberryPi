@@ -84,7 +84,7 @@ ReturnCodes WebApp::setupSites() {
 }
 
 void WebApp::recvMainData(
-    __attribute__((unused)) const Pistache::Rest::Request& req,
+    const Pistache::Rest::Request& req,
     Pistache::Http::ResponseWriter res
 ) {
     // TODO: actually parse request to get data to send via client
