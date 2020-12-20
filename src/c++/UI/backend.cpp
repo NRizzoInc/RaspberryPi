@@ -62,10 +62,7 @@ ReturnCodes WebApp::setupSites() {
     auto opts = Pistache::Http::Endpoint::options().threads(1);
     web_app.init(opts);
 
-    // redirect landing page to main page
-    // WebAppUrls.at(WebAppUrlsNames::LANDING_PAGE) => WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE)
-
-    // actual main page
+    // main page
     Pistache::Rest::Routes::Get(
         web_app_router,
         WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE),
@@ -93,6 +90,15 @@ void WebApp::recvMainData(
     // TODO: actually parse request to get data to send via client
     res.send(Pistache::Http::Code::Ok, "Successfully received data!\n");
 }
+
+/// redirect function (TODO)
+// void Redirect(
+//     const std::string& redirect_url,
+//     const Pistache::Rest::Request& req,
+//     Pistache::Http::ResponseWriter res
+// ) {
+//     res.send(Pistache::Http::Code::Ok, {"Redirecting to " + redirect_url});
+// }
 
 void WebApp::handleShutdown(
     __attribute__((unused)) const Pistache::Rest::Request& req,

@@ -18,6 +18,8 @@ void HelloHandler::onRequest(
     response.send(Pistache::Http::Code::Ok, "Hello, World");
 }
 
+/******************************************** Web/Route Functions *******************************************/
+
 
 }; // end of Handlers namespace
 

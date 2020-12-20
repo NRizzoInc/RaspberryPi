@@ -24,14 +24,14 @@ constexpr char URL_BASE_IP[] {"http://127.0.0.1"};
 
 // used by WebAppUrls as keys to select specific urls
 enum class WebAppUrlsNames {
+    // LANDING_PAGE, //TODO: get redirect to work
     MAIN_PAGE,
-    LANDING_PAGE,
     SHUTDOWN_PAGE,
 };
 
 // contains actual urls as values
 const std::unordered_map<WebAppUrlsNames, std::string> WebAppUrls {
-    {WebAppUrlsNames::LANDING_PAGE, "/"},
+    // {WebAppUrlsNames::LANDING_PAGE, "/"}, //TODO: get redirect to work
     {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"},
     {WebAppUrlsNames::SHUTDOWN_PAGE, "/Shutdown"},
 };
@@ -87,6 +87,16 @@ class WebApp {
          */
         void recvMainData(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
 
+        // TODO: Get redirect to work (hard to do function generator/flexible with this bind)
+        ///**
+        // * @brief Create a route function that will redirect to another page
+        // * @param redirect_url The full url of where to redirect to
+        // */
+        //void Redirect(
+        //    const std::string& redirect_url,
+        //    const Pistache::Rest::Request& req,
+        //    Pistache::Http::ResponseWriter res
+        //);
 
         /**
          * @brief Responsible for closing web server & telling client to stop

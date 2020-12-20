@@ -4,15 +4,13 @@
 // Standard Includes
 #include <iostream>
 #include <string>
+#include <functional>
 
 // Our Includes
-#include "constants.h"
-#include "tcp_base.h" // shared_ptr to base class (for updatePkt())
-#include "web_handlers.h"
 
 // 3rd Party Includes
-#include <json.hpp>
-#include "pistache/endpoint.h"
+#include "pistache/endpoint.h" // for actually web app server
+#include "pistache/router.h" // to be able to make routes
 
 namespace RPI {
 
@@ -36,6 +34,9 @@ class HelloHandler : public Pistache::Http::Handler {
             Pistache::Http::ResponseWriter response
         ) override;
 }; // end of HelloHander (hello world example w/o route -- single page)
+
+
+/******************************************** Web/Route Functions *******************************************/
 
 
 }; // end of Handlers namespace
