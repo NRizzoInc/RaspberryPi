@@ -40,7 +40,6 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     }
 
     // if valid str, parse and convert stringified json to json
-    cout << "pkt to read: " << pkt_buf<< endl;
     const json& data = json::parse(pkt_buf);
     CommonPkt translated_pkt;
 
