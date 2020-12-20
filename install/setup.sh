@@ -30,14 +30,14 @@ print_flags () {
     echo "    -p | --linux-pkgs: Install all the required linux packages"
     echo "    -s | --submodules: Fetch & Update all the git submodules in this repo"
     echo "    -g | --gpio: Build and Install the c++ gpio library from source"
-    echo "    -c | --crow: Build and Install the c++ web-app library \"crow\" to capture keyboard input for client"
+    echo "    -w | --web: Build and Install the c++ web-app library \"pistache\" to capture keyboard input for client"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
 }
 
 # parse command line args
 installGPIO=false
-installCrow=false
+installPistache=false
 updateSubmodules=false
 linuxPkgs=false
 installAll=true # default to installing everything
@@ -57,13 +57,13 @@ while [[ "$#" -gt 0 ]]; do
             installAll=false
             break
             ;;
-        -s | --submodules )
-            updateSubmodules=true
+        -w | --web )
+            installPistache=true
             installAll=false
             break
             ;;
-        -c | --crow )
-            installCrow=true
+        -s | --submodules )
+            updateSubmodules=true
             installAll=false
             break
             ;;
@@ -86,9 +86,9 @@ externDir="${rootDir}/extern"
 helpersDir="${INSTALL_DIR}/helpers"
 
 # Get helper script paths
-crowScript="${helpersDir}/Crow.sh"
 wiringPiScript="${helpersDir}/WiringPi.sh"
 submoduleScript="${helpersDir}/submodules.sh"
+pistacheScript="${helpersDir}/pistache.sh"
 linuxPkgsScript="${helpersDir}/linux_pkgs.sh"
 
 # call helpers as needed
@@ -111,11 +111,11 @@ if [[ ${installGPIO} == true || ${installAll} == true ]]; then
         --extern-dir "${externDir}"
 fi
 
-if [[ ${installCrow} == true || ${installAll} == true ]]; then
-    bash "${crowScript}" \
-        --mode "install" \
+if [[ ${installPistache} == true || ${installAll} == true ]]; then
+    bash "${pistacheScript}" \
         --extern-dir "${externDir}"
 fi
+
 
 echo "========= Completed Helper Scripts ========="
 

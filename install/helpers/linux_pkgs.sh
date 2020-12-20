@@ -16,9 +16,6 @@ apt install -y \
     gcc-7 g++-7 \
     mesa-common-dev \
     build-essential \
-    libboost-all-dev \
-    google-perftools libgoogle-perftools-dev \
-    libssl-dev \
 
 apt upgrade -y
 
@@ -28,8 +25,5 @@ apt upgrade -y
 # https://github.com/RobotLocomotion/drake/issues/2087#issue-148166827
 sudo ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/x86_64-linux-gnu/libGL.so
 
-# create additional symlink for faster malloc (found in wrong place & crow asks for wrong name)
-sudo ln -s /usr/lib/x86_64-linux-gnu/libtcmalloc.so /usr/lib/libtcmalloc.so
-sudo ln -s /usr/lib/libtcmalloc.so /usr/lib/libtcmalloc_minimal.so
 
 echo "=============== Compelted Linux Package Manager Script ==============="

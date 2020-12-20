@@ -14,8 +14,8 @@ using std::endl;
 WebApp::WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port)
     : client_ptr{tcp_client}
     , web_port{port}
-    , web_url{std::string(URL_BASE) + "/" + std::to_string(web_port)}
-    , web_app{}
+    , web_url_root{std::string(URL_BASE_IP) + ":" + std::to_string(web_port)}
+    , web_app{Pistache::Address{Pistache::Ipv4::any(), Pistache::Port(web_port)}}
     , is_running{false}
 {
     if(setupSites() != ReturnCodes::Success) {
@@ -42,45 +42,86 @@ void WebApp::startWebApp(const bool print_urls) {
 
     // start running the web app
     is_running = true;
-    web_app.signal_clear().port(web_port).run();
-    // web_app.port(web_port).multithreaded().run();
+    web_app.serveThreaded();
 }
 
 void WebApp::stopWebApp() {
     // causes issues trying to close web app if it is not open
     if (is_running) {
-        // web_app.close();
-        web_app.stop();
         is_running = false;
+        return;
     }
+    web_app.shutdown();
 }
 
-/********************************************* Helper Functions ********************************************/
+/******************************************** Web/Route Functions *******************************************/
 
 ReturnCodes WebApp::setupSites() {
-    // Note: create copy of map's strings (needs rvalue ref, which cannot be made from a const)
+    // see https://github.com/pistacheio/pistache/blob/master/examples/rest_server.cc
+    // setup web app options
+    auto opts = Pistache::Http::Endpoint::options().threads(1);
+    web_app.init(opts);
 
-    // redirect landing page to main page
-    web_app.route_dynamic(std::string{WebAppUrls.at(WebAppUrlsNames::LANDING_PAGE)})(
-        [&](__attribute__((unused)) const crow::request &req, crow::response &res) {
-            // to redirect have to proivde full url: https://github.com/ipkn/crow/issues/346
-            res.redirect(web_url + std::string{WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE)});
-        }
+    // main page
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE),
+        Pistache::Rest::Routes::bind(&WebApp::recvMainData, this)
     );
 
-    web_app.route_dynamic(std::string{WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE)})(
-        [&]() {
-            return "Main Page";
-        }
+
+    // shutdown/close page
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::SHUTDOWN_PAGE),
+        Pistache::Rest::Routes::bind(&WebApp::handleShutdown, this)
     );
+
+    // use the default routing handler to manage the routing of multiple sites/routes
+    web_app.setHandler(web_app_router.handler());
 
     return ReturnCodes::Success;
 }
 
+void WebApp::recvMainData(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    // TODO: actually parse request to get data to send via client
+    try {
+        const RPI::Network::CommonPkt updated_pkt {client_ptr->readPkt(req.body().c_str())};
+        client_ptr->updatePkt(updated_pkt);
+        res.send(Pistache::Http::Code::Ok, "Successfully received data!\n");
+    } catch (std::exception& err) {
+        cout << "ERROR: Bad web app data: " << err.what() << endl;
+        res.send(Pistache::Http::Code::Bad_Request, "Bad Data Sent!\n");
+    }
+}
+
+/// redirect function (TODO)
+// void Redirect(
+//     const std::string& redirect_url,
+//     const Pistache::Rest::Request& req,
+//     Pistache::Http::ResponseWriter res
+// ) {
+//     res.send(Pistache::Http::Code::Ok, {"Redirecting to " + redirect_url});
+// }
+
+void WebApp::handleShutdown(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    client_ptr->setExitCode(true);
+    res.send(Pistache::Http::Code::Ok, "Stopping Web App Server\n");
+}
+
+/********************************************* Helper Functions ********************************************/
+
+
 void WebApp::printUrls() const {
     cout << "Web App's Urls: " << endl;
     for(auto& url : WebAppUrls) {
-        cout << web_url << url.second << endl;
+        cout << web_url_root << url.second << endl;
     }
 }
 

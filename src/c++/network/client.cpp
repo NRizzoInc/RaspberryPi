@@ -14,7 +14,7 @@ TcpClient::TcpClient(const std::string& ip_addr, const int port_num, const bool 
     , client_sock_fd{-1}        // init to invalid
     , server_ip{ip_addr}        // ip address to try to reach server
     , server_port{port_num}     // port the client tries to reach the server at
-    , is_first_msg{true}        // will be set false immediately after sending first message
+    , pkt_ready{true}        // will be set false immediately after sending first message
 {
     // first check if should not init
     if (!should_init) return;
@@ -38,12 +38,10 @@ TcpClient::~TcpClient() {
 ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
     // inform client that pkt has been updated and needs to be sent
     std::unique_lock<std::mutex> lk(data_mutex);
-    auto rtn_code {Packet::updatePkt(updated_pkt)};
+    ReturnCodes rtn_code = Packet::updatePkt(updated_pkt);
     lk.unlock();
-    has_new_msg.notify_one();
-
-    // wait for pkt to be sent by worker
-    has_new_msg.wait(lk);
+    pkt_ready.store(true); // atomic should be done outside of lock
+    has_new_msg.notify_all();
 
     // can return now that packet was sent
     return rtn_code;
@@ -69,10 +67,10 @@ void TcpClient::netAgentFn(const bool print_data) {
         has_new_msg.wait_for(
             data_lock,
             std::chrono::seconds(Constants::Network::RECV_TIMEOUT-1),
-            [&](){return is_first_msg.load();}
+            [&](){return pkt_ready.load();}
         );
-        // prevent predicate from being triggered in future iterations
-        is_first_msg.store(false);
+        // prevent predicate from being triggered in future iterations w/o being set by another thread
+        pkt_ready.store(false);
 
         /********************************* Sending To Server ********************************/
         // client starts by sending data to other endpoint

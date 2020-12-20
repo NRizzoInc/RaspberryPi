@@ -64,7 +64,7 @@ class TcpClient : public TcpBase {
         int                         client_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
         std::string                 server_ip;          // ip address of the server
         int                         server_port;        // port number of the server
-        std::atomic_bool            is_first_msg;       // need to send an initization message for first packet
+        std::atomic_bool            pkt_ready;          // alert send cv to unlock
         std::mutex                  data_mutex;
         std::condition_variable     has_new_msg;        // true if client needs to tell the server something
 

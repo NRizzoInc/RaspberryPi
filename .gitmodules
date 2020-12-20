@@ -7,6 +7,6 @@
 [submodule "extern/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi"]
 	path = extern/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi
 	url = git@github.com:Freenove/Freenove_4WD_Smart_Car_Kit_for_Raspberry_Pi.git
-[submodule "extern/crow"]
-	path = extern/crow
-	url = git@github.com:NRizzoInc/crow.git
+[submodule "extern/pistache"]
+	path = extern/pistache
+	url = https://github.com/oktal/pistache.git

@@ -1,10 +1,11 @@
 # use this to find in main dir
 add_library(RPI_UI
     backend.cpp
+    web_handlers.cpp
 ) 
 
 target_link_libraries(RPI_UI
-    ${Boost_LIBRARIES}
+    ${Pistache_LIBRARIES}
 )
 
 target_compile_options(RPI_UI

@@ -1,15 +1,15 @@
 #!/bin/bash
-#@file: Builds and Installs External Crow Library
+#@file: Builds and Installs External pistache Library
 
 # CLI Flags
 print_flags () {
     echo "========================================================================================================================="
-    echo "Usage: Crow.sh"
+    echo "Usage: pistache.sh"
     echo "========================================================================================================================="
-    echo "Helper utility to setup the Crow external library in this repo for creation of web app ui for client"
+    echo "Helper utility to setup the pistache external library in this repo for creation of web app ui for client"
     echo "========================================================================================================================="
     echo "How to use:" 
-    echo "  To Start: ./Crow.sh [flags]"
+    echo "  To Start: ./pistache.sh [flags]"
     echo "========================================================================================================================="
     echo "Available Flags:"
     echo "    -i | --extern-dir: Path to the extern dir (defaults to git pinned path)"
@@ -48,22 +48,22 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # deduse library paths
-crowDir="${externDir}/crow"
+pistacheDir="${externDir}/pistache"
 if [[ ${mode} == "install" ]]; then
 
     # install gpio lib, have to be in the correct dir for this (chain commands)
-    echo "=============== Bulding and Installing Crow Library! ==============="
-    # following these instructions: https://github.com/ipkn/crow#building-tests-examples
-    cd "${crowDir}" && \
+    echo "=============== Bulding and Installing Pistache Library! ==============="
+    # following these instructions: http://pistache.io/quickstart#requirements
+    cd "${pistacheDir}" && \
         mkdir -p build && \
         cd build && \
-        cmake .. && \
+        cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release .. && \
         make || \
         echo "Failed to build: try running ./install/helpers/linux_pkgs.sh to get requirements"
 
 else # clean
-    echo "=============== Cleaning Crow Library! ==============="
-    cd "${crowDir}" && \
+    echo "=============== Cleaning Pistache Library! ==============="
+    cd "${pistacheDir}" && \
         rm -rf build || \
-        echo "Failed to clean crow"
+        echo "Failed to clean Pistache"
 fi
