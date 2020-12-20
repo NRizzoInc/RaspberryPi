@@ -11,6 +11,7 @@
 
 // 3rd Party Includes
 #include <json.hpp>
+#include "pistache/endpoint.h"
 
 namespace RPI {
 
