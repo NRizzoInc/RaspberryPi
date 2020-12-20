@@ -49,7 +49,9 @@ void WebApp::stopWebApp() {
     // causes issues trying to close web app if it is not open
     if (is_running) {
         is_running = false;
+        return;
     }
+    web_app.shutdown();
 }
 
 /********************************************* Helper Functions ********************************************/
