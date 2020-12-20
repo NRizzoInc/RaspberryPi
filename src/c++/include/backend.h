@@ -10,7 +10,6 @@
 #include "tcp_base.h" // shared_ptr to base class (for updatePkt())
 
 // 3rd Party Includes
-#include <crow.h>
 #include <json.hpp>
 
 namespace RPI {
@@ -71,7 +70,7 @@ class WebApp {
         std::shared_ptr<RPI::Network::TcpBase> client_ptr;
         const int           web_port;           // port the web app should use
         const std::string   web_url;            // full url to base page (i.e. http://<ip>:<port>/)
-        crow::SimpleApp     web_app;            // the web app object
+        // crow::SimpleApp     web_app;            // the web app object
         bool                is_running;         // true when web app is running
 
         /********************************************* Helper Functions ********************************************/
