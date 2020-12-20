@@ -8,6 +8,7 @@
 // Our Includes
 #include "constants.h"
 #include "tcp_base.h" // shared_ptr to base class (for updatePkt())
+#include "web_handlers.h"
 
 // 3rd Party Includes
 #include <json.hpp>
@@ -43,9 +44,9 @@ class WebApp {
          * @brief Construct a new Event Listener object
          * 
          * @param tcp_client ptr to the tcp client
-         * @param port The port to run the client at (defaults to 8080)
+         * @param port The port to run the client at (defaults to 5001)
          */
-        WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port=8080);
+        WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port=5001);
         virtual ~WebApp();
 
         /********************************************* Getters/Setters *********************************************/
@@ -69,10 +70,10 @@ class WebApp {
 
         // shared pointer to the base casted TcpClient object (used to call updatePkt to trigger a send)
         std::shared_ptr<RPI::Network::TcpBase> client_ptr;
-        const int           web_port;           // port the web app should use
-        const std::string   web_url;            // full url to base page (i.e. http://<ip>:<port>/)
-        // crow::SimpleApp     web_app;            // the web app object
-        bool                is_running;         // true when web app is running
+        const int                   web_port;           // port the web app should use
+        const std::string           web_url;            // full url to base page (i.e. http://<ip>:<port>/)
+        Pistache::Http::Endpoint    web_app;            // the web app object
+        bool                        is_running;         // true when web app is running
 
         /********************************************* Helper Functions ********************************************/
 

@@ -15,7 +15,7 @@ WebApp::WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const in
     : client_ptr{tcp_client}
     , web_port{port}
     , web_url{std::string(URL_BASE) + "/" + std::to_string(web_port)}
-    // , web_app{}
+    , web_app{Pistache::Address{Pistache::Ipv4::any(), Pistache::Port(web_port)}}
     , is_running{false}
 {
     if(setupSites() != ReturnCodes::Success) {
@@ -42,6 +42,7 @@ void WebApp::startWebApp(const bool print_urls) {
 
     // start running the web app
     is_running = true;
+    web_app.serveThreaded();
 }
 
 void WebApp::stopWebApp() {
@@ -54,13 +55,16 @@ void WebApp::stopWebApp() {
 /********************************************* Helper Functions ********************************************/
 
 ReturnCodes WebApp::setupSites() {
-    // Note: create copy of map's strings (needs rvalue ref, which cannot be made from a const)
+    // setup web app options
+    auto opts = Pistache::Http::Endpoint::options().threads(1);
+    web_app.init(opts);
 
     // redirect landing page to main page
     // WebAppUrls.at(WebAppUrlsNames::LANDING_PAGE) => WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE)
 
     // actual main page
     // WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE)
+    web_app.setHandler(std::make_shared<Handlers::HelloHandler>());
 
     return ReturnCodes::Success;
 }
