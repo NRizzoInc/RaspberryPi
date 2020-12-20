@@ -47,6 +47,12 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     return translated_pkt;
 }
 
+/// wraps to char buffer version of function
+CommonPkt Packet::readPkt(json pkt_json) const {
+    return readPkt(pkt_json.dump().c_str());
+}
+
+
 std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
     // see pkt_sample.json for format
     // https://github.com/nlohmann/json#json-as-first-class-data-type

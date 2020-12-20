@@ -69,6 +69,12 @@ class Packet {
          * @return The packet translated into the struct
          */
         CommonPkt readPkt(const char* pkt_buf) const;
+        /**
+         * @brief Interprets a received packet and translates it to an easier type to deal with
+         * @param pkt_json A json containing the packet info
+         * @return The packet translated into the struct
+         */
+        CommonPkt readPkt(json pkt_json) const;
 
 
         /**

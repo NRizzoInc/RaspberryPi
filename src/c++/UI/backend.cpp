@@ -88,7 +88,13 @@ void WebApp::recvMainData(
     Pistache::Http::ResponseWriter res
 ) {
     // TODO: actually parse request to get data to send via client
-    res.send(Pistache::Http::Code::Ok, "Successfully received data!\n");
+    try {
+        const RPI::Network::CommonPkt updated_pkt {client_ptr->readPkt(req.body().c_str())};
+        client_ptr->updatePkt(updated_pkt);
+        res.send(Pistache::Http::Code::Ok, "Successfully received data!\n");
+    } catch (std::exception& err) {
+        res.send(Pistache::Http::Code::Bad_Request, "Bad Data Sent!\n");
+    }
 }
 
 /// redirect function (TODO)
