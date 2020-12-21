@@ -9,6 +9,12 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+// get paths (operator/ is used for joining)
+const fs::path      CURR_DIR             {fs::path{__FILE__}.parent_path()};
+const fs::path      FRONTEND_DIR         {CURR_DIR / "frontend"};
+const fs::path      HTML_DIR             {FRONTEND_DIR / "html"};
+const fs::path      STATIC_DIR           {FRONTEND_DIR / "static"};
+
 /********************************************** Constructors **********************************************/
 
 WebApp::WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port)
@@ -66,9 +72,13 @@ ReturnCodes WebApp::setupSites() {
     Pistache::Rest::Routes::Get(
         web_app_router,
         WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE),
+        Pistache::Rest::Routes::bind(&WebApp::serveMainPage, this)
+    );
+    Pistache::Rest::Routes::Post(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE),
         Pistache::Rest::Routes::bind(&WebApp::recvMainData, this)
     );
-
 
     // shutdown/close page
     Pistache::Rest::Routes::Get(
@@ -77,10 +87,95 @@ ReturnCodes WebApp::setupSites() {
         Pistache::Rest::Routes::bind(&WebApp::handleShutdown, this)
     );
 
+    // static resources (if invalid path, might be static resource, if not handles it)
+    web_app_router.addNotFoundHandler(Pistache::Rest::Routes::bind(&WebApp::serveStaticResources, this));
+
     // use the default routing handler to manage the routing of multiple sites/routes
     web_app.setHandler(web_app_router.handler());
 
     return ReturnCodes::Success;
+}
+
+void WebApp::serveMainPage(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    // guide: https://github.com/pistacheio/pistache/blob/master/src/common/description.cc
+    const fs::path MAIN_PAGE_PATH {HTML_DIR / "index.html"};
+    Pistache::Http::serveFile(res, MAIN_PAGE_PATH.c_str());
+}
+
+// cannot serve directory, have to manually server files:
+// https://github.com/pistacheio/pistache/blob/1df04a35cd54f476dc788c0175f37395df701f7d/examples/http_server.cc#L140-L146
+void WebApp::serveStaticResources(
+    const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    const fs::path  js_path     {STATIC_DIR / "js"};
+    const fs::path  css_path    {STATIC_DIR / "stylesheets"};
+    const fs::path  images_path {STATIC_DIR / "images"};
+
+    // determine what resource is being asked for & manually serve it
+    const std::string req_page {req.resource()};
+    const std::string res_page_name {Helpers::findFilename(req_page)};
+
+    // security check (first make sure it is not going back more than one dir -- tryna access actual filesystem)
+    // not have to specific MIME type as defined by extern/pistache/include/pistache/mime.h
+    // or see: http://pistache.io/guide/#response-streaming (ctrl+f "MIME types")
+    if (Helpers::contains(req_page, "../..")) {
+        // bad/invalid path (continue to end of fn for appropriate settings)
+    } 
+    // serve the requested stylesheet
+    // only serve file if valid => if not reach end of fn
+    else if (Helpers::contains(req_page, "stylesheets")) {
+        const fs::path serve_file {css_path / res_page_name};
+        if (fs::exists(serve_file)) {
+            Pistache::Http::serveFile(
+                res,
+                serve_file.string(),
+                Pistache::Http::Mime::MediaType(
+                    Pistache::Http::Mime::Type::Text, // main type
+                    Pistache::Http::Mime::Subtype::Css // sub type
+                )
+            );
+        }
+        return;
+    } 
+    // serve the requested images
+    // only serve file if valid => if not reach end of fn
+    else if (Helpers::contains(req_page, "images")) {
+        const fs::path serve_file {images_path / res_page_name};
+        if (fs::exists(serve_file)) {
+            Pistache::Http::serveFile(
+                res,
+                serve_file.string(),
+                Pistache::Http::Mime::MediaType(
+                    Pistache::Http::Mime::Type::Application, // main type
+                    Pistache::Http::Mime::Subtype::Png // sub type
+                )
+            );
+        }
+        return;
+    } else if (Helpers::contains(req_page, "js")) {
+        // serve the requested js file
+        // only serve file if valid => if not reach end of fn
+        const fs::path serve_file {js_path / res_page_name};
+        if (fs::exists(serve_file)) {
+            Pistache::Http::serveFile(
+                res,
+                serve_file.string(),
+                Pistache::Http::Mime::MediaType(
+                    Pistache::Http::Mime::Type::Application, // main type
+                    Pistache::Http::Mime::Subtype::Javascript // sub type
+                )
+            );
+        }
+        return;
+    } 
+
+    // bad/invalid path to reach this point
+    res.headers().add<Pistache::Http::Header::Location>(req_page);
+    res.send(Pistache::Http::Code::Moved_Permanently, "Invalid Path!\n");
 }
 
 void WebApp::recvMainData(

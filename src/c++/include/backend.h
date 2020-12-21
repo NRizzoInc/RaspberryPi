@@ -4,8 +4,10 @@
 // Standard Includes
 #include <iostream>
 #include <string>
+#include <experimental/filesystem> // to get path to html file
 
 // Our Includes
+#include "string_helpers.hpp"
 #include "constants.h"
 #include "tcp_base.h" // shared_ptr to base class (for updatePkt())
 #include "web_handlers.h"
@@ -19,14 +21,18 @@ namespace RPI {
 
 namespace UI {
 
+// filesystem namespace shortened for convenience bc super long & experimental
+namespace fs = std::experimental::filesystem;
+
 // TODO: convert to variable that can be changed with input
-constexpr char URL_BASE_IP[] {"http://127.0.0.1"};
+const std::string   URL_BASE_IP          {"http://127.0.0.1"};
 
 // used by WebAppUrls as keys to select specific urls
 enum class WebAppUrlsNames {
     // LANDING_PAGE, //TODO: get redirect to work
     MAIN_PAGE,
     SHUTDOWN_PAGE,
+    STATIC,
 };
 
 // contains actual urls as values
@@ -34,6 +40,7 @@ const std::unordered_map<WebAppUrlsNames, std::string> WebAppUrls {
     // {WebAppUrlsNames::LANDING_PAGE, "/"}, //TODO: get redirect to work
     {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"},
     {WebAppUrlsNames::SHUTDOWN_PAGE, "/Shutdown"},
+    {WebAppUrlsNames::STATIC, "../static"}, // from perspective of html file, static is one back
 };
 
 /**
@@ -80,6 +87,24 @@ class WebApp {
         bool                        is_running;         // true when web app is running
 
         /******************************************** Web/Route Functions *******************************************/
+
+        /**
+         * @brief Serves the html file so user can submit form containing jsonified data for client
+         * @param req The request object
+         * @param res The response object
+         * @note See https://github.com/pistacheio/pistache/blob/master/src/common/description.cc
+         */
+        void serveMainPage(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
+
+
+        /**
+         * @brief Serves the frontend static resources (i.e js, css, images, etc)
+         * @param req The request object
+         * @param res The response object
+         * @note See https://github.com/pistacheio/pistache/blob/master/src/common/description.cc
+         */
+        void serveStaticResources(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
+
 
         /**
          * @brief Responsible for managing the data that comes in when user utilizes the main page of the web app
