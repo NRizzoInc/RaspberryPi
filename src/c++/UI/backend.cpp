@@ -121,7 +121,13 @@ void WebApp::handleShutdown(
 void WebApp::printUrls() const {
     cout << "Web App's Urls: " << endl;
     for(auto& url : WebAppUrls) {
-        cout << web_url_root << url.second << endl;
+        // make sure path starts with '/' so url looks like http://<ip>:<port>/
+        const std::string suffix_path {
+            Helpers::startsWith(url.second, "/") ? 
+                url.second :
+                std::string{"/"} + url.second
+        };
+        cout << web_url_root << suffix_path << endl;
     }
 }
 
