@@ -85,11 +85,20 @@ document.body.onkeyup   = (e) => {handleKeyboard(e, false)}
 
 // mouse listener
 // Prevent scrolling on every click!
-document.body.addEventListener("click", e => {
+document.body.addEventListener("mousedown", e => {
     const targetElement = e.target
     const targetClass = targetElement.className // maps to direction for press()
     if (targetElement && targetElement.nodeName == "A") {
         e.preventDefault();
     }
     press(targetClass, true)
+});
+
+document.body.addEventListener("mouseup", e => {
+    const targetElement = e.target
+    const targetClass = targetElement.className // maps to direction for press()
+    if (targetElement && targetElement.nodeName == "A") {
+        e.preventDefault();
+    }
+    press(targetClass, false)
 });
