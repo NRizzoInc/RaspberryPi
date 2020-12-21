@@ -65,7 +65,11 @@ void WebApp::stopWebApp() {
 ReturnCodes WebApp::setupSites() {
     // see https://github.com/pistacheio/pistache/blob/master/examples/rest_server.cc
     // setup web app options
-    auto opts = Pistache::Http::Endpoint::options().threads(1);
+    auto opts = Pistache::Http::Endpoint::options()
+        .threads(1)
+        // prevent bug "EADDRINUSE (Address already in use)" after quick stop/start
+        .flags(Pistache::Tcp::Options::ReuseAddr)
+        ;
     web_app.init(opts);
 
     // main page
