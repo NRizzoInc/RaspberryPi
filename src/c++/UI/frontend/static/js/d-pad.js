@@ -9,6 +9,17 @@ let dpads = Array.prototype.slice.call(document.getElementsByClassName('d-pad'),
 let opads = Array.prototype.slice.call(document.getElementsByClassName('o-pad'), 0)
 let els = dpads.concat(opads);
 
+/**
+ * @brief Gets which controller is being used based on element
+ * @param {*} el The element
+ * @returns {"d-pad" | "o-pad"} 
+ */
+const getCtrler = (el) => {
+    const ctrl_idx = el.className.indexOf('d-') !== -1
+    const which_ctrler = ctrl_idx ? 'd-pad' : 'o-pad'
+    return which_ctrler
+}
+
 // TODO: eventually convert to "motor"
 const dir_to_led = {
     "left"  : "red",
@@ -24,12 +35,6 @@ const dir_to_led = {
  * @note keyCode list: https://keycode.info/
  */
 const press = async (direction, isDown) => {
-    for (let i = 0; i < els.length; i++) {
-        let el = els[i]
-        const ctrl_idx = el.className.indexOf('d-') !== -1
-        const which_ctrler = ctrl_idx ? 'd-pad' : 'o-pad'
-    }
-
     // parse data
     const led_color = dir_to_led[direction]
 
@@ -63,19 +68,19 @@ const handleKeyboard = (e, isDown) => {
     switch (e.keyCode) {
         case 65: // 'a' key
         case 37: // left arrow key
-            press('left', isDown);
+            press("left", isDown);
             break;
         case 68: // 'd' key
         case 39: // right arrow key
-            press('right', isDown);
+            press("right", isDown);
             break;
         case 87: // 'w' key
         case 38: // up arrow key
-            press('up', isDown);
+            press("up", isDown);
             break;
         case 83: // 's' key
         case 40: // down arrow key
-            press('down', isDown);
+            press("down", isDown);
             break;
     }
 }
