@@ -222,7 +222,9 @@ void WebApp::printUrls() const {
                 url.second :
                 std::string{"/"} + url.second
         };
-        cout << web_url_root << suffix_path << endl;
+        const std::string main_comment {
+            url.first == WebAppUrlsNames::MAIN_PAGE ? " -- use this main page" : ""};
+        cout << web_url_root << suffix_path << main_comment << endl;
     }
 }
 
