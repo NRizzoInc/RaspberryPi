@@ -26,10 +26,18 @@ const press = (direction, isDown) => {
     }
 
     // handle sending
-    const led = dir_to_led[direction]
+    // see pkt_sample.json in network dir for what it should look like
+    const led_color = dir_to_led[direction]
+    const pkt = {
+        "control": {
+            "led": {
+                led_color : isDown // if down, turn on led
+            }
+        },
+    }
 
     // TODO: remove after debugging
-    console.log(`Triggered: ${direction}, down: ${isDown}, led: ${led}`);
+    console.log(`Triggered: ${direction}, down: ${isDown}, led: ${led_color}`);
 }
 
 /**
