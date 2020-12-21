@@ -144,27 +144,14 @@ void TcpServer::netAgentFn(const bool print_data) {
                 // TODO: implement method to send camera data to client
             }
 
-            // at end of while, reset socks to attempt to make new connection
-            if (resetSocks() != ReturnCodes::Success) {
-                cerr << "Failed to reset the sockets" << endl;
+            // at end of while, reset data socket to attempt to make new connection with same listener
+            if (data_sock_fd > 0) {
+                close(data_sock_fd);
+                data_sock_fd = -1;
             }
         }
     }
 }
-
-ReturnCodes TcpServer::resetSocks() {
-    if (listen_sock_fd > 0) {
-        close(listen_sock_fd);
-        listen_sock_fd = -1;
-    }
-
-    if (data_sock_fd > 0) {
-        close(data_sock_fd);
-        data_sock_fd = -1;
-    }
-    return ReturnCodes::Success;
-}
-
 
 ReturnCodes TcpServer::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
@@ -216,7 +203,15 @@ void TcpServer::quit() {
     setExitCode(true);
 
     // if listen socket is open, close it and set to -1
-    resetSocks();
+    if (listen_sock_fd > 0) {
+        close(listen_sock_fd);
+        listen_sock_fd = -1;
+    }
+
+    if (data_sock_fd > 0) {
+        close(data_sock_fd);
+        data_sock_fd = -1;
+    }
 }
 
 

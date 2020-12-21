@@ -69,12 +69,6 @@ class TcpServer : public TcpBase {
         ReturnCodes initSock() override;
 
         /**
-         * @brief Closes & resets the data & listen sockets so that new connection can be waited on
-         * @return ReturnCodes Success if no issues, otherwise error
-         */
-        ReturnCodes resetSocks();
-
-        /**
          * @brief Function called at end of running server to close the sockets
          */
         void quit() override;
