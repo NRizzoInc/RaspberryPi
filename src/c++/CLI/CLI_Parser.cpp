@@ -97,10 +97,19 @@ ReturnCodes CLI_Parser::addFlags() {
         ->check(::CLI::ValidIPV4)
         ;
 
-    add_option("-p,--port", cli_res[CLI::Results::NET_PORT])
+    add_option("-p,--net-port", cli_res[CLI::Results::NET_PORT])
         ->description("The server's/client's port number")
         ->required(false)
         ->default_val("55555")
+        ->check(::CLI::Range(1024, 65535))
+        ;
+
+    /****************************************** Web App Flags *****************************************/
+
+    add_option("--web-port", cli_res[CLI::Results::WEB_PORT])
+        ->description("The web-app's port number")
+        ->required(false)
+        ->default_val("5001")
         ->check(::CLI::Range(1024, 65535))
         ;
 

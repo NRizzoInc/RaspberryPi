@@ -24,7 +24,6 @@ namespace UI {
 // filesystem namespace shortened for convenience bc super long & experimental
 namespace fs = std::experimental::filesystem;
 
-// TODO: convert to variable that can be changed with input
 const std::string   URL_BASE_IP          {"http://127.0.0.1"};
 
 // used by WebAppUrls as keys to select specific urls
@@ -54,9 +53,9 @@ class WebApp {
          * @brief Construct a new Event Listener object
          * 
          * @param tcp_client ptr to the tcp client
-         * @param port The port to run the client at (defaults to 5001)
+         * @param port The port to run the client
          */
-        WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port=5001);
+        WebApp(const std::shared_ptr<RPI::Network::TcpBase> tcp_client, const int port);
         virtual ~WebApp();
 
         /********************************************* Getters/Setters *********************************************/

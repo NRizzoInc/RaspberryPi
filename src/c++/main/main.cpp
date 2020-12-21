@@ -52,15 +52,15 @@ int main(int argc, char* argv[]) {
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
     // if is_client, do not init the server (and vice-versa)
-    const int port {std::stoi(parse_res[RPI::CLI::Results::NET_PORT])}; // dont convert this twice
+    const int net_port {std::stoi(parse_res[RPI::CLI::Results::NET_PORT])}; // dont convert this twice
     static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
-            (RPI::Network::TcpBase*) new RPI::Network::TcpClient{parse_res[RPI::CLI::Results::IP], port, is_client} :
-            (RPI::Network::TcpBase*) new RPI::Network::TcpServer{port, !is_client}
+          (RPI::Network::TcpBase*) new RPI::Network::TcpClient{parse_res[RPI::CLI::Results::IP], net_port, is_client} :
+          (RPI::Network::TcpBase*) new RPI::Network::TcpServer{net_port, !is_client}
     };
 
     // Create UI Event Listener to interact with client
-    static RPI::UI::WebApp net_ui{net_agent};
+    static RPI::UI::WebApp net_ui{net_agent, std::stoi(parse_res[RPI::CLI::Results::WEB_PORT])};
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
