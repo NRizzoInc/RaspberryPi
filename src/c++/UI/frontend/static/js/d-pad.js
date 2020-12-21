@@ -1,13 +1,4 @@
-// Prevent scrolling on every click!
-// credit: https://codepen.io/tswone/pen/GLzZLd
-// super sweet vanilla JS delegated event handling!
-document.body.addEventListener("click", e => {
-    const targetElement = e.target
-    const targetName = targetElement.name
-    if (targetElement && targetElement.nodeName == "A") {
-        e.preventDefault();
-    }
-});
+/// @file: Very basic & simple js code to handle keyboard/mouse listener for d-pad
 
 let dpads = Array.prototype.slice.call(document.getElementsByClassName('d-pad'), 0)
 let opads = Array.prototype.slice.call(document.getElementsByClassName('o-pad'), 0)
@@ -24,6 +15,7 @@ const press = (press_direction) => {
     }
 }
 
+// keyboard listener
 // keyCode list: https://keycode.info/
 document.body.onkeydown = (e) => {
     switch (e.keyCode) {
@@ -45,3 +37,14 @@ document.body.onkeydown = (e) => {
             break;
     }
 };
+
+// mouse listener
+// Prevent scrolling on every click!
+document.body.addEventListener("click", e => {
+    const targetElement = e.target
+    const targetClass = targetElement.className // maps to direction for press()
+    if (targetElement && targetElement.nodeName == "A") {
+        e.preventDefault();
+    }
+    press(targetClass)
+});
