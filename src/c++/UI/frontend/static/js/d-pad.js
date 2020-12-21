@@ -1,4 +1,9 @@
-/// @file: Very basic & simple js code to handle keyboard/mouse listener for d-pad
+'use strict';
+/**
+ * @file Very basic & simple js code to handle keyboard/mouse listener for d-pad
+ */
+
+import { postPktData } from "./request_handler.js"
 
 let dpads = Array.prototype.slice.call(document.getElementsByClassName('d-pad'), 0)
 let opads = Array.prototype.slice.call(document.getElementsByClassName('o-pad'), 0)
@@ -18,26 +23,34 @@ const dir_to_led = {
  * @param {Boolean} isDown True if key is currently being pressed, False if is not
  * @note keyCode list: https://keycode.info/
  */
-const press = (direction, isDown) => {
+const press = async (direction, isDown) => {
     for (let i = 0; i < els.length; i++) {
         let el = els[i]
         const ctrl_idx = el.className.indexOf('d-') !== -1
         const which_ctrler = ctrl_idx ? 'd-pad' : 'o-pad'
     }
 
-    // handle sending
-    // see pkt_sample.json in network dir for what it should look like
+    // parse data
     const led_color = dir_to_led[direction]
+
+    // handle sending data back to web app server
+    // see pkt_sample.json in network dir for what it should look like
     const pkt = {
         "control": {
             "led": {
-                led_color : isDown // if down, turn on led
+                // dont set unknown colors bc dont know their current state
+                // has to be false/true, not 0/1
+                // "red":      false/true,
+                // "yellow":   false/true,
+                // "green":    false/true,
+                // "blue":     false/true
             }
         },
     }
-
-    // TODO: remove after debugging
-    console.log(`Triggered: ${direction}, down: ${isDown}, led: ${led_color}`);
+    // if down, led should turn on (needs to be true/false for json to be parsable)
+    //  -- lucky that js & c++ use same nomenclature)
+    pkt.control.led[led_color] = isDown
+    await postPktData(pkt)
 }
 
 /**
