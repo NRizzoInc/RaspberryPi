@@ -134,7 +134,6 @@ void TcpServer::netAgentFn(const bool print_data) {
             } catch (std::exception& err) {
                 cerr << "Failed to update from client info" << endl;
                 cerr << err.what() << endl;
-                return; // stop when error
             }
 
             // reset the buffer for a new read
