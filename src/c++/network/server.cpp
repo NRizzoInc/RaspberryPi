@@ -47,9 +47,9 @@ ReturnCodes TcpServer::acceptClient() {
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
+    cout << "Waiting to accept connection @" << formatIpAddr(GetPublicIp(), listen_port) << endl;
     while (!getExitCode() && data_sock_fd < 0) {
         // call the accept API on the socket and forward connection to data socket
-        cout << "Waiting to accept connection @" << formatIpAddr(GetPublicIp(), listen_port) << endl;
         data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
     }
 
@@ -87,62 +87,82 @@ void TcpServer::netAgentFn(const bool print_data) {
     // create a char buffer that hold the max allowed size
     char buf[Constants::Network::MAX_DATA_SIZE];
 
-    // wait for a client to connect
-    if(acceptClient() == ReturnCodes::Success) {
+    // loop to keep trying to connect to new clients until told to stop
+    while(!getExitCode()) {
 
-        // loop to receive data and send data with client
-        while(!getExitCode()) {
+        // wait for a client to connect
+        if(acceptClient() == ReturnCodes::Success) {
 
-            /********************************* Receiving From Server ********************************/
-            // call recvData, passing buf, to receive data
-            // save the return value of recvData in a data_size variable
-            const int data_size {recvData(data_sock_fd, buf)};
+            // loop to receive data and send data with client
+            while(!getExitCode()) {
 
-            // check if the data_size is smaller than 0
-            // (if so, time to end loop & exit)
-            if (data_size < 0) {
-                cout << "Terminate - socket recv error" << endl;
-                setExitCode(true);
-                break;
-            }
+                /********************************* Receiving From Server ********************************/
+                // call recvData, passing buf, to receive data
+                // save the return value of recvData in a data_size variable
+                const int data_size {recvData(data_sock_fd, buf)};
 
-            // check if the data_size is equal to 0 (time to exit)
-            else if (data_size == 0) {
-                cout << "Terminate - the other endpoint has closed the socket" << endl;
-                setExitCode(true);
-                break;
-            } 
-
-            // print the buf to the terminal(if told to)
-            if (print_data) {
-                cout << "Recv: " << buf << endl;
-            }
-
-            // convert stringified json to json so it can be parsed into struct
-            try {
-                const CommonPkt pkt {readPkt(buf)};
-                if(updatePkt(pkt) != ReturnCodes::Success) {
-                    cerr << "Failed to update from client info" << endl;
+                // check if the data_size is smaller than 0
+                // (if so, print message bc might have been fluke)
+                if (data_size < 0) {
+                    cout << "Terminate - socket recv error" << endl;
                 }
 
-                // call receive callback if set
-                if (recv_cb) {
-                    if (recv_cb(pkt) != ReturnCodes::Success) {
-                        cerr << "ERROR: Failed to process received packet from client" << endl;
+                // check if the data_size is equal to 0 (time to exit bc client killed conn)
+                // break, but dont exit so server can wait for new client to connect
+                else if (data_size == 0) {
+                    cout << "Terminate - the other endpoint has closed the socket" << endl;
+                    break;
+                } 
+
+                // print the buf to the terminal(if told to)
+                if (print_data) {
+                    cout << "Recv: " << buf << endl;
+                }
+
+                // convert stringified json to json so it can be parsed into struct
+                try {
+                    const CommonPkt pkt {readPkt(buf)};
+                    if(updatePkt(pkt) != ReturnCodes::Success) {
+                        cerr << "Failed to update from client info" << endl;
                     }
+
+                    // call receive callback if set
+                    if (recv_cb) {
+                        if (recv_cb(pkt) != ReturnCodes::Success) {
+                            cerr << "ERROR: Failed to process received packet from client" << endl;
+                        }
+                    }
+                } catch (std::exception& err) {
+                    cerr << "Failed to update from client info" << endl;
+                    cerr << err.what() << endl;
                 }
-            } catch (std::exception& err) {
-                cerr << "Failed to update from client info" << endl;
-                cerr << err.what() << endl;
+
+                // reset the buffer for a new read
+                memset(buf, 0, sizeof(buf));
+
+                // server does not need to send data to client (YET)
+                // TODO: implement method to send camera data to client
             }
 
-            // reset the buffer for a new read
-            memset(buf, 0, sizeof(buf));
-
-            // server does not need to send data to client (YET)
-            // TODO: implement method to send camera data to client
+            // at end of while, reset socks to attempt to make new connection
+            if (resetSocks() != ReturnCodes::Success) {
+                cerr << "Failed to reset the sockets" << endl;
+            }
         }
     }
+}
+
+ReturnCodes TcpServer::resetSocks() {
+    if (listen_sock_fd > 0) {
+        close(listen_sock_fd);
+        listen_sock_fd = -1;
+    }
+
+    if (data_sock_fd > 0) {
+        close(data_sock_fd);
+        data_sock_fd = -1;
+    }
+    return ReturnCodes::Success;
 }
 
 
@@ -196,17 +216,7 @@ void TcpServer::quit() {
     setExitCode(true);
 
     // if listen socket is open, close it and set to -1
-    if(listen_sock_fd >= 0) {
-        close(listen_sock_fd);
-        listen_sock_fd = -1;
-    }
-
-    // if data socket is open, close it and set it to -1
-    if(data_sock_fd >= 0){
-        close(data_sock_fd);
-        data_sock_fd = -1;
-    }
-
+    resetSocks();
 }
 
 
