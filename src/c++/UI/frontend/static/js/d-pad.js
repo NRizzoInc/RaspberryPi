@@ -1,28 +1,44 @@
 // Prevent scrolling on every click!
 // credit: https://codepen.io/tswone/pen/GLzZLd
 // super sweet vanilla JS delegated event handling!
-document.body.addEventListener("click", function(e) {
-	if(e.target && e.target.nodeName == "A") {
-    e.preventDefault();
-	}
+document.body.addEventListener("click", e => {
+    const targetElement = e.target
+    const targetName = targetElement.name
+    if (targetElement && targetElement.nodeName == "A") {
+        e.preventDefault();
+    }
+    // TODO: remove after done debugging
+    console.log(`Triggered: ${targetName}`)
 });
-let dpads = Array.prototype.slice.call(document.getElementsByClassName('d-pad'), 0),
-      opads = Array.prototype.slice.call(document.getElementsByClassName('o-pad'), 0),
-      els = dpads.concat(opads);
-function dir(dir) {  
-  for (let i = 0; i < els.length; i++) {
-    const el = els[i],
-          d = el.className.indexOf('d-') !== -1,
-          what = d ? 'd-pad' : 'o-pad';
-    console.log(what);
-    el.className = what + ' ' + dir;
-  }
+
+let dpads = Array.prototype.slice.call(document.getElementsByClassName('d-pad'), 0)
+let opads = Array.prototype.slice.call(document.getElementsByClassName('o-pad'), 0)
+let els = dpads.concat(opads);
+
+// handles the pressing of a button
+const press = (press_direction) => {
+    for (let i = 0; i < els.length; i++) {
+        const el = els[i],
+            d = el.className.indexOf('d-') !== -1,
+            what = d ? 'd-pad' : 'o-pad';
+        console.log(what);
+        el.className = what + ' ' + press_direction;
+    }
 }
-document.body.onkeyup = function(e) {
-  switch(e.which) {
-    case 37: dir('left'); break;
-    case 39: dir('right'); break;
-    case 38: dir('up'); break;
-    case 40: dir('down'); break;
-  }
+
+document.body.onkeyup = (e) => {
+    switch (e.which) {
+        case 37:
+            press('left');
+            break;
+        case 39:
+            press('right');
+            break;
+        case 38:
+            press('up');
+            break;
+        case 40:
+            press('down');
+            break;
+    }
 };
