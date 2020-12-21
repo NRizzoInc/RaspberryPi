@@ -66,5 +66,52 @@ inline std::string createVecStr(const std::vector<vecType>& vec, const std::stri
 }
 
 
+/**
+ * @brief Determines if a string contains a substring
+ * @param str The string to search through
+ * @param substr The substring to look for
+ * @return true str contains substr
+ * @return false str does not contain substr
+ */
+inline bool contains(const std::string& str, const std::string& substr) {
+    return str.find(substr) != std::string::npos;
+}
+
+/**
+ * @brief Determines if a string ends with a substring
+ * @param str The string to search
+ * @param ending The substring to look for at the end of str
+ * @return true if str ends with ending
+ * @return false if str does not end with ending
+ */
+inline bool endsWith(const std::string& str, const std::string& ending) {
+    if (str.length() >= ending.length()) {
+        return (0 == str.compare(str.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @brief Determines if a string starts with a substring
+ * @param str The string to search
+ * @param start The substring to look for at the start of str
+ * @return true if str starts with start
+ * @return false if str does not start with start
+ */
+inline bool startsWith(const std::string& str, const std::string& start) {
+    return str.rfind(start, 0) != std::string::npos;
+}
+
+/**
+ * @brief Determines the string that comes after the last '/'
+ * @param str The string to parse
+ * @return The substring after the last '/'
+ */
+inline std::string findFilename(const std::string& str) {
+    return str.substr(str.find_last_of("/"));
+}
+
 }; // end of Helpers namespace
+
 #endif
