@@ -25,7 +25,7 @@ const press = (press_direction) => {
 }
 
 // keyCode list: https://keycode.info/
-document.body.onkeyup = (e) => {
+document.body.onkeydown = (e) => {
     switch (e.keyCode) {
         case 65: // 'a' key
         case 37: // left arrow key
