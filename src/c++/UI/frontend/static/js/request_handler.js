@@ -15,7 +15,6 @@ export async function postPktData(pkt_data) {
         reqResponse = await $.ajax({
             url: curr_page,
             type: 'POST',
-            // need both for flask to understand MIME Type
             // dataType: "json", // return from web app server might be text -- triggers error
             contentType: "application/json",
             data: JSON.stringify(pkt_data),
