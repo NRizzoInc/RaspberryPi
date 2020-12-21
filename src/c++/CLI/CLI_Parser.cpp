@@ -97,7 +97,7 @@ ReturnCodes CLI_Parser::addFlags() {
         ->check(::CLI::ValidIPV4)
         ;
 
-    add_option("-p,--port", cli_res[CLI::Results::PORT])
+    add_option("-p,--port", cli_res[CLI::Results::NET_PORT])
         ->description("The server's/client's port number")
         ->required(false)
         ->default_val("55555")

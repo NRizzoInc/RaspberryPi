@@ -38,7 +38,7 @@ namespace CLI::Results {
     constexpr auto RATE      = "rate"       ;
     constexpr auto DURATION  = "duration"   ;
     constexpr auto IP        = "ip"         ;
-    constexpr auto PORT      = "port"       ;
+    constexpr auto NET_PORT  = "net-port"   ;
 }; // end of CLI::Results namespace
 
 }; // end of RPI namespace
