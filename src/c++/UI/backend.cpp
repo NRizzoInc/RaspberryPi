@@ -182,7 +182,6 @@ void WebApp::recvMainData(
     const Pistache::Rest::Request& req,
     Pistache::Http::ResponseWriter res
 ) {
-    // TODO: actually parse request to get data to send via client
     try {
         const RPI::Network::CommonPkt updated_pkt {client_ptr->readPkt(req.body().c_str())};
         client_ptr->updatePkt(updated_pkt);
