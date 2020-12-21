@@ -80,25 +80,19 @@ const handleKeyboard = (e, isDown) => {
     }
 }
 
-document.body.onkeydown = (e) => {handleKeyboard(e, true)}
-document.body.onkeyup   = (e) => {handleKeyboard(e, false)}
-
 // mouse listener
 // Prevent scrolling on every click!
-document.body.addEventListener("mousedown", e => {
+const handleMouse = (e, isDown) => {
     const targetElement = e.target
     const targetClass = targetElement.className // maps to direction for press()
     if (targetElement && targetElement.nodeName == "A") {
         e.preventDefault();
     }
-    press(targetClass, true)
-});
+    press(targetClass, isDown)
+}
 
-document.body.addEventListener("mouseup", e => {
-    const targetElement = e.target
-    const targetClass = targetElement.className // maps to direction for press()
-    if (targetElement && targetElement.nodeName == "A") {
-        e.preventDefault();
-    }
-    press(targetClass, false)
-});
+// actually create listeners
+document.body.onkeydown     = (e) => handleKeyboard(e, true)
+document.body.onkeyup       = (e) => handleKeyboard(e, false)
+document.body.onmousedown   = (e) => handleMouse(e, true)
+document.body.onmouseup     = (e) => handleMouse(e, false)
