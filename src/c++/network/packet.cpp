@@ -43,8 +43,6 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     const json& data = json::parse(pkt_buf);
     CommonPkt translated_pkt;
 
-    // const json& control             = data["control"];
-    // const json& led                 = control["led"];
     translated_pkt.cntrl.led.red    = findIfExists<bool>(data, {"control", "led", "red"});
     translated_pkt.cntrl.led.yellow = findIfExists<bool>(data, {"control", "led", "yellow"});
     translated_pkt.cntrl.led.green  = findIfExists<bool>(data, {"control", "led", "green"});
