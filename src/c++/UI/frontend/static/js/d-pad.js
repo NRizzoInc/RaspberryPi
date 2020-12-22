@@ -5,10 +5,6 @@
 
 import { postPktData } from "./request_handler.js"
 
-let dpads = Array.prototype.slice.call(document.getElementsByClassName('d-pad'), 0)
-let opads = Array.prototype.slice.call(document.getElementsByClassName('o-pad'), 0)
-let els = dpads.concat(opads);
-
 /**
  * @brief Gets which controller is being used based on element
  * @param {*} el The element
