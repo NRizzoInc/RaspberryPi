@@ -31,6 +31,14 @@ led_btns.forEach( (el) => {
         const color = btnIdToColor(el.id)
         leds_state[color] = !leds_state[color]
         sendPkt(leds_state)
+
+        // if on, keep button darker/highlighted
+        const darken_class = "btn-darken"
+        if (leds_state[color]) {
+            el.classList.add(darken_class)
+        } else {
+            el.classList.remove(darken_class)
+        }
     })
 })
 

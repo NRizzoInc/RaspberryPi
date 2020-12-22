@@ -11,14 +11,14 @@
     opacity: 0.8;
 }
 
+/* darken and grab when hovering over it */
+/* use "btn-darken" to dynamically set dark state in js */
+.btn-darken,
 .btn-overlay:hover {
-    opacity: 1;
     cursor: grab;
+    opacity: 1;
 }
-
-/* On click */
-.btn-overlay:active,
-.btn:active {
+.btn-overlay:active {
     cursor: grabbing;
 }
 
@@ -33,14 +33,9 @@
 
 .btn-img {
     /* alert user they can click */
-    cursor: grab;
     object-fit: cover;
     /* 100% makes all buttons on same line grow to max possible size */
     width:  100%;
-}
-.btn-img:active {
-    /* alert user they are clicking */
-    cursor: grabbing;
 }
 
 .all-btn-container {
