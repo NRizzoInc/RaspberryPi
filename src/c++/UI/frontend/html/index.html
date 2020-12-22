@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/d-pad.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/button.css">
     <script type="module" src="../static/js/jquery.js"></script>
+    <script type="module" src="../static/js/pkt.js"></script>
     <script type="module" src="../static/js/d-pad.js"></script>
     <script type="module" src="../static/js/request_handler.js"></script>
     <title>RaspberryPi Client</title>
@@ -32,16 +33,16 @@
 
         <!-------------------------------------------- LED Buttons ------------------------------------------->
         <div class="row flex-inline button-wrapper height-25 vertical-margins-med">
-            <button class="btn-img-holder btn-overlay">
+            <button id="red-btn" class="btn-img-holder btn-overlay">
                 <img class="btn-img" src="../images/red-button.png"/>
             </button>
-            <button class="btn-img-holder btn-overlay">
+            <button id="yellow-btn" class="btn-img-holder btn-overlay">
                 <img class="btn-img" src="../images/yellow-button.png"/>
             </button>
-            <button class="btn-img-holder btn-overlay">
+            <button id="green-btn" class="btn-img-holder btn-overlay">
                 <img class="btn-img" src="../images/green-button.png"/>
             </button>
-            <button class="btn-img-holder btn-overlay">
+            <button id="blue-btn" class="btn-img-holder btn-overlay">
                 <img class="btn-img" src="../images/blue-button.png"/>
             </button>
         </div>

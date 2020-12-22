@@ -3,7 +3,7 @@
  * @file Very basic & simple js code to handle keyboard/mouse listener for d-pad
  */
 
-import { postPktData } from "./request_handler.js"
+import { sendPkt } from "./pkt.js"
 
 /**
  * @brief Gets which controller is being used based on element
@@ -34,24 +34,11 @@ const press = async (direction, isDown) => {
     // parse data
     const led_color = dir_to_led[direction]
 
-    // handle sending data back to web app server
-    // see pkt_sample.json in network dir for what it should look like
-    const pkt = {
-        "control": {
-            "led": {
-                // dont set unknown colors bc dont know their current state
-                // has to be false/true, not 0/1
-                // "red":      false/true,
-                // "yellow":   false/true,
-                // "green":    false/true,
-                // "blue":     false/true
-            }
-        },
-    }
     // if down, led should turn on (needs to be true/false for json to be parsable)
     //  -- lucky that js & c++ use same nomenclature)
-    pkt.control.led[led_color] = isDown
-    await postPktData(pkt)
+    const leds = {} // cannot inline it since variable key
+    leds[led_color] = isDown
+    await sendPkt(leds)
 }
 
 /**
