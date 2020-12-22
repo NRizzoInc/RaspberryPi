@@ -43,26 +43,26 @@ const press = async (direction, isDown) => {
 
 /**
  * @brief keyboard listener handler
- * @param {EventListenerObject} e The event obejct
+ * @param {EventListenerObject} e The event object
  * @param {Boolean} isDown True if key is currently being pressed, False if is not
  * @note keyCode list: https://keycode.info/
  */
 const handleKeyboard = (e, isDown) => {
-    switch (e.keyCode) {
-        case 65: // 'a' key
-        case 37: // left arrow key
+    switch (e.key) {
+        case "a":
+        case "ArrowLeft":
             press("left", isDown);
             break;
-        case 68: // 'd' key
-        case 39: // right arrow key
+        case "d":
+        case "ArrowRight":
             press("right", isDown);
             break;
-        case 87: // 'w' key
-        case 38: // up arrow key
+        case "w":
+        case "ArrowUp":
             press("up", isDown);
             break;
-        case 83: // 's' key
-        case 40: // down arrow key
+        case "s":
+        case "ArrowDown":
             press("down", isDown);
             break;
     }
