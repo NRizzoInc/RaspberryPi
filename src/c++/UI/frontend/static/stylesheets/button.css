@@ -1,0 +1,48 @@
+/* Design on hover mechanic that makes the button *appear* to get darker */
+/* Opacity 1 = normal (0 = invisible) */
+.btn-overlay {
+    transition: opacity 0.5s ease;
+    -webkit-transition: opacity 0.5s ease;
+    -moz-transition: opacity 0.5s ease;
+    width: fit-content;
+}
+
+.btn-overlay {
+    opacity: 0.8;
+}
+
+.btn-overlay:hover {
+    opacity: 1;
+    cursor: grab;
+}
+
+/* On click */
+.btn-overlay:active,
+.btn:active {
+    cursor: grabbing;
+}
+
+/* the class used on the img tag whose src="/path/to/.png */
+.btn-img-holder {
+    outline: none;
+    border: none;
+    background-color: white;
+    width: 100%;
+    width: fit-content;
+}
+
+.btn-img {
+    /* alert user they can click */
+    cursor: grab;
+    object-fit: cover;
+    /* 100% makes all buttons on same line grow to max possible size */
+    width:  100%;
+}
+.btn-img:active {
+    /* alert user they are clicking */
+    cursor: grabbing;
+}
+
+.all-btn-container {
+    display: inline-block;
+}

@@ -5,6 +5,7 @@
     <link rel="icon" href="../static/images/rpi-logo.png">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/common.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/d-pad.css">
+    <link rel="stylesheet" type="text/css" href="../static/stylesheets/button.css">
     <script type="module" src="../static/js/jquery.js"></script>
     <script type="module" src="../static/js/d-pad.js"></script>
     <script type="module" src="../static/js/request_handler.js"></script>
@@ -12,20 +13,38 @@
 </head>
 
 <body>
-    <!-- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd -->
-    <div class="set setbg white">
-        <nav class="d-pad">
-            <a class="up"       name="d-pad-up"     href="#"></a>
-            <a class="right"    name="d-pad-right"  href="#"></a>
-            <a class="down"     name="d-pad-down"   href="#"></a>
-            <a class="left"     name="d-pad-left"   href="#"></a>
-        </nav>
-        <nav class="o-pad ">
-            <a class="up"       name="o-pad-up"     href="#"></a>
-            <a class="right"    name="o-pad-right"  href="#"></a>
-            <a class="down"     name="o-pad-down"   href="#"></a>
-            <a class="left"     name="o-pad-left"   href="#"></a>
-        </nav>
+    <div class="page-content-container">
+        <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
+        <div class="set setbg white padding-sm">
+            <nav class="d-pad">
+                <a class="up"       name="d-pad-up"     href="#"></a>
+                <a class="right"    name="d-pad-right"  href="#"></a>
+                <a class="down"     name="d-pad-down"   href="#"></a>
+                <a class="left"     name="d-pad-left"   href="#"></a>
+            </nav>
+            <nav class="o-pad ">
+                <a class="up"       name="o-pad-up"     href="#"></a>
+                <a class="right"    name="o-pad-right"  href="#"></a>
+                <a class="down"     name="o-pad-down"   href="#"></a>
+                <a class="left"     name="o-pad-left"   href="#"></a>
+            </nav>
+        </div>
+
+        <!-------------------------------------------- LED Buttons ------------------------------------------->
+        <div class="row flex-inline button-wrapper height-25 vertical-margins-med">
+            <button class="btn-img-holder btn-overlay">
+                <img class="btn-img" src="../images/red-button.png"/>
+            </button>
+            <button class="btn-img-holder btn-overlay">
+                <img class="btn-img" src="../images/red-button.png"/>
+            </button>
+            <button class="btn-img-holder btn-overlay">
+                <img class="btn-img" src="../images/red-button.png"/>
+            </button>
+            <button class="btn-img-holder btn-overlay">
+                <img class="btn-img" src="../images/red-button.png"/>
+            </button>
+        </div>
     </div>
 </body>
 
