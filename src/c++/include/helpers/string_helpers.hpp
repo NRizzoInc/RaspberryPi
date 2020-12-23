@@ -25,12 +25,19 @@ inline const std::vector<std::string> splitStr(const char delim, const std::stri
     std::vector<std::string> split_str;
 
     // iterate over string (backwards bc of push_back)
+    // check edge case of empty string (dont add to vector)
     std::string::size_type beg = 0;
     for (std::size_t end = 0; (end = to_split.find(delim, end)) != std::string::npos; ++end) {
-        split_str.push_back(to_split.substr(beg, end - beg));
+        const std::string& el = to_split.substr(beg, end - beg);
+        if (el.size() > 0) {
+            split_str.push_back(el);
+        }
         beg = end + 1;
     }
-    split_str.push_back(to_split.substr(beg));
+    const std::string& final_el {to_split.substr(beg)};
+    if (final_el.size() > 0) {
+        split_str.push_back(final_el);
+    }
 
     return std::move(split_str);
 }
@@ -59,5 +66,52 @@ inline std::string createVecStr(const std::vector<vecType>& vec, const std::stri
 }
 
 
+/**
+ * @brief Determines if a string contains a substring
+ * @param str The string to search through
+ * @param substr The substring to look for
+ * @return true str contains substr
+ * @return false str does not contain substr
+ */
+inline bool contains(const std::string& str, const std::string& substr) {
+    return str.find(substr) != std::string::npos;
+}
+
+/**
+ * @brief Determines if a string ends with a substring
+ * @param str The string to search
+ * @param ending The substring to look for at the end of str
+ * @return true if str ends with ending
+ * @return false if str does not end with ending
+ */
+inline bool endsWith(const std::string& str, const std::string& ending) {
+    if (str.length() >= ending.length()) {
+        return (0 == str.compare(str.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @brief Determines if a string starts with a substring
+ * @param str The string to search
+ * @param start The substring to look for at the start of str
+ * @return true if str starts with start
+ * @return false if str does not start with start
+ */
+inline bool startsWith(const std::string& str, const std::string& start) {
+    return str.rfind(start, 0) != std::string::npos;
+}
+
+/**
+ * @brief Determines the string that comes after the last '/'
+ * @param str The string to parse
+ * @return The substring after the last '/'
+ */
+inline std::string findFilename(const std::string& str) {
+    return str.substr(str.find_last_of("/"));
+}
+
 }; // end of Helpers namespace
+
 #endif

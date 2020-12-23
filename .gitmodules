@@ -4,3 +4,6 @@
 [submodule "extern/CLI11"]
 	path = extern/CLI11
 	url = git@github.com:CLIUtils/CLI11.git
+[submodule "extern/pistache"]
+	path = extern/pistache
+	url = https://github.com/oktal/pistache.git

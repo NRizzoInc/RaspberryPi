@@ -30,12 +30,14 @@ print_flags () {
     echo "    -p | --linux-pkgs: Install all the required linux packages"
     echo "    -s | --submodules: Fetch & Update all the git submodules in this repo"
     echo "    -g | --gpio: Build and Install the c++ gpio library from source"
+    echo "    -w | --web: Build and Install the c++ web-app library \"pistache\" to capture keyboard input for client"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
 }
 
 # parse command line args
 installGPIO=false
+installPistache=false
 updateSubmodules=false
 linuxPkgs=false
 installAll=true # default to installing everything
@@ -52,6 +54,11 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -g | --gpio )
             installGPIO=true
+            installAll=false
+            break
+            ;;
+        -w | --web )
+            installPistache=true
             installAll=false
             break
             ;;
@@ -81,6 +88,7 @@ helpersDir="${INSTALL_DIR}/helpers"
 # Get helper script paths
 wiringPiScript="${helpersDir}/WiringPi.sh"
 submoduleScript="${helpersDir}/submodules.sh"
+pistacheScript="${helpersDir}/pistache.sh"
 linuxPkgsScript="${helpersDir}/linux_pkgs.sh"
 
 # call helpers as needed
@@ -102,6 +110,12 @@ if [[ ${installGPIO} == true || ${installAll} == true ]]; then
     bash "${wiringPiScript}" \
         --extern-dir "${externDir}"
 fi
+
+if [[ ${installPistache} == true || ${installAll} == true ]]; then
+    bash "${pistacheScript}" \
+        --extern-dir "${externDir}"
+fi
+
 
 echo "========= Completed Helper Scripts ========="
 

@@ -31,3 +31,4 @@ clean:
 	@- $(RM) ./build/ 
 	@- $(RM) ./release/
 	@- $(RM) ./bin/
+	@- $(RM) ./lib/ 

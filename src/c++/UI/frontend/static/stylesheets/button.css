@@ -1,0 +1,43 @@
+/* Design on hover mechanic that makes the button *appear* to get darker */
+/* Opacity 1 = normal (0 = invisible) */
+.btn-overlay {
+    transition: opacity 0.5s ease;
+    -webkit-transition: opacity 0.5s ease;
+    -moz-transition: opacity 0.5s ease;
+    width: fit-content;
+}
+
+.btn-overlay {
+    opacity: 0.8;
+}
+
+/* darken and grab when hovering over it */
+/* use "btn-darken" to dynamically set dark state in js */
+.btn-darken,
+.btn-overlay:hover {
+    cursor: grab;
+    opacity: 1;
+}
+.btn-overlay:active {
+    cursor: grabbing;
+}
+
+/* the class used on the img tag whose src="/path/to/.png */
+.btn-img-holder {
+    outline: none;
+    border: none;
+    background-color: white;
+    width: 100%;
+    width: fit-content;
+}
+
+.btn-img {
+    /* alert user they can click */
+    object-fit: cover;
+    /* 100% makes all buttons on same line grow to max possible size */
+    width:  100%;
+}
+
+.all-btn-container {
+    display: inline-block;
+}

@@ -5,12 +5,14 @@ using std::cerr;
 using std::endl;
 
 
+namespace RPI {
 namespace gpio {
 namespace Button {
 
 /********************************************** Constructors **********************************************/
 ButtonController::ButtonController()
-    : color_to_btns ({
+    : GPIOBase{}
+    , color_to_btns ({
             // get mappings in terminal with `gpio readall`
             // go by "wPi" column
             // init each button as "unpressed" = false
@@ -19,8 +21,6 @@ ButtonController::ButtonController()
             {"green",   std::make_pair(7, false)},
             {"blue",    std::make_pair(0, false)}
         })
-    , stop_thread(false)
-    , isInit(false)
 {
     // stub
 }
@@ -61,24 +61,6 @@ std::vector<std::string> ButtonController::getBtnColorList() const {
 
 const BtnMap& ButtonController::getBtnMap() const {
     return color_to_btns;
-}
-
-bool ButtonController::getIsInit() const {
-    return isInit;
-}
-
-ReturnCodes ButtonController::setIsInit(const bool new_state) const {
-    isInit = new_state;
-    return ReturnCodes::Success;
-}
-
-ReturnCodes ButtonController::setShouldThreadExit(const bool new_status) const {
-    stop_thread = new_status;
-    return ReturnCodes::Success;
-}
-
-const std::atomic_bool& ButtonController::getShouldThreadExit() const {
-    return stop_thread;
 }
 
 ReturnCodes ButtonController::setBtnCallback(const BtnCallback& callback) const {
@@ -142,3 +124,5 @@ bool ButtonController::isDepressed(const int pin) const {
 }; // end of Button namespace
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace

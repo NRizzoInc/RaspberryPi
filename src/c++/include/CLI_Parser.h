@@ -14,12 +14,13 @@
 #include "constants.h"
 #include "string_helpers.hpp"
 
+namespace RPI {
 namespace gpio {
 
 /**
  * @brief Class that manages the GPIO's CLI
  */
-class CLI_Parser : public CLI::App {
+class CLI_Parser : public ::CLI::App {
     public:
         /********************************************** Constructors **********************************************/
         
@@ -75,5 +76,7 @@ class CLI_Parser : public CLI::App {
 
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace
 
 #endif

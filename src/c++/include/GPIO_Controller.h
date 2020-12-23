@@ -7,6 +7,11 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <thread>
+// block destructor with mutex so that thread can be created prior to joining
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 // Our Includes
 #include "string_helpers.hpp"
@@ -14,10 +19,12 @@
 #include "constants.h"
 #include "LED_Controller.h"
 #include "Button_Controller.h"
+#include "packet.h"
 
 // 3rd Party Includes
 #include <wiringPi.h>
 
+namespace RPI {
 namespace gpio {
 
 using MapParentMaps = std::unordered_map<
@@ -73,14 +80,22 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         ReturnCodes setShouldThreadExit(const bool new_status) const override;
 
         /**
-         * @brief Handles the execution of the selected function
+         * @brief Handles the execution of the selected function in a thread
          * @param flags Mapping contianing all command line flag values needed to call
          * correct function with correct params
          * @param args Additional args to unpack for the function call
          * @return ReturnCodes
-         * @note Wrapper for FnMap's searchAndCall()
          */
-        ReturnCodes run(const CLI::Results::ParseResults& flags) const;
+        ReturnCodes run(const CLI::Results::ParseResults& flags);
+
+        /**
+         * @brief Wrapper for wrapping and closing functions that need to be called
+         * before end object goes out of scope.
+         * @return ReturnCodes 
+         */
+        virtual ReturnCodes cleanup();
+
+        ReturnCodes gpioHandlePkt(const Network::CommonPkt& pkt) const;
 
     private:
         /******************************************** Private Variables ********************************************/
@@ -94,10 +109,14 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * }
          * 
          */
-        const MapParentMaps color_to_led_btn_pairs;
-        // maps a string (mode name) to a gpio function
-        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;
-
+        const MapParentMaps                             color_to_led_btn_pairs;
+        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;         // maps a mode name to a gpio function
+        std::thread                                     run_thread;             // thread that contains run()
+        std::atomic_bool                                started_thread;         // need to wait for thread to start before joining
+        std::mutex                                      thread_mutex;
+        std::condition_variable                         thread_cv;              // true if client needs to tell the server something
+        bool                                            has_cleaned_up;         // makes sure cleanup doesnt happen twice
+        
         /********************************************* Helper Functions ********************************************/
         /**
          * @brief: Helps construct color_to_led_btn_pairs based on what colors they share
@@ -112,9 +131,29 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          */
         Helpers::Map::ClassFnMap<GPIO_Controller> createFnMap() const;
 
+        /**
+         * @brief Helper function that ... literally does nothing
+         * @note Needed for map to have an option to test other features/do nothing
+         */
+        void doNothing() const;
+
+        /**
+         * @brief Wrapper for FnMap's searchAndCall() so that it can be bound for lambda
+         * @note Without this, would ahve to copy "this" object by value to pass into lambda
+         */
+        void callSelFn(
+            const std::string& mode,
+            const std::vector<std::string>& colors,
+            const unsigned int& interval,
+            const int& duration,
+            const unsigned int& rate
+        ) const;
+
 };
 
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace
 
 #endif

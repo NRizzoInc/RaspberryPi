@@ -6,6 +6,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+namespace RPI {
 namespace gpio {
 
 /********************************************** Constructors **********************************************/
@@ -17,7 +18,7 @@ CLI_Parser::CLI_Parser(
     const std::string name
 )
     // instantiate parent constructor
-    : CLI::App(name)
+    : ::CLI::App(name)
     , argc(_argc)
     , argv(_argv)
     , mode_list(mode_list)
@@ -31,10 +32,10 @@ CLI_Parser::CLI_Parser(
 const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
     // actually parse flags
     try {
-        CLI::App::parse(argc, argv);
-    } catch  (const CLI::ParseError &e) {
+        ::CLI::App::parse(argc, argv);
+    } catch  (const ::CLI::ParseError &e) {
         cerr << "=========== Failed to Parse CLI Flags! ===========" << endl;
-        CLI::App::exit(e); // handles printing of error messages
+        ::CLI::App::exit(e); // handles printing of error messages
         throw(e);
     }
 
@@ -50,19 +51,21 @@ ReturnCodes CLI_Parser::addFlags() {
     add_option("-m,--mode", cli_res[CLI::Results::MODE])
         ->description("Which action to perform")
         ->required(true)
-        ->check(CLI::IsMember(mode_list))
+        ->check(::CLI::IsMember(mode_list))
+        // make sure only 1 mode is ever taken
+        ->expected(1)
+        ->take_first()
         ;
 
     const char delim {','};
     add_option("-c,--colors", cli_res[CLI::Results::COLORS])
         ->description("Which LEDs/Buttons to use (comma-seperated)")
         ->required(false)
-        ->default_val("")
         // method for taking in multiple args => str-represented vector
-        ->expected(0, color_list.size()-1)
+        ->expected(0, color_list.size())
         ->allow_extra_args() // allow mutliple inputs despite type=str
         ->delimiter(delim)
-        ->check(CLI::IsMember(color_list))
+        ->check(::CLI::IsMember(color_list))
         ->join(delim)
         ;
 
@@ -84,8 +87,36 @@ ReturnCodes CLI_Parser::addFlags() {
         ->default_val("1")
         ;
 
+    /**************************************** Networking Flags ****************************************/
+
+    // mark them both as needing mode_opt bc its results impact them
+    add_option("-a,--ip", cli_res[CLI::Results::IP])
+        ->description("The server's ip address")
+        ->required(false)
+        ->default_val("127.0.0.1")
+        ->check(::CLI::ValidIPV4)
+        ;
+
+    add_option("-p,--net-port", cli_res[CLI::Results::NET_PORT])
+        ->description("The server's/client's port number")
+        ->required(false)
+        ->default_val("55555")
+        ->check(::CLI::Range(1024, 65535))
+        ;
+
+    /****************************************** Web App Flags *****************************************/
+
+    add_option("--web-port", cli_res[CLI::Results::WEB_PORT])
+        ->description("The web-app's port number")
+        ->required(false)
+        ->default_val("5001")
+        ->check(::CLI::Range(1024, 65535))
+        ;
+
     return ReturnCodes::Success;
 }
 
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace

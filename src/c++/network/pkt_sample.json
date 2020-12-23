@@ -1,0 +1,11 @@
+{
+    "control": {
+        "led": {
+            "red":      false,
+            "yellow":   false,
+            "green":    false,
+            "blue":     false
+        }
+    },
+    "ACK": true
+}

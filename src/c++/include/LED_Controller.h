@@ -7,7 +7,6 @@
 #include <vector>
 #include <unordered_map>
 #include <chrono>
-#include <atomic>
 #include <thread>
 
 // Our Includes
@@ -15,11 +14,13 @@
 #include "string_helpers.hpp"
 #include "timing.hpp"
 #include "constants.h"
+#include "GPIO_Base.h"
 
 // 3rd Party Includes
 #include <wiringPi.h>
 #include <softPwm.h>
 
+namespace RPI {
 namespace gpio {
 namespace LED {
 
@@ -29,7 +30,7 @@ using LEDMap = std::unordered_map<std::string, LEDMapVal>;
 /**
  * @brief Handles all LED operations
  */
-class LEDController {
+class LEDController : public GPIOBase {
     public:
         /********************************************** Constructors **********************************************/
         LEDController();
@@ -49,22 +50,6 @@ class LEDController {
         std::vector<std::string> getLedColorList() const;
 
         const LEDMap& getLedMap() const;
-
-        /**
-         * @brief Set whether the thread should stop
-         * @param new_status The new status (true = stop, false = keep going) 
-         * @return ReturnCodes
-         * @note can be const because underlying bool is mutable
-         */
-        virtual ReturnCodes setShouldThreadExit(const bool new_status) const;
-        /**
-         * @brief Get whether the thread should stop
-         * @return std::atomic_bool 
-         */
-        virtual const std::atomic_bool& getShouldThreadExit() const;
-
-        virtual bool getIsInit() const;
-        ReturnCodes setIsInit(const bool new_state) const;
 
         /********************************************* LED Functions *********************************************/
         /**
@@ -118,12 +103,6 @@ class LEDController {
         /******************************************** Private Variables ********************************************/
         // Map each color to a led's corresponding pin number
         const LEDMap color_to_leds;
-        /**
-         * @brief Controls whether or not to stop blocking functions (i.e. blink)
-         * @note Is mutable so that it can be modified in const functions safely
-         */
-        mutable std::atomic_bool stop_thread;
-        mutable bool isInit;
 
 
         /********************************************* Helper Functions ********************************************/
@@ -135,5 +114,6 @@ class LEDController {
 }; // end of LED namespace
 
 }; // end of gpio namespace
+}; // end of RPI namespace
 
 #endif

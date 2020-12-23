@@ -6,6 +6,7 @@ using std::cerr;
 using std::endl;
 
 
+namespace RPI {
 namespace gpio {
 namespace LED {
 
@@ -13,14 +14,13 @@ namespace LED {
 LEDController::LEDController()
     // pin mappings -- http://wiringpi.com/pins/
     // gpio readall -- care about WPi column
-    : color_to_leds ({
+    : GPIOBase{}
+    , color_to_leds ({
             {"red",     5}, // gpio5 /pin(BCM) 24 (can use variable brightness)
             {"yellow",  4},
             {"green",   1},
             {"blue",    16}
         })
-    , stop_thread(false)
-    , isInit(false)
 {
     // stub
 }
@@ -64,26 +64,6 @@ std::vector<std::string> LEDController::getLedColorList() const {
 const LEDMap& LEDController::getLedMap() const {
     return color_to_leds;
 }
-
-
-ReturnCodes LEDController::setShouldThreadExit(const bool new_status) const {
-    stop_thread = new_status;
-    return ReturnCodes::Success;
-}
-
-const std::atomic_bool& LEDController::getShouldThreadExit() const {
-    return stop_thread;
-}
-
-bool LEDController::getIsInit() const {
-    return isInit;
-}
-
-ReturnCodes LEDController::setIsInit(const bool new_state) const {
-    isInit = new_state;
-    return ReturnCodes::Success;
-}
-
 
 /********************************************* LED Functions *********************************************/
 
@@ -172,3 +152,5 @@ void LEDController::LEDIntensity(
 }; // end of LED namespace
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace

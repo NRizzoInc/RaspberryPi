@@ -4,6 +4,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+namespace RPI {
+
 namespace gpio {
 
 /********************************************** Constructors **********************************************/
@@ -15,12 +17,38 @@ GPIO_Controller::GPIO_Controller()
     // init vars
     , color_to_led_btn_pairs (generateLedBtnPairs())
     , mode_to_action (createFnMap())
+    , run_thread{}
+    , started_thread{false}
+    , has_cleaned_up{false}
 {
     // stub
 }
 
 GPIO_Controller::~GPIO_Controller() {
-    // destructor stub
+    // stub
+}
+
+ReturnCodes GPIO_Controller::cleanup() {
+    // dont double cleanup
+    if (has_cleaned_up) return ReturnCodes::Success;
+
+    // wait to block until a thread has been setup
+    // otherwise thread is empty and joins immediately
+    // but max out time to wait or else program gets blocked here if thread is never started
+    std::unique_lock<std::mutex> lk{thread_mutex};
+    thread_cv.wait_for(
+        lk,
+        std::chrono::milliseconds(200),
+        [&](){ return started_thread.load(); }
+    );
+
+    // block until thread ends
+    if (run_thread.joinable()) {
+        run_thread.join();
+    }
+
+    has_cleaned_up = true;
+    return ReturnCodes::Success;
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -73,8 +101,17 @@ ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
 
 }
 
+ReturnCodes GPIO_Controller::gpioHandlePkt(const Network::CommonPkt& pkt) const {
+    const auto& leds_status {pkt.cntrl.led};
+    setLED("blue",          leds_status.blue);
+    setLED("green",         leds_status.green);
+    setLED("red",           leds_status.red);
+    setLED("yellow",        leds_status.yellow);
+    return ReturnCodes::Success;
+}
 
-ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const {
+
+ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
     // get required variables from flag mapping
     const auto& mode        {flags.at(CLI::Results::MODE)};
     const auto& colors      {Helpers::splitStr(',', flags.at(CLI::Results::COLORS))};
@@ -90,15 +127,17 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) const 
                                 )
                             };
 
-    mode_to_action.searchAndCall<void>(
-        *this, // need to pass reference to this object
-        mode, // key to the function to call
-        // pass the actual params needed by functions
-        colors,
-        interval,
-        duration,
-        rate
-    );
+    // start up selected function based on mode in a thread (joined in destructor)
+    run_thread = std::thread{
+        std::bind(&GPIO_Controller::callSelFn, this,
+            // the actual arguments needed by the function
+            mode,
+            colors,
+            interval,
+            duration,
+            rate
+        )
+    };
 
     return ReturnCodes::Success;
 }
@@ -127,14 +166,43 @@ MapParentMaps GPIO_Controller::generateLedBtnPairs() const {
     return to_rtn;
 }
 
+void GPIO_Controller::doNothing() const {
+    // sometimes you just gotta be a bit sassy
+    // cout << "You chose the option to do nothing... you should rethink your life choices" << endl;
+}
+
+void GPIO_Controller::callSelFn(
+    const std::string& mode,
+    const std::vector<std::string>& colors,
+    const unsigned int& interval,
+    const int& duration,
+    const unsigned int& rate
+) const {
+    mode_to_action.searchAndCall<void>(
+        *this, // need to pass reference to this object
+        mode, // key to the function to call
+        // pass the actual params needed by functions
+        colors,
+        interval,
+        duration,
+        rate
+    );
+}
+
+
 Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
     Helpers::Map::ClassFnMap<GPIO_Controller> to_rtn;
     // TODO: Figure out way to make reinterpret_cast automatic
-    to_rtn["Blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
-    to_rtn["Intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
-    to_rtn["Btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
+    to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
+    to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
+    to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
+    to_rtn["server"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
+    to_rtn["client"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
+    to_rtn["none"]        = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     return to_rtn;
 }
 
 
 }; // end of gpio namespace
+
+}; // end of RPI namespace
