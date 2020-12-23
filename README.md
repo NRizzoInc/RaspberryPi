@@ -1,7 +1,8 @@
 # Description
 
 This repo contains both C++ and Python code for interfacing with a Raspberry Pi 3B+.
-In the future however, I plan on stop supporting the Python code base in favor of C++. 
+In the future however, I plan on stop supporting the Python code base in favor of C++.
+_Note:_ I may rever to the raspberry pi as RPI for short.
 
 ## Current Features
 
@@ -32,6 +33,10 @@ Follow [this guide](https://pimylifeup.com/raspberry-pi-swap-file/) for how to d
 sudo dphys-swapfile swapoff # turn swap off
 sudo dphys-swapfile swapon  # turn swap back on
 ```
+
+## Usage
+
+Check out [this guide](https://github.com/NRizzoInc/RaspberryPi/wiki) for how to use the server & client to control the RPI.
 
 ## GPIO Configuration
 
