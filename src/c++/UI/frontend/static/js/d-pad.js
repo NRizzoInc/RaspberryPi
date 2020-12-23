@@ -80,7 +80,7 @@ const handleMouse = (e, isDown) => {
 }
 
 // actually create listeners
-document.body.onkeydown     = (e) => handleKeyboard(e, true)
-document.body.onkeyup       = (e) => handleKeyboard(e, false)
-document.body.onmousedown   = (e) => handleMouse(e, true)
-document.body.onmouseup     = (e) => handleMouse(e, false)
+document.addEventListener("keydown",    (e) => handleKeyboard(e, true))
+document.addEventListener("keyup",      (e) => handleKeyboard(e, false))
+document.addEventListener("mousedown",  (e) => handleMouse(e, true))
+document.addEventListener("mouseup",    (e) => handleMouse(e, false))

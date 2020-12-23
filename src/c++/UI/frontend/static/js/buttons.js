@@ -76,7 +76,7 @@ const handleBtnsKeyboard = (e) => {
 // create event listener for each button that toggles the led's current state
 
 // keyboard key listeners
-document.body.onkeydown     = (e) => handleBtnsKeyboard(e)
+document.addEventListener("keydown", handleBtnsKeyboard)
 
 // mouse click listeners
 led_btns.forEach( (el) => {
