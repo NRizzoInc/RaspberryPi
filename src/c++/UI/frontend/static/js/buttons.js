@@ -56,7 +56,6 @@ const handleEvent = (btn_color) => {
  * @note keyCode list: https://keycode.info/
  */
 const handleBtnsKeyboard = (e) => {
-    console.log(`keycode: ${e.keyCode}`)
     switch (e.keyCode) {
         case 49: // '1' key
             handleEvent("red");
@@ -76,7 +75,7 @@ const handleBtnsKeyboard = (e) => {
 // create event listener for each button that toggles the led's current state
 
 // keyboard key listeners
-document.addEventListener("keydown", handleBtnsKeyboard)
+document.addEventListener("keydown", (e) => handleBtnsKeyboard(e))
 
 // mouse click listeners
 led_btns.forEach( (el) => {
