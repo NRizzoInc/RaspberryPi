@@ -16,10 +16,10 @@ ButtonController::ButtonController()
             // get mappings in terminal with `gpio readall`
             // go by "wPi" column
             // init each button as "unpressed" = false
-            {"red",     std::make_pair(8, false)},
-            {"yellow",  std::make_pair(9, false)},
-            {"green",   std::make_pair(7, false)},
-            {"blue",    std::make_pair(0, false)}
+            {"red",     std::make_pair(26, false)},
+            {"yellow",  std::make_pair(27, false)},
+            {"green",   std::make_pair(28, false)},
+            {"blue",    std::make_pair(29, false)}
         })
 {
     // stub

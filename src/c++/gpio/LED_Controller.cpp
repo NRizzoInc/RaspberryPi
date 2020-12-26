@@ -16,10 +16,10 @@ LEDController::LEDController()
     // gpio readall -- care about WPi column
     : GPIOBase{}
     , color_to_leds ({
-            {"red",     5}, // gpio5 /pin(BCM) 24 (can use variable brightness)
+            {"red",     1},
             {"yellow",  4},
-            {"green",   1},
-            {"blue",    16}
+            {"green",   5},
+            {"blue",    6}
         })
 {
     // stub
