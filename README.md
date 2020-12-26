@@ -46,8 +46,8 @@ _Note: the C++ code utilizes the `wPi` column in the `./PinDiagrams/README.md` f
 
 | wPi Pins 	| LEDs 	| Buttons 	|
 |:--------:	|:----:	|:-------:	|
-|    Red   	|   5  	|    8    	|
-|  Yellow  	|   4  	|    9    	|
-|   Green  	|   1  	|    7    	|
-|   Blue   	|  16  	|    0    	|
+|    Red   	|   1	|    26    	|
+|  Yellow  	|   4  	|    27    	|
+|   Green  	|   5  	|    28    	|
+|   Blue   	|   6  	|    29    	|
 

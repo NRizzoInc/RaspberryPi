@@ -29,16 +29,16 @@ class ButtonLedController():
         """Sets up the board's lcd & led based on my breadboard's pin configuration"""
         #------------------------------------------ Buttons & LED ------------------------------------------#
         self.__leds = {
-            "red"     : PWMLED(24), # gpio24/ pin 18 (can use variable brightness)
+            "red"     : PWMLED(18), # gpio24/ pin 18 (can use variable brightness)
             "yellow"  : PWMLED(23),
-            "green"   : PWMLED(18),
-            "blue"    : PWMLED(15)
+            "green"   : PWMLED(24),
+            "blue"    : PWMLED(25)
         }
         self.__btns = {
-            "red"     : Button(2), # "gpio2" = "BOARD3"
-            "yellow"  : Button(3),
-            "green"   : Button(4),
-            "blue"    : Button(17)
+            "red"     : Button(12), # "gpio2" = "BOARD3"
+            "yellow"  : Button(16),
+            "green"   : Button(20),
+            "blue"    : Button(21)
         }
 
         #------------------------------------------ Btn-LED Pairs ------------------------------------------#
