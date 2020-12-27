@@ -41,6 +41,9 @@ enum class I2C_PWM_Addr : std::uint8_t {
     OFF_HIGH    = 0x09,    // Register for setting off duty cycle HIGH pwm
 }; // end of pwm addresses
 
+/**
+ * @brief Handle class for I2C Chip for motors (PCA9685)
+ */
 class MotorController : public GPIOBase {
 
     public:
