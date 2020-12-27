@@ -157,7 +157,8 @@ ReturnCodes MotorController::WriteReg(const std::uint8_t reg_addr, const std::ui
     ) < 0 ? ReturnCodes::Error : ReturnCodes::Success};
 
     if (rtn != ReturnCodes::Success) {
-        cerr << "Error: Failed to write to register @" << reg_addr << endl;
+        // have to print as int (uint8_t maps to ascii char)
+        cerr << "Error: Failed to write to register @" << std::hex << reg_addr << endl;
     }
     return rtn;
 }
@@ -211,28 +212,30 @@ ReturnCodes MotorController::SetPwmFreq(const float freq) const {
 
 
 ReturnCodes MotorController::SetPwm(const int channel, const int on, const int off) const {
+    // see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 16
     // have to update all pwm registers
     // each motor channel has 1 of each pwm registers (hence the 4*channel to get the correct address)
 
+    cout << "reg base addr: " << std::hex << I2C_PWM_Addr::ON_LOW << endl;
     if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::ON_LOW) + 4*channel, on & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update ON LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::ON_HIGH) + 4*channel, on >> 8) != ReturnCodes::Success) {
-        cerr << "Failed to update ON HIGH PWM" << endl;
-        return ReturnCodes::Error;
-    }
+    // if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::ON_HIGH) + 4*channel, on >> 8) != ReturnCodes::Success) {
+    //     cerr << "Failed to update ON HIGH PWM" << endl;
+    //     return ReturnCodes::Error;
+    // }
 
-    if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::OFF_LOW) + 4*channel, off & 0xFF) != ReturnCodes::Success) {
-        cerr << "Failed to update OFF LOW PWM" << endl;
-        return ReturnCodes::Error;
-    }
+    // if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::OFF_LOW) + 4*channel, off & 0xFF) != ReturnCodes::Success) {
+    //     cerr << "Failed to update OFF LOW PWM" << endl;
+    //     return ReturnCodes::Error;
+    // }
 
-    if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::OFF_HIGH ) +4*channel,  off >> 8) != ReturnCodes::Success) {
-        cerr << "Failed to update OFF HIGH PWM" << endl;
-        return ReturnCodes::Error;
-    }
+    // if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::OFF_HIGH ) +4*channel,  off >> 8) != ReturnCodes::Success) {
+    //     cerr << "Failed to update OFF HIGH PWM" << endl;
+    //     return ReturnCodes::Error;
+    // }
 
     return ReturnCodes::Success;
 }
