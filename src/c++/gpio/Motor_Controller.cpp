@@ -141,11 +141,16 @@ void MotorController::testLoop(
 /********************************************* Helper Functions ********************************************/
 
 ReturnCodes MotorController::WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const {
-    return wiringPiI2CWriteReg8(
+    ReturnCodes rtn {wiringPiI2CWriteReg8(
         motor_i2c_addr,
         reg_addr,
         data
-    ) < 0 ? ReturnCodes::Error : ReturnCodes::Success;
+    ) < 0 ? ReturnCodes::Error : ReturnCodes::Success};
+
+    if (rtn != ReturnCodes::Success) {
+        cerr << "Error: Failed to write to register @" << reg_addr << endl;
+    }
+    return rtn;
 }
 
 std::uint8_t MotorController::ReadReg(const std::uint8_t reg_addr) const {
@@ -188,7 +193,7 @@ ReturnCodes MotorController::SetPwmFreq(const float freq) const {
         cerr << "Failed to set mode to final setting" << endl;
         return ReturnCodes::Error;
     }
- 
+
     // success
     return ReturnCodes::Success;
 }
