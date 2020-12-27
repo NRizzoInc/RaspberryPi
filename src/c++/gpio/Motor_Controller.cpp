@@ -25,8 +25,14 @@ ReturnCodes MotorController::init() const {
 
     // setup pins for their purpose
     if (wiringPiI2CSetup (motor_i2c_addr) == -1) {
+        cerr << "Error: Failed to init I2C Motor Module" << endl;
         return ReturnCodes::Error;
     }
+
+    if(SetPwmFreq(50.0) != ReturnCodes::Success) {
+        cerr << "Error: Failed to set I2C Motor Module's PWM Frequency" << endl;
+        return ReturnCodes::Error;
+    } 
 
     setIsInit(true);
     return ReturnCodes::Success;
@@ -145,6 +151,48 @@ ReturnCodes MotorController::WriteReg(const std::uint8_t reg_addr, const std::ui
 std::uint8_t MotorController::ReadReg(const std::uint8_t reg_addr) const {
     return wiringPiI2CReadReg8(motor_i2c_addr, static_cast<int>(reg_addr));
 }
+
+ReturnCodes MotorController::SetPwmFreq(const float freq) const {
+    // scale frequency
+    float prescaleval {25000000.0};     // 25MHz
+    prescaleval /= 4096.0;              // 12-bit
+    prescaleval /= freq;                // 25MHz/50 = .5MHz
+    prescaleval -= 1.0;
+    const int scaled_freq = floor(prescaleval + .5); // round
+
+    // get old freq & pause pwm freq register to update it
+    const std::uint8_t mode_reg  { static_cast<std::uint8_t>(I2C_PWM_Addr::MODE_REG) };
+    const std::uint8_t oldmode   { ReadReg(mode_reg) };                                     // rewrite after update
+    const std::uint8_t newmode   { static_cast<std::uint8_t>((oldmode & 0x7F) | 0x10) };    // sleep
+    const ReturnCodes  sleep_rtn { WriteReg(mode_reg, newmode) };                           // go to sleep
+    if(sleep_rtn != ReturnCodes::Success) {
+        cerr << "Failed to put pwm freq register to sleep" << endl;
+        return sleep_rtn;
+    }
+
+    // update pwm freq
+    if(WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::FREQ_REG), scaled_freq) != ReturnCodes::Success) {
+        cerr << "Failed to update pwm freq" << endl;
+        return ReturnCodes::Error;
+    }
+
+    // restore old mode
+    if(WriteReg(mode_reg, oldmode) != ReturnCodes::Success) {
+        cerr << "Failed to restore to original mode from sleep" << endl;
+        return ReturnCodes::Error;
+    }
+
+    // wait a bit for interrupt to pick up change & set mode to appropriate final setting
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    if(WriteReg(mode_reg, oldmode | 0x80) != ReturnCodes::Success) {
+        cerr << "Failed to set mode to final setting" << endl;
+        return ReturnCodes::Error;
+    }
+ 
+    // success
+    return ReturnCodes::Success;
+}
+
 
 ReturnCodes MotorController::SetPwm(const int channel, const int on, const int off) const {
     // have to update all pwm registers

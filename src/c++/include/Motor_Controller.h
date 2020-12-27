@@ -35,6 +35,8 @@ enum class I2C_Addr : int {
 }; // end of motor wheel addresses
 
 enum class I2C_PWM_Addr : std::uint8_t {
+    MODE_REG    = 0x00,    // Root Register containing mode
+    FREQ_REG    = 0xFE,    // Register for controlling the pwm frequency
     ON_LOW      = 0x06,    // Register for setting on duty cycle LOW pwm
     ON_HIGH     = 0x07,    // Register for setting on duty cycle HIGH pwm
     OFF_LOW     = 0x08,    // Register for setting off duty cycle LOW pwm
@@ -119,6 +121,20 @@ class MotorController : public GPIOBase {
          */
         std::uint8_t ReadReg(const std::uint8_t reg_addr) const;
 
+        /**
+         * @brief Sets the pwm signal's frequency
+         * @param freq (defaults to 50MHz) The frequnecy of the pwm signal in MHz
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes SetPwmFreq(const float freq=50.0) const;
+
+        /**
+         * @brief Sets the pwm duty cycle for a motor (changes the speed/direction of the motor)
+         * @param channel The motor's channel
+         * @param on On time
+         * @param off Off time
+         * @return ReturnCodes Success if no issues 
+         */
         ReturnCodes SetPwm(const int channel, const int on, const int off) const;
 
         /**
