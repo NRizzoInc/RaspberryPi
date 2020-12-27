@@ -4,7 +4,9 @@
 // Standard Includes
 #include <iostream>
 #include <string>
-#include <vector>
+#include <cstdint>      // for std::uint8_t
+#include <cmath>        // for abs
+#include <algorithm>    // for max/min
 
 // Our Includes
 #include "constants.h"
@@ -18,6 +20,22 @@
 namespace RPI {
 namespace gpio {
 namespace Motor {
+
+// Maps each tire/motor to its i2c address
+/// note: each motor has 2 channels (i.e. 0-1, 2-3, 4-5, 6-7)
+enum class I2C_Addr : int {
+    FL          = 0,         // Front Left
+    FR          = 2,         // Front Right
+    BL          = 4,         // Back  Left
+    BR          = 6,         // Back  Right
+}; // end of motor wheel addresses
+
+enum class I2C_PWM_Addr : std::uint8_t {
+    ON_LOW      = 0x06,    // Register for setting on duty cycle LOW pwm
+    ON_HIGH     = 0x07,    // Register for setting on duty cycle HIGH pwm
+    OFF_LOW     = 0x08,    // Register for setting off duty cycle LOW pwm
+    OFF_HIGH    = 0x09,    // Register for setting off duty cycle HIGH pwm
+}; // end of pwm addresses
 
 class MotorController : public GPIOBase {
 
@@ -36,12 +54,60 @@ class MotorController : public GPIOBase {
 
         /********************************************* Motor Functions *********************************************/
 
+        /**
+         * @brief Set a single motor's pwm with a desired duty cycle
+         * @param motor_dir The specific motor to set
+         * @param duty Higher Positives mean forward, Lower negatives mean backward
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes SetSingleMotorPWM(const I2C_Addr motor_dir, const int duty) const;
+
+        /**
+         * @brief Set all the motor's pwm with the desired duty cycle
+         * @note Higher positive duty mean forward, lower negative duty mean backward
+         * @param duty_fl Front Left Duty
+         * @param duty_fr Front Right Duty
+         * @param duty_bl Back Left Duty
+         * @param duty_br Back Right Duty
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes SetMotorsPWM(
+            const int duty_fl,
+            const int duty_fr,
+            const int duty_bl,
+            const int duty_br
+        ) const;
+
     private:
         /******************************************** Private Variables ********************************************/
 
-        const int motor_i2c_addr;               // the address for the robot's i2c motor module
+        const std::uint8_t motor_i2c_addr;               // the address for the robot's i2c motor module
 
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Write data to a register in the Motor's i2c device
+         * @param reg_addr The specific motor to write to (based on I2C_PWM_Addr enum mapping to addresses)
+         * @param data The data to write
+         * @return ReturnCodes 
+         */
+        ReturnCodes WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const;
+
+        /**
+         * @brief Read data from a register in the Motor's i2c device
+         * @param reg_addr The specific motor to read from (based on I2C_PWM_Addr enum mapping to addresses)
+         * @return The found data
+         */
+        std::uint8_t ReadReg(const std::uint8_t reg_addr) const;
+
+        ReturnCodes SetPwm(const int channel, const int on, const int off) const;
+
+        /**
+         * @brief Converts the passed duty to a valid duty in the range (i.e. caps max/min)
+         * @param duty The duty to make sure is in the valid range
+         * @return std::uint8_t The capped off duty based on input
+         */
+        int CheckDutyRange(const int duty) const;
 
 }; // MotorController
 
