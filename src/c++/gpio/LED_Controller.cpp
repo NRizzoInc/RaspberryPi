@@ -16,10 +16,10 @@ LEDController::LEDController()
     // gpio readall -- care about WPi column
     : GPIOBase{}
     , color_to_leds ({
-            {"red",     1},
-            {"yellow",  4},
-            {"green",   5},
-            {"blue",    6}
+            {"red",     22},
+            {"yellow",  23},
+            {"green",   24},
+            {"blue",    25}
         })
 {
     // stub
