@@ -38,7 +38,9 @@ sudo dphys-swapfile swapon  # turn swap back on
 
 Check out [this guide](https://github.com/NRizzoInc/RaspberryPi/wiki) for how to use the server & client to control the RPI.
 
-## GPIO Configuration
+## Setup
+
+### GPIO Configuration
 
 See the `PinDiagrams` directory gain an understanding of my RPI's pin usage.
 
@@ -50,4 +52,9 @@ _Note: the C++ code utilizes the `wPi` column in the `./PinDiagrams/README.md` f
 |  Yellow  	|   23  |    27    	|
 |   Green  	|   24  |    28    	|
 |   Blue   	|   25  |    29    	|
+
+### Software Configuration
+
+Make sure all RPI interfaces are enabled (except "1-wire").
+Click on raspberry pi symbol on top left -> "Preferences" -> "Raspberry Pi Configuration"
 
