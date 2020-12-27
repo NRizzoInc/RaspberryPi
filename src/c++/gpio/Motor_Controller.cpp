@@ -86,9 +86,12 @@ void MotorController::testLoop(
     // not needed, but need to follow call guidlines for fn-mapping to work
     __attribute__((unused)) const std::vector<std::string>& colors,
     const unsigned int& interval,
-    __attribute__((unused)) const int& duration,
+    const int& duration,
     __attribute__((unused)) const unsigned int& rate
 ) const {
+    cout << "Interval: " << interval << "ms" << endl;
+    cout << "Duration: " << duration << "ms" << endl;
+
     // keep track of time/duration
     const auto start_time = std::chrono::steady_clock::now();
 

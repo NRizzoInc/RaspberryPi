@@ -90,7 +90,7 @@ class MotorController : public GPIOBase {
             // not needed, but need to follow call guidlines for fn-mapping to work
             __attribute__((unused)) const std::vector<std::string>& colors={},
             const unsigned int& interval=1000,
-            __attribute__((unused)) const int& duration=-1,
+            const int& duration=-1,
             __attribute__((unused)) const unsigned int& rate=1
         ) const;
 
