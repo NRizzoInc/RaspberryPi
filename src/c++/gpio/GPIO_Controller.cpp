@@ -99,10 +99,11 @@ ReturnCodes GPIO_Controller::init() const {
 
 ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
     // only return success if both were successful
-    return \
-        LEDController::setShouldThreadExit(new_status) == ReturnCodes::Success &&
-        ButtonController::setShouldThreadExit(new_status) == ReturnCodes::Success ?
-            ReturnCodes::Success : ReturnCodes::Error;
+    bool rtn {true};
+    rtn &= LEDController::setShouldThreadExit(new_status)       == ReturnCodes::Success;
+    rtn &= ButtonController::setShouldThreadExit(new_status)    == ReturnCodes::Success;
+    rtn &= MotorController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
+    return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 
 }
 
