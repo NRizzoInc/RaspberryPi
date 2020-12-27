@@ -13,6 +13,7 @@ GPIO_Controller::GPIO_Controller()
     // call constructors for parents
     : LED::LEDController()
     , Button::ButtonController()
+    , Motor::MotorController()
 
     // init vars
     , color_to_led_btn_pairs (generateLedBtnPairs())
@@ -79,6 +80,10 @@ ReturnCodes GPIO_Controller::init() const {
     }
     if (ButtonController::init() != ReturnCodes::Success) {
         cerr << "Failed to properly init buttons" << endl;
+        return ReturnCodes::Error;
+    }
+    if (MotorController::init() != ReturnCodes::Success) {
+        cerr << "Failed to properly init motors" << endl;
         return ReturnCodes::Error;
     }
 
