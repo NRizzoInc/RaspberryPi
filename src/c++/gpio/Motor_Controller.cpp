@@ -158,6 +158,8 @@ std::uint8_t MotorController::ReadReg(const std::uint8_t reg_addr) const {
 }
 
 ReturnCodes MotorController::SetPwmFreq(const float freq) const {
+    // instr: https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 15
+
     // scale frequency
     float prescaleval {25000000.0};     // 25MHz
     prescaleval /= 4096.0;              // 12-bit
@@ -167,9 +169,9 @@ ReturnCodes MotorController::SetPwmFreq(const float freq) const {
 
     // get old freq & pause pwm freq register to update it
     const std::uint8_t mode_reg  { static_cast<std::uint8_t>(I2C_PWM_Addr::MODE_REG) };
-    const std::uint8_t oldmode   { ReadReg(mode_reg) };                                     // rewrite after update
-    const std::uint8_t newmode   { static_cast<std::uint8_t>((oldmode & 0x7F) | 0x10) };    // sleep
-    const ReturnCodes  sleep_rtn { WriteReg(mode_reg, newmode) };                           // go to sleep
+    const std::uint8_t oldmode   { ReadReg(mode_reg) };                                   // rewrite after update
+    const std::uint8_t newmode   { static_cast<std::uint8_t>((oldmode & 0x7F) | 0x10) };  // sleep (bit4 & restart off)
+    const ReturnCodes  sleep_rtn { WriteReg(mode_reg, newmode) };                         // go to sleep
     if(sleep_rtn != ReturnCodes::Success) {
         cerr << "Failed to put pwm freq register to sleep" << endl;
         return sleep_rtn;
@@ -188,7 +190,7 @@ ReturnCodes MotorController::SetPwmFreq(const float freq) const {
     }
 
     // wait a bit for interrupt to pick up change & set mode to appropriate final setting
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    std::this_thread::sleep_for(std::chrono::microseconds(500));
     if(WriteReg(mode_reg, oldmode | 0x80) != ReturnCodes::Success) {
         cerr << "Failed to set mode to final setting" << endl;
         return ReturnCodes::Error;
