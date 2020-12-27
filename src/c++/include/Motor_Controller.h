@@ -45,6 +45,10 @@ enum class I2C_PWM_Addr : std::uint8_t {
     FREQ_REG    = 0xFE,    // Register for controlling the pwm frequency
 }; // end of pwm addresses
 
+// handle cout with enum (cannot print uint8_t bc alias for char* so prints ascii)
+std::ostream& operator<<(std::ostream& out, const I2C_PWM_Addr& addr);
+std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
+
 /**
  * @brief Handle class for I2C Chip for motors (PCA9685)
  * @note see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf

@@ -41,6 +41,15 @@ ReturnCodes MotorController::init() const {
 
 /********************************************* Getters/Setters *********************************************/
 
+std::ostream& operator<<(std::ostream& out, const I2C_PWM_Addr& addr) {
+    return out << static_cast<int>(addr);
+}
+
+std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8) {
+    return out << static_cast<int>(addr_8);
+}
+
+
 /********************************************* Motor Functions *********************************************/
 
 ReturnCodes MotorController::SetSingleMotorPWM(const I2C_Addr motor_dir, const int duty) const {
