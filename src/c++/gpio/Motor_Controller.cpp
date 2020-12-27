@@ -82,6 +82,52 @@ ReturnCodes MotorController::SetMotorsPWM(
     }
 }
 
+void MotorController::testLoop(
+    // not needed, but need to follow call guidlines for fn-mapping to work
+    __attribute__((unused)) const std::vector<std::string>& colors,
+    const unsigned int& interval,
+    __attribute__((unused)) const int& duration,
+    __attribute__((unused)) const unsigned int& rate
+) const {
+    // keep track of time/duration
+    const auto start_time = std::chrono::steady_clock::now();
+
+    while (
+        !MotorController::getShouldThreadExit() &&
+        // if duration == -1 : run forever
+        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
+    ) {
+        // forward
+        if (SetMotorsPWM(2000, 2000, 2000, 2000) != ReturnCodes::Success) {
+            cerr << "Error: Failed to move motors forward" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+
+        // back
+        if (SetMotorsPWM(-2000, -2000, -2000, -2000) != ReturnCodes::Success) {
+            cerr << "Error: Failed to move motors backward" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+
+        // left
+        if (SetMotorsPWM(-500, -500, 2000, 2000) != ReturnCodes::Success) {
+            cerr << "Error: Failed to move motors left" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+
+        // right
+        if (SetMotorsPWM(2000, 2000, -500, -500) != ReturnCodes::Success) {
+            cerr << "Error: Failed to move motors right" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+
+        // stop
+        if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
+            cerr << "Error: Failed to stop motors" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+    }
+}
 
 /********************************************* Helper Functions ********************************************/
 

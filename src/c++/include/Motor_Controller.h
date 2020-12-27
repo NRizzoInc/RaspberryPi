@@ -4,13 +4,17 @@
 // Standard Includes
 #include <iostream>
 #include <string>
+#include <vector>
 #include <cstdint>      // for std::uint8_t
 #include <cmath>        // for abs
 #include <algorithm>    // for max/min
+#include <chrono>
+#include <thread>
 
 // Our Includes
 #include "constants.h"
 #include "GPIO_Base.h"
+#include "timing.hpp"
 
 // 3rd Party Includes
 #include <wiringPi.h>
@@ -76,6 +80,18 @@ class MotorController : public GPIOBase {
             const int duty_fr,
             const int duty_bl,
             const int duty_br
+        ) const;
+
+        /**
+         * @brief Run the motors through a set pattern
+         * @note Have to pass everything by reference do to function mapping requirements
+         */
+        void testLoop(
+            // not needed, but need to follow call guidlines for fn-mapping to work
+            __attribute__((unused)) const std::vector<std::string>& colors={},
+            const unsigned int& interval=1000,
+            __attribute__((unused)) const int& duration=-1,
+            __attribute__((unused)) const unsigned int& rate=1
         ) const;
 
     private:
