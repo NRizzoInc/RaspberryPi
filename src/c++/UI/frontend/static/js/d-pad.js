@@ -39,7 +39,6 @@ const press = async (direction, isDown) => {
     // if down, motor should turn on (needs to be true/false for json to be parsable)
     //  -- lucky that js & c++ use same nomenclature)
     motors_status[direction] = isDown
-    console.log(`motors_status: ${JSON.stringify(motors_status)}`)
     await sendPkt({}, motors_status)
 }
 

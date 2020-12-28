@@ -41,6 +41,5 @@ export const sendPkt = async (
             "motor"     : motors
         },
     }
-    console.log(JSON.stringify(pkt))
     await postPktData(pkt)
 } 
