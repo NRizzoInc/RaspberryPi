@@ -108,12 +108,32 @@ ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
 }
 
 ReturnCodes GPIO_Controller::gpioHandlePkt(const Network::CommonPkt& pkt) const {
-    const auto& leds_status {pkt.cntrl.led};
-    setLED("blue",          leds_status.blue);
-    setLED("green",         leds_status.green);
-    setLED("red",           leds_status.red);
-    setLED("yellow",        leds_status.yellow);
-    return ReturnCodes::Success;
+    bool rtn {true}; // changes to false if any return not Success
+
+    // handle leds
+    const auto& leds_status  {pkt.cntrl.led};
+    rtn &= ReturnCodes::Success == setLED("blue",          leds_status.blue);
+    rtn &= ReturnCodes::Success == setLED("green",         leds_status.green);
+    rtn &= ReturnCodes::Success == setLED("red",           leds_status.red);
+    rtn &= ReturnCodes::Success == setLED("yellow",        leds_status.yellow);
+
+    // handle motors
+    const auto& motor_status         { pkt.cntrl.motor };
+    const bool stopped_vert          { !motor_status.forward && !motor_status.backward  };
+    const bool stopped_hor           { !motor_status.left    && !motor_status.right     };
+    const Motor::VertDir vert {
+        stopped_vert ? Motor::VertDir::NONE : (
+            motor_status.forward ? Motor::VertDir::FORWARD : Motor::VertDir::REVERSE
+        )
+    };
+    const Motor::HorizDir horiz  {
+        stopped_hor ? Motor::HorizDir::NONE : (
+            motor_status.left ? Motor::HorizDir::LEFT : Motor::HorizDir::RIGHT
+        )
+    };
+    rtn &= ReturnCodes::Success == ChangeMotorDir(vert, horiz);
+
+    return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 }
 
 

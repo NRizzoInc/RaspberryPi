@@ -47,10 +47,10 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     translated_pkt.cntrl.led.yellow     = findIfExists<bool>(data, {"control", "led",   "yellow"    });
     translated_pkt.cntrl.led.green      = findIfExists<bool>(data, {"control", "led",   "green"     });
     translated_pkt.cntrl.led.blue       = findIfExists<bool>(data, {"control", "led",   "blue"      });
-    translated_pkt.cntrl.motor.forward  = findIfExists<int> (data, {"control", "motor", "forward"   });
-    translated_pkt.cntrl.motor.backward = findIfExists<int> (data, {"control", "motor", "backward"  });
-    translated_pkt.cntrl.motor.right    = findIfExists<int> (data, {"control", "motor", "right"     });
-    translated_pkt.cntrl.motor.left     = findIfExists<int> (data, {"control", "motor", "left"      });
+    translated_pkt.cntrl.motor.forward  = findIfExists<bool>(data, {"control", "motor", "forward"   });
+    translated_pkt.cntrl.motor.backward = findIfExists<bool>(data, {"control", "motor", "backward"  });
+    translated_pkt.cntrl.motor.right    = findIfExists<bool>(data, {"control", "motor", "right"     });
+    translated_pkt.cntrl.motor.left     = findIfExists<bool>(data, {"control", "motor", "left"      });
     translated_pkt.ACK                  = findIfExists<bool>(data, {"ACK"});
 
     return translated_pkt;
