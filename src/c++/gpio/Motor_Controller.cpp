@@ -95,6 +95,28 @@ ReturnCodes MotorController::SetSingleMotorPWM(const I2C_Addr motor_dir, const i
     }
 }
 
+ReturnCodes MotorController::ChangeMotorDir(const VertDir vertical, const HorizDir horizontal) const {
+    // start off with medium duty (TODO: eventually add this as argument via another enum for slow, med, fast)
+    
+    // if backward, negate all
+    // if not moving, set to 0
+    const bool  is_forward      { vertical == VertDir::FORWARD };
+    const bool  stopping        { vertical == VertDir::NONE };
+    // vertical penalty (-1,0,1)
+    const int   vert_pen        { stopping ? 0 : ( is_forward ? 1 : -1 ) };
+
+    // if no horizontal component, multiply by 1
+    // steer towards a side by having motors on that side negate & 1/4
+    const bool is_straight  { horizontal == HorizDir::NONE };
+    const bool is_right     { horizontal == HorizDir::RIGHT };
+    const int  duty_fl      { static_cast<int>(DUTY_MED * vert_pen * (is_straight ? 1 : (is_right ?  1   : -.25) )) };
+    const int  duty_fr      { static_cast<int>(DUTY_MED * vert_pen * (is_straight ? 1 : (is_right ? -.25 :    1) )) };
+    const int  duty_bl      { static_cast<int>(DUTY_MED * vert_pen * (is_straight ? 1 : (is_right ?  1   : -.25) )) };
+    const int  duty_br      { static_cast<int>(DUTY_MED * vert_pen * (is_straight ? 1 : (is_right ? -.25 :    1) )) };
+    return SetMotorsPWM(duty_fl, duty_fr, duty_bl, duty_br);
+}
+
+
 ReturnCodes MotorController::SetMotorsPWM(
     const int duty_fl,
     const int duty_fr,
@@ -132,7 +154,7 @@ void MotorController::testLoop(
         (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
         // forward
-        if (SetMotorsPWM(2000, 2000, 2000, 2000) != ReturnCodes::Success) {
+        if (ChangeMotorDir(VertDir::FORWARD, HorizDir::NONE) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors forward" << endl;
         } else {
             cout << "Moving forward" << endl;
@@ -141,7 +163,7 @@ void MotorController::testLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // back
-        if (SetMotorsPWM(-2000, -2000, -2000, -2000) != ReturnCodes::Success) {
+        if (ChangeMotorDir(VertDir::REVERSE, HorizDir::NONE) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors backward" << endl;
         }  else {
             cout << "Moving backward" << endl;
@@ -150,7 +172,7 @@ void MotorController::testLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // left
-        if (SetMotorsPWM(-1000, 2000, -1000, 2000) != ReturnCodes::Success) {
+        if (ChangeMotorDir(VertDir::FORWARD, HorizDir::LEFT) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors left" << endl;
         }  else {
             cout << "Moving left" << endl;
@@ -159,7 +181,7 @@ void MotorController::testLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // right
-        if (SetMotorsPWM(2000, -1000, 2000, -1000) != ReturnCodes::Success) {
+        if (ChangeMotorDir(VertDir::FORWARD, HorizDir::RIGHT) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors right" << endl;
         }  else {
             cout << "Moving right" << endl;
@@ -168,7 +190,7 @@ void MotorController::testLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // stop
-        if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
+        if (ChangeMotorDir(VertDir::NONE, HorizDir::NONE) != ReturnCodes::Success) {
             cerr << "Error: Failed to stop motors" << endl;
         }  else {
             cout << "Stopping" << endl;

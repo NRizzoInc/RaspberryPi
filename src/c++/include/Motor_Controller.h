@@ -47,6 +47,27 @@ enum class I2C_PWM_Addr : std::uint8_t {
     FREQ_REG        = 0xFE,    // Register for controlling the pwm frequency
 }; // end of pwm addresses
 
+/**
+ * @brief Enum which defines possible vertical directions the robot can move
+ */
+enum class VertDir : int {
+    REVERSE         =-1,    // moving towards backward
+    FORWARD         = 1,    // moving towards forward
+    NONE            = 0     // if not moving 
+}; // end of HorizDir
+
+/**
+ * @brief Enum which defines possible horizontal directions the robot can move
+ */
+enum class HorizDir : int {
+    LEFT            =-1,    // moving towards left
+    RIGHT           = 1,    // moving towards right
+    NONE            = 0     // if moving straight forward/back
+}; // end of HorizDir
+
+constexpr int DUTY_MED         { 2000 };        // duty value for medium forward speed 
+constexpr int DUTY_MED_BACK    { -DUTY_MED };   // duty value for medium backward speed
+
 // handle cout with enum (cannot print uint8_t bc alias for char* so prints ascii)
 std::ostream& operator<<(std::ostream& out, const I2C_PWM_Addr& addr);
 std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
@@ -81,7 +102,16 @@ class MotorController : public GPIOBase {
         ReturnCodes SetSingleMotorPWM(const I2C_Addr motor_dir, const int duty) const;
 
         /**
-         * @brief Set all the motor's pwm with the desired duty cycle
+         * @brief Easily facilitates changing direction by handling the changing of motor pwm signals
+         * @param vertical Enum that defines robot's vertical vector
+         * @param horizontal Enum that defines robot's horizontal vector
+         * @note Treat car movement where +y = forward & +x = right (both NONE == stop)
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes ChangeMotorDir(const VertDir vertical, const HorizDir horizontal) const;
+
+        /**
+         * @brief Set all the motor's pwm with the desired duty cycle (higher level API: ChangeMotorDir())
          * @note Higher positive duty mean forward, lower negative duty mean backward
          * @param duty_fl Front Left Duty
          * @param duty_fr Front Right Duty
