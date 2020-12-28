@@ -109,6 +109,15 @@ class MotorController : public GPIOBase {
          * @return ReturnCodes Success if no issues
          */
         ReturnCodes ChangeMotorDir(const VertDir vertical, const HorizDir horizontal) const;
+        /**
+         * @brief Overload to simplifies conversion of cardinal directions into enum
+         * @param forward True if has a positive forward vector 
+         * @param backward True if has a positive backward vector
+         * @param left True if has a positive left vector
+         * @param right True if has a positive right vector
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes ChangeMotorDir(const bool forward, const bool backward, const bool left, const bool right) const;
 
         /**
          * @brief Set all the motor's pwm with the desired duty cycle (higher level API: ChangeMotorDir())

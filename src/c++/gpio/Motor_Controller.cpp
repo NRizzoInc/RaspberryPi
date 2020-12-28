@@ -95,6 +95,32 @@ ReturnCodes MotorController::SetSingleMotorPWM(const I2C_Addr motor_dir, const i
     }
 }
 
+ReturnCodes MotorController::ChangeMotorDir(
+    const bool forward,
+    const bool backward,
+    const bool left,
+    const bool right
+) const {
+    // default to none so dont have to waste extra if check for none
+    Motor::VertDir vert     {VertDir::NONE};
+    Motor::HorizDir horiz   {HorizDir::NONE};
+
+    if (forward) {
+        vert = VertDir::FORWARD;
+    } else if (backward) {
+        vert = VertDir::REVERSE;
+    }
+
+    if (left) {
+        horiz = HorizDir::LEFT;
+    } else if (right) {
+        horiz = HorizDir::RIGHT;
+    }
+
+    return ChangeMotorDir(vert, horiz);
+}
+
+
 ReturnCodes MotorController::ChangeMotorDir(const VertDir vertical, const HorizDir horizontal) const {
     // start off with medium duty (TODO: eventually add this as argument via another enum for slow, med, fast)
     

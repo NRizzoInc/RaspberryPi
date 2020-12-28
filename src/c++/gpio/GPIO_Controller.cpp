@@ -119,19 +119,12 @@ ReturnCodes GPIO_Controller::gpioHandlePkt(const Network::CommonPkt& pkt) const 
 
     // handle motors
     const auto& motor_status         { pkt.cntrl.motor };
-    const bool stopped_vert          { !motor_status.forward && !motor_status.backward  };
-    const bool stopped_hor           { !motor_status.left    && !motor_status.right     };
-    const Motor::VertDir vert {
-        stopped_vert ? Motor::VertDir::NONE : (
-            motor_status.forward ? Motor::VertDir::FORWARD : Motor::VertDir::REVERSE
-        )
-    };
-    const Motor::HorizDir horiz  {
-        stopped_hor ? Motor::HorizDir::NONE : (
-            motor_status.left ? Motor::HorizDir::LEFT : Motor::HorizDir::RIGHT
-        )
-    };
-    rtn &= ReturnCodes::Success == ChangeMotorDir(vert, horiz);
+    rtn &= ReturnCodes::Success == ChangeMotorDir(
+        motor_status.forward,
+        motor_status.backward,
+        motor_status.left,
+        motor_status.right
+    );
 
     return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 }
