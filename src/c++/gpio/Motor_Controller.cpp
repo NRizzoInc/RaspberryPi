@@ -138,6 +138,7 @@ void MotorController::testLoop(
             cout << "Moving forward" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        if (MotorController::getShouldThreadExit()) break;
 
         // back
         if (SetMotorsPWM(-2000, -2000, -2000, -2000) != ReturnCodes::Success) {
@@ -146,6 +147,7 @@ void MotorController::testLoop(
             cout << "Moving backward" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        if (MotorController::getShouldThreadExit()) break;
 
         // left
         if (SetMotorsPWM(-1000, 2000, -1000, 2000) != ReturnCodes::Success) {
@@ -154,6 +156,7 @@ void MotorController::testLoop(
             cout << "Moving left" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        if (MotorController::getShouldThreadExit()) break;
 
         // right
         if (SetMotorsPWM(2000, -1000, 2000, -1000) != ReturnCodes::Success) {
@@ -162,6 +165,7 @@ void MotorController::testLoop(
             cout << "Moving right" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        if (MotorController::getShouldThreadExit()) break;
 
         // stop
         if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
