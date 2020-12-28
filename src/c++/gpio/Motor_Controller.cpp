@@ -17,6 +17,11 @@ MotorController::MotorController()
     // stub
 }
 MotorController::~MotorController() {
+    // make motors stop
+    if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
+        cerr << "Error: Failed to stop motors" << endl;
+    }
+
     // if motor device fd is open, close it and set to -1
     if (motor_i2c_fd > 0) {
         close(motor_i2c_fd);
@@ -127,29 +132,29 @@ void MotorController::testLoop(
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
-        // // back
-        // if (SetMotorsPWM(-2000, -2000, -2000, -2000) != ReturnCodes::Success) {
-        //     cerr << "Error: Failed to move motors backward" << endl;
-        // }
-        // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        // back
+        if (SetMotorsPWM(-2000, -2000, -2000, -2000) != ReturnCodes::Success) {
+            cerr << "Error: Failed to move motors backward" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
-        // // left
-        // if (SetMotorsPWM(-500, -500, 2000, 2000) != ReturnCodes::Success) {
-        //     cerr << "Error: Failed to move motors left" << endl;
-        // }
-        // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        // left
+        if (SetMotorsPWM(-500, -500, 2000, 2000) != ReturnCodes::Success) {
+            cerr << "Error: Failed to move motors left" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
-        // // right
-        // if (SetMotorsPWM(2000, 2000, -500, -500) != ReturnCodes::Success) {
-        //     cerr << "Error: Failed to move motors right" << endl;
-        // }
-        // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        // right
+        if (SetMotorsPWM(2000, 2000, -500, -500) != ReturnCodes::Success) {
+            cerr << "Error: Failed to move motors right" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
-        // // stop
-        // if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
-        //     cerr << "Error: Failed to stop motors" << endl;
-        // }
-        // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        // stop
+        if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
+            cerr << "Error: Failed to stop motors" << endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
 }
 
