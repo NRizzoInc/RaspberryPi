@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <unistd.h>     // for close fd
 #include <cstdint>      // for std::uint8_t
 #include <cmath>        // for abs
 #include <algorithm>    // for max/min
@@ -110,7 +111,8 @@ class MotorController : public GPIOBase {
     private:
         /******************************************** Private Variables ********************************************/
 
-        const std::uint8_t motor_i2c_addr;               // the address for the robot's i2c motor module
+        const   std::uint8_t    motor_i2c_addr;     // the address for the robot's i2c motor module
+        mutable int             motor_i2c_fd;       // file descriptor created by setup (mutable for const init)
 
         /********************************************* Helper Functions ********************************************/
 

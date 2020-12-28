@@ -12,11 +12,16 @@ using std::endl;
 MotorController::MotorController()
     : GPIOBase{}
     , motor_i2c_addr{0x40} // TODO: make this a cli arg (gotten with `i2cdetect -y 1`)
+    , motor_i2c_fd{-1}     // invalid
 {
     // stub
 }
 MotorController::~MotorController() {
-    // stub
+    // if motor device fd is open, close it and set to -1
+    if (motor_i2c_fd > 0) {
+        close(motor_i2c_fd);
+        motor_i2c_fd = -1;
+    }
 }
 
 ReturnCodes MotorController::init() const {
@@ -24,7 +29,8 @@ ReturnCodes MotorController::init() const {
     if (MotorController::getIsInit()) return ReturnCodes::Success;
 
     // setup pins for their purpose
-    if (wiringPiI2CSetup (motor_i2c_addr) == -1) {
+    motor_i2c_fd = wiringPiI2CSetup(motor_i2c_addr);
+    if (motor_i2c_fd == -1) {
         cerr << "Error: Failed to init I2C Motor Module" << endl;
         return ReturnCodes::Error;
     }
@@ -151,7 +157,7 @@ void MotorController::testLoop(
 
 ReturnCodes MotorController::WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const {
     ReturnCodes rtn {wiringPiI2CWriteReg8(
-        motor_i2c_addr,
+        motor_i2c_fd,
         reg_addr,
         data
     ) < 0 ? ReturnCodes::Error : ReturnCodes::Success};
@@ -164,7 +170,7 @@ ReturnCodes MotorController::WriteReg(const std::uint8_t reg_addr, const std::ui
 }
 
 std::uint8_t MotorController::ReadReg(const std::uint8_t reg_addr) const {
-    return wiringPiI2CReadReg8(motor_i2c_addr, static_cast<int>(reg_addr));
+    return wiringPiI2CReadReg8(motor_i2c_fd, static_cast<int>(reg_addr));
 }
 
 ReturnCodes MotorController::SetPwmFreq(const float freq) const {
@@ -216,26 +222,33 @@ ReturnCodes MotorController::SetPwm(const int channel, const int on, const int o
     // have to update all pwm registers
     // each motor channel has 1 of each pwm registers (hence the 4*channel to get the correct address)
 
-    cout << "reg base addr: " << std::hex << I2C_PWM_Addr::ON_LOW_BASE << endl;
-    if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::ON_LOW_BASE) + 4*channel, on & 0xFF) != ReturnCodes::Success) {
+    // helper function to get the address based on base address
+    auto calc_addr = [&](const I2C_PWM_Addr base_addr){
+        return static_cast<std::uint8_t>(
+            static_cast<std::uint8_t>(base_addr) +
+            static_cast<std::uint8_t>(4*channel) // 4 pwm regs per channel
+        );
+    };
+
+    if (WriteReg(calc_addr(I2C_PWM_Addr::ON_LOW_BASE),  on & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update ON LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    // if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::ON_HIGH_BASE) + 4*channel, on >> 8) != ReturnCodes::Success) {
-    //     cerr << "Failed to update ON HIGH PWM" << endl;
-    //     return ReturnCodes::Error;
-    // }
+    if (WriteReg(calc_addr(I2C_PWM_Addr::ON_HIGH_BASE), on >> 8) != ReturnCodes::Success) {
+        cerr << "Failed to update ON HIGH PWM" << endl;
+        return ReturnCodes::Error;
+    }
 
-    // if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::OFF_LOW_BASE) + 4*channel, off & 0xFF) != ReturnCodes::Success) {
-    //     cerr << "Failed to update OFF LOW PWM" << endl;
-    //     return ReturnCodes::Error;
-    // }
+    if (WriteReg(calc_addr(I2C_PWM_Addr::OFF_LOW_BASE), off & 0xFF) != ReturnCodes::Success) {
+        cerr << "Failed to update OFF LOW PWM" << endl;
+        return ReturnCodes::Error;
+    }
 
-    // if (WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::OFF_HIGH_BASE) +4*channel,  off >> 8) != ReturnCodes::Success) {
-    //     cerr << "Failed to update OFF HIGH PWM" << endl;
-    //     return ReturnCodes::Error;
-    // }
+    if (WriteReg(calc_addr(I2C_PWM_Addr::OFF_HIGH_BASE), off >> 8) != ReturnCodes::Success) {
+        cerr << "Failed to update OFF HIGH PWM" << endl;
+        return ReturnCodes::Error;
+    }
 
     return ReturnCodes::Success;
 }
