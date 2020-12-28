@@ -39,8 +39,13 @@ const motors_status = {
 const press = async (direction, isDown) => {
     // if down, motor should turn on (needs to be true/false for json to be parsable)
     //  -- lucky that js & c++ use same nomenclature)
-    motors_status[direction] = isDown
-    await sendPkt({}, motors_status)
+
+    // only update and send new status if it is different from current status
+    // (prevent sending duplicate packets)
+    if (motors_status[direction] != isDown) {
+        motors_status[direction] = isDown
+        await sendPkt({}, motors_status)
+    }
 }
 
 /**
