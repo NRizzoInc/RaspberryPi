@@ -17,15 +17,19 @@ MotorController::MotorController()
     // stub
 }
 MotorController::~MotorController() {
-    // make motors stop
-    if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
-        cerr << "Error: Failed to stop motors" << endl;
-    }
+    // only cleanup if is init in first place
+    // prevents client from trying to write to registers that do not exist
+    if (MotorController::getIsInit()) {
+        // make motors stop
+        if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
+            cerr << "Error: Failed to stop motors" << endl;
+        }
 
-    // if motor device fd is open, close it and set to -1
-    if (motor_i2c_fd > 0) {
-        close(motor_i2c_fd);
-        motor_i2c_fd = -1;
+        // if motor device fd is open, close it and set to -1
+        if (motor_i2c_fd > 0) {
+            close(motor_i2c_fd);
+            motor_i2c_fd = -1;
+        }
     }
 }
 
