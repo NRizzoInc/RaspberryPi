@@ -16,29 +16,31 @@ const getCtrler = (el) => {
     return which_ctrler
 }
 
-// TODO: eventually convert to "motor"
-const dir_to_led = {
-    "left"  : "red",
-    "right" : "yellow",
-    "up"    : "green",
-    "down"  : "blue",
+const ctrlers = ["d-pad", "o-pad"]
+    .map((class_name) => Array.from(document.getElementsByClassName(class_name)))
+    .reduce((btns_list, curr_btn_coll) => btns_list.concat(curr_btn_coll))
+
+// contains current motor status (true = on, false = off)
+// inits to off
+const motors_status = {
+    "forward":  false,
+    "backward": false,
+    "right":    false,
+    "left":     false
 }
 
 /**
  * @brief handles what happens after the pressing of a button via keyboard or mouse
- * @param {"up" | "down" | "left" | "right"} direction The direction being pressed
+ * @param {"forward" | "backward" | "left" | "right"} direction The direction being pressed
  * @param {Boolean} isDown True if key is currently being pressed, False if is not
  * @note keyCode list: https://keycode.info/
  */
 const press = async (direction, isDown) => {
-    // parse data
-    const led_color = dir_to_led[direction]
-
-    // if down, led should turn on (needs to be true/false for json to be parsable)
+    // if down, motor should turn on (needs to be true/false for json to be parsable)
     //  -- lucky that js & c++ use same nomenclature)
-    const leds = {} // cannot inline it since variable key
-    leds[led_color] = isDown
-    await sendPkt(leds)
+    motors_status[direction] = isDown
+    console.log(`motors_status: ${JSON.stringify(motors_status)}`)
+    await sendPkt({}, motors_status)
 }
 
 /**
@@ -59,11 +61,11 @@ const handleKeyboard = (e, isDown) => {
             break;
         case "w":
         case "ArrowUp":
-            press("up", isDown);
+            press("forward", isDown);
             break;
         case "s":
         case "ArrowDown":
-            press("down", isDown);
+            press("backward", isDown);
             break;
     }
 }
@@ -82,5 +84,7 @@ const handleMouse = (e, isDown) => {
 // actually create listeners
 document.addEventListener("keydown",    (e) => handleKeyboard(e, true))
 document.addEventListener("keyup",      (e) => handleKeyboard(e, false))
-document.addEventListener("mousedown",  (e) => handleMouse(e, true))
-document.addEventListener("mouseup",    (e) => handleMouse(e, false))
+ctrlers.forEach( (btn_el) => {
+    btn_el.addEventListener("mousedown",  (e) => handleMouse(e, true))
+    btn_el.addEventListener("mouseup",    (e) => handleMouse(e, false))
+})

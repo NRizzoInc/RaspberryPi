@@ -23,13 +23,24 @@ const toBool = (val) => {
  * "blue":      Boolean,
  * } | {}} leds A json containing one of the color:bool pairs listed (defaults to empty json)
  */
-export const sendPkt = async (leds={}) => {
+export const sendPkt = async (
+    leds={},
+    motors={
+        // default to motors being off
+        "forward":  false,
+        "backward": false,
+        "right":    false,
+        "left":     false
+    }
+) => {
     // handle sending data back to web app server
     // see pkt_sample.json in network dir for what it should look like
     const pkt = {
         "control": {
-            "led": leds
+            "led"       : leds,
+            "motor"     : motors
         },
     }
+    console.log(JSON.stringify(pkt))
     await postPktData(pkt)
 } 
