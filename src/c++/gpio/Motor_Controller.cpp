@@ -20,8 +20,8 @@ MotorController::~MotorController() {
 }
 
 ReturnCodes MotorController::init() const {
-    // if already init, stop now
-    if (getIsInit()) return ReturnCodes::Success;
+    // if already init, stop now (have to specify whose getIsInit to call otherwise always true)
+    if (MotorController::getIsInit()) return ReturnCodes::Success;
 
     // setup pins for their purpose
     if (wiringPiI2CSetup (motor_i2c_addr) == -1) {
