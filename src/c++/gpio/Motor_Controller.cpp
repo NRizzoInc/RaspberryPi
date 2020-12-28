@@ -64,19 +64,24 @@ std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8) {
 /********************************************* Motor Functions *********************************************/
 
 ReturnCodes MotorController::SetSingleMotorPWM(const I2C_Addr motor_dir, const int duty) const {
+    // see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 10
     // each motor has to set the pwm in two place
-    // based on input, the determine actual duty for the 2 channels that need to be set for the motor
-    const int ch0 {static_cast<int>(motor_dir)};
-    const int ch1 {static_cast<int>(motor_dir)+1};
+    // based on input, the determine actual duty for the 2 pwm channels in reg that need to be set for the motor
+    // each register has a channel for output and brightness control
+    const int ch0 { static_cast<int>(motor_dir) };
+    const int ch1 { ch0+1 };
     int duty0{};
     int duty1{};
 
+    // strange case for back left wheel being opposite all other wheels
+    // const bool is_opposite { false };
+    const bool is_opposite { motor_dir == I2C_Addr::BL };
     if (duty > 0) {
-        duty0 = 0;
-        duty1 = duty;
+        duty0 = is_opposite ? 0         : duty;
+        duty1 = is_opposite ? duty      : 0;
     } else if (duty < 0) {
-        duty0 = abs(duty);
-        duty1 = 0;
+        duty0 = is_opposite ? abs(duty) : 0;
+        duty1 = is_opposite ? 0         : abs(duty);
     } else {
         // duty == 0 (stop)
         duty0 = 4095;
@@ -129,30 +134,40 @@ void MotorController::testLoop(
         // forward
         if (SetMotorsPWM(2000, 2000, 2000, 2000) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors forward" << endl;
+        } else {
+            cout << "Moving forward" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
         // back
         if (SetMotorsPWM(-2000, -2000, -2000, -2000) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors backward" << endl;
+        }  else {
+            cout << "Moving backward" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
         // left
-        if (SetMotorsPWM(-500, -500, 2000, 2000) != ReturnCodes::Success) {
+        if (SetMotorsPWM(-1000, 2000, -1000, 2000) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors left" << endl;
+        }  else {
+            cout << "Moving left" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
         // right
-        if (SetMotorsPWM(2000, 2000, -500, -500) != ReturnCodes::Success) {
+        if (SetMotorsPWM(2000, -1000, 2000, -1000) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors right" << endl;
+        }  else {
+            cout << "Moving right" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 
         // stop
         if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
             cerr << "Error: Failed to stop motors" << endl;
+        }  else {
+            cout << "Stopping" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
