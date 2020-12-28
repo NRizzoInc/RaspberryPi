@@ -68,20 +68,18 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
     // key-values are seperated by commas not ':'
     json json_pkt = {{
         "control", {
-            {
-                "led", {
-                    {"red",         pkt.cntrl.led.red},
-                    {"yellow",      pkt.cntrl.led.yellow},
-                    {"green",       pkt.cntrl.led.green},
-                    {"blue",        pkt.cntrl.led.blue}
-                },
-                "motor", {
-                    {"forward",     pkt.cntrl.motor.forward},
-                    {"backward",    pkt.cntrl.motor.backward},
-                    {"right",       pkt.cntrl.motor.right},
-                    {"left",        pkt.cntrl.motor.left}
-                }
-            }
+            {"led", {
+                {"red",         pkt.cntrl.led.red},
+                {"yellow",      pkt.cntrl.led.yellow},
+                {"green",       pkt.cntrl.led.green},
+                {"blue",        pkt.cntrl.led.blue}
+            }},
+            {"motor", {
+                {"forward",     pkt.cntrl.motor.forward},
+                {"backward",    pkt.cntrl.motor.backward},
+                {"right",       pkt.cntrl.motor.right},
+                {"left",        pkt.cntrl.motor.left}
+            }}
         }},
         {"ACK", pkt.ACK}
     };
