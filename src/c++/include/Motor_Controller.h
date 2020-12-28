@@ -29,9 +29,9 @@ namespace Motor {
 /// note: each motor has 2 channels (i.e. 0-1, 2-3, 4-5, 6-7)
 enum class I2C_Addr : int {
     FL          = 0,         // Front Left
-    FR          = 2,         // Front Right
-    BL          = 4,         // Back  Left
-    BR          = 6,         // Back  Right
+    BL          = 2,         // Back  Left
+    BR          = 4,         // Back  Right
+    FR          = 6,         // Front Right
 }; // end of motor wheel addresses
 
 // register addresses for the I2C Chip for motors (PCA9685)
