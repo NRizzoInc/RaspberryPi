@@ -1,6 +1,7 @@
 'use strict';
 /**
  * @file Very basic & simple js code to handle keyboard/mouse listener for d-pad
+ * The arrow/wasd keys are responsible for the robot's motors & movement
  */
 
 import { sendPkt } from "./pkt.js"
