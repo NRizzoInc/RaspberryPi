@@ -5,6 +5,12 @@
             "yellow":   false,
             "green":    false,
             "blue":     false
+        },
+        "motor": {
+            "forward":  false,
+            "backward": false,
+            "right":    false,
+            "left":     false
         }
     },
     "ACK": true
