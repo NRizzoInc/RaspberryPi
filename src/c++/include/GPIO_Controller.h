@@ -36,13 +36,13 @@ using MapParentMaps = std::unordered_map<
     >
 >;
 
-class GPIO_Controller; // forward declare for mapping
-using ModeMap = Helpers::Map::ClassFnMap<GPIO_Controller>;
+class GPIOController; // forward declare for mapping
+using ModeMap = Helpers::Map::ClassFnMap<GPIOController>;
 
 /**
  * @brief Handles all GPIO related operations
  */
-class GPIO_Controller : public LED::LEDController, public Button::ButtonController, public Motor::MotorController {
+class GPIOController : public LED::LEDController, public Button::ButtonController, public Motor::MotorController {
     public:
         /********************************************** Constructors **********************************************/
 
@@ -51,8 +51,8 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * (i.e. buttons, leds, motors, etc...)
          * @param motor_i2c_addr The address of the motor controller i2c board
          */
-        GPIO_Controller(const std::uint8_t motor_i2c_addr);
-        virtual ~GPIO_Controller();
+        GPIOController(const std::uint8_t motor_i2c_addr);
+        virtual ~GPIOController();
 
         /********************************************* Getters/Setters *********************************************/
         /**

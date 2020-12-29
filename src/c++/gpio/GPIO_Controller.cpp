@@ -11,10 +11,10 @@ namespace gpio {
 /**************************************** Static Member Variables *****************************************/
 
 // define the mode to function map
-const ModeMap       GPIO_Controller::mode_to_action         {GPIO_Controller::createFnMap()};
+const ModeMap GPIOController::mode_to_action {GPIOController::createFnMap()};
 
 /********************************************** Constructors **********************************************/
-GPIO_Controller::GPIO_Controller(const std::uint8_t motor_i2c_addr)
+GPIOController::GPIOController(const std::uint8_t motor_i2c_addr)
     // call constructors for parents
     : LED::LEDController()
     , Button::ButtonController()
@@ -28,11 +28,11 @@ GPIO_Controller::GPIO_Controller(const std::uint8_t motor_i2c_addr)
     // stub
 }
 
-GPIO_Controller::~GPIO_Controller() {
+GPIOController::~GPIOController() {
     // stub
 }
 
-ReturnCodes GPIO_Controller::cleanup() {
+ReturnCodes GPIOController::cleanup() {
     // dont double cleanup
     if (has_cleaned_up) return ReturnCodes::Success;
 
@@ -57,19 +57,19 @@ ReturnCodes GPIO_Controller::cleanup() {
 
 /********************************************* Getters/Setters *********************************************/
 
-std::vector<std::string> GPIO_Controller::getModes() {
+std::vector<std::string> GPIOController::getModes() {
     return Helpers::Map::getMapKeys(mode_to_action);
 }
 
 
-bool GPIO_Controller::getIsInit() const {
+bool GPIOController::getIsInit() const {
     return LEDController::getIsInit() && ButtonController::getIsInit();
 }
 
 
 /*********************************************** GPIO Helpers **********************************************/
 
-ReturnCodes GPIO_Controller::init() const {
+ReturnCodes GPIOController::init() const {
     // immediately return if already init
     if (getIsInit()) return ReturnCodes::Success;
 
@@ -97,7 +97,7 @@ ReturnCodes GPIO_Controller::init() const {
     return ReturnCodes::Success;
 }
 
-ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
+ReturnCodes GPIOController::setShouldThreadExit(const bool new_status) const {
     // only return success if both were successful
     bool rtn {true};
     rtn &= LEDController::setShouldThreadExit(new_status)       == ReturnCodes::Success;
@@ -107,7 +107,7 @@ ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
 
 }
 
-ReturnCodes GPIO_Controller::gpioHandlePkt(const Network::CommonPkt& pkt) const {
+ReturnCodes GPIOController::gpioHandlePkt(const Network::CommonPkt& pkt) const {
     bool rtn {true}; // changes to false if any return not Success
 
     // handle leds
@@ -130,7 +130,7 @@ ReturnCodes GPIO_Controller::gpioHandlePkt(const Network::CommonPkt& pkt) const 
 }
 
 
-ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
+ReturnCodes GPIOController::run(const CLI::Results::ParseResults& flags) {
     // get required variables from flag mapping
     const auto& mode        {flags.at(CLI::Results::MODE)};
     const auto& colors      {Helpers::splitStr(',', flags.at(CLI::Results::COLORS))};
@@ -148,7 +148,7 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
 
     // start up selected function based on mode in a thread (joined in destructor)
     run_thread = std::thread{
-        std::bind(&GPIO_Controller::callSelFn, this,
+        std::bind(&GPIOController::callSelFn, this,
             // the actual arguments needed by the function
             mode,
             colors,
@@ -163,12 +163,12 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
 
 /********************************************* Helper Functions ********************************************/
 
-void GPIO_Controller::doNothing() const {
+void GPIOController::doNothing() const {
     // sometimes you just gotta be a bit sassy
     // cout << "You chose the option to do nothing... you should rethink your life choices" << endl;
 }
 
-void GPIO_Controller::callSelFn(
+void GPIOController::callSelFn(
     const std::string& mode,
     const std::vector<std::string>& colors,
     const unsigned int& interval,
@@ -187,16 +187,16 @@ void GPIO_Controller::callSelFn(
 }
 
 
-ModeMap GPIO_Controller::createFnMap() {
+ModeMap GPIOController::createFnMap() {
     ModeMap to_rtn;
     // TODO: Figure out way to make reinterpret_cast automatic
     to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
     to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
     to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
     to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testLoop);
-    to_rtn["server"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
-    to_rtn["client"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
-    to_rtn["none"]        = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
+    to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
+    to_rtn["client"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
+    to_rtn["none"]        = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     return to_rtn;
 }
 

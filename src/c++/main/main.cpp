@@ -26,8 +26,8 @@ int main(int argc, char* argv[]) {
     RPI::gpio::CLI_Parser cli_parser(
         argc,
         argv,
-        RPI::gpio::GPIO_Controller::getModes(),
-        RPI::gpio::GPIO_Controller::getLedColorList(),
+        RPI::gpio::GPIOController::getModes(),
+        RPI::gpio::GPIOController::getLedColorList(),
         "GPIO App"
     );
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     /* ============================================ Create GPIO Obj =========================================== */
     // create single static gpio obj to controll rpi
     // static needed so it can be accessed in ctrl+c lambda
-    static RPI::gpio::GPIO_Controller gpio_handler{
+    static RPI::gpio::GPIOController gpio_handler{
         // motor i2c addr (convert hex string to int using base 16)
         static_cast<std::uint8_t>(std::stoi(parse_res[RPI::CLI::Results::MOTOR_ADDR], 0, 16))
     };
