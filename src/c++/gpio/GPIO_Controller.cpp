@@ -12,7 +12,6 @@ namespace gpio {
 
 // define the mode to function map
 const ModeMap       GPIO_Controller::mode_to_action         {GPIO_Controller::createFnMap()};
-const MapParentMaps GPIO_Controller::color_to_led_btn_pairs {GPIO_Controller::generateLedBtnPairs()};
 
 /********************************************** Constructors **********************************************/
 GPIO_Controller::GPIO_Controller(const std::uint8_t motor_i2c_addr)
@@ -57,9 +56,6 @@ ReturnCodes GPIO_Controller::cleanup() {
 }
 
 /********************************************* Getters/Setters *********************************************/
-std::vector<std::string> GPIO_Controller::getPairColorList() {
-    return Helpers::Map::getMapKeys(color_to_led_btn_pairs);
-}
 
 std::vector<std::string> GPIO_Controller::getModes() {
     return Helpers::Map::getMapKeys(mode_to_action);
@@ -166,28 +162,6 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
 }
 
 /********************************************* Helper Functions ********************************************/
-
-MapParentMaps GPIO_Controller::generateLedBtnPairs() {
-    MapParentMaps to_rtn;
-
-    // compile list of colors both LED & Buttons share
-    auto& led_mapping {LEDController::getLedMap()};
-    auto& btn_mapping {ButtonController::getBtnMap()};
-
-    // only add to master list if both contain the string
-    for (std::string color : Helpers::Map::getMapKeys(led_mapping)) {
-        if (btn_mapping.find(color) != btn_mapping.end()) {
-            const auto to_insert = std::make_pair(
-                led_mapping.at(color),
-                btn_mapping.at(color)
-            );
-            // breaks with .insert()
-            to_rtn.emplace(color, to_insert);
-        }
-    }
-
-    return to_rtn;
-}
 
 void GPIO_Controller::doNothing() const {
     // sometimes you just gotta be a bit sassy

@@ -119,7 +119,6 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * }
          * 
          */
-        static const MapParentMaps                      color_to_led_btn_pairs; // static bc same for all gpio objects
         static const ModeMap                            mode_to_action;         // maps a mode name to a gpio function
         std::thread                                     run_thread;             // thread that contains run()
         std::atomic_bool                                started_thread;         // wait for thread start before joining
@@ -128,13 +127,6 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
         bool                                            has_cleaned_up;         // ensures cleanup doesnt happen twice
         
         /********************************************* Helper Functions ********************************************/
-        /**
-         * @brief: Helps construct color_to_led_btn_pairs based on what colors they share
-         * @returns: The constructed map of shared colors
-         * @note static so that it can be used to create the static member variable
-         */
-        static MapParentMaps generateLedBtnPairs();
-
 
         /**
          * @brief Create a Fn Map object
