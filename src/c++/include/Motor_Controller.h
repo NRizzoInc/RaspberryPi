@@ -80,7 +80,12 @@ class MotorController : public GPIOBase {
 
     public:
         /********************************************** Constructors **********************************************/
-        MotorController();
+
+        /**
+         * @brief Construct a motor controller object responsible for handling motor interactions
+         * @param motor_i2c_addr The address of the motor controller i2c board
+         */
+        MotorController(const std::uint8_t motor_i2c_addr);
         virtual ~MotorController();
 
         /**

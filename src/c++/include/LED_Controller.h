@@ -47,9 +47,14 @@ class LEDController : public GPIOBase {
          * @brief: Gets a list of LED colors
          * @returns: Vector<string> of each color
          */
-        std::vector<std::string> getLedColorList() const;
+        static std::vector<std::string> getLedColorList();
 
-        const LEDMap& getLedMap() const;
+        /**
+         * @brief Get the get the color to led mapping
+         * @note static so that it can be used to create the static member variable
+         * @return const LEDMap& 
+         */
+        static const LEDMap& getLedMap();
 
         /********************************************* LED Functions *********************************************/
         /**
@@ -101,8 +106,10 @@ class LEDController : public GPIOBase {
 
     private:
         /******************************************** Private Variables ********************************************/
+
         // Map each color to a led's corresponding pin number
-        const LEDMap color_to_leds;
+        // there should be only one mapping for all LEDController objects
+        static const LEDMap color_to_leds;
 
 
         /********************************************* Helper Functions ********************************************/

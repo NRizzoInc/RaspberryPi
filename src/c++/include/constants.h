@@ -32,14 +32,15 @@ namespace CLI::Results {
     using ParseResults = std::unordered_map<std::string, std::string>;
 
     // cannot use std::string in constexpr (auto == char[])
-    constexpr auto MODE      = "mode"       ;
-    constexpr auto COLORS    = "names"      ;
-    constexpr auto INTERVAL  = "interval"   ;
-    constexpr auto RATE      = "rate"       ;
-    constexpr auto DURATION  = "duration"   ;
-    constexpr auto IP        = "ip"         ;
-    constexpr auto NET_PORT  = "net-port"   ;
-    constexpr auto WEB_PORT  = "web-port"   ;
+    constexpr auto MODE             = "mode"       ;
+    constexpr auto COLORS           = "names"      ;
+    constexpr auto INTERVAL         = "interval"   ;
+    constexpr auto RATE             = "rate"       ;
+    constexpr auto DURATION         = "duration"   ;
+    constexpr auto IP               = "ip"         ;
+    constexpr auto NET_PORT         = "net-port"   ;
+    constexpr auto WEB_PORT         = "web-port"   ;
+    constexpr auto MOTOR_ADDR       = "motor-addr" ;
 }; // end of CLI::Results namespace
 
 }; // end of RPI namespace

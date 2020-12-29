@@ -104,6 +104,15 @@ ReturnCodes CLI_Parser::addFlags() {
         ->check(::CLI::Range(1024, 65535))
         ;
 
+    /**************************************** I2C Address Flags ***************************************/
+
+    add_option("--motor-addr", cli_res[CLI::Results::MOTOR_ADDR])
+        ->description("The motor controller's i2c address in hex (find with i2cdetect -y 1)")
+        ->required(false)
+        ->default_val("0x40")
+        ->check(::CLI::Number)
+        ;
+
     /****************************************** Web App Flags *****************************************/
 
     add_option("--web-port", cli_res[CLI::Results::WEB_PORT])
