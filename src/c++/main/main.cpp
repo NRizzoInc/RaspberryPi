@@ -11,8 +11,8 @@
 #include "string_helpers.hpp"
 #include "GPIO_Controller.h"
 #include "CLI_Parser.h"
-#include "server.h"
-#include "client.h"
+#include "tcp_server.h"
+#include "tcp_client.h"
 #include "tcp_base.h"
 #include "backend.h"
 
