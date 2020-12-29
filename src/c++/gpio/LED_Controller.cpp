@@ -12,12 +12,12 @@ namespace LED {
 
 /**************************************** Static Member Variables *****************************************/
 
-const LEDMap LEDController::color_to_leds {{
+const LEDMap LEDController::color_to_leds {
     {"red",     22},
     {"yellow",  23},
     {"green",   24},
     {"blue",    25}
-}};
+};
 
 
 /********************************************** Constructors **********************************************/
