@@ -30,6 +30,8 @@ MotorController::~MotorController() {
             close(motor_i2c_fd);
             motor_i2c_fd = -1;
         }
+
+        cout << "Resetting Motor Pins" << endl;
     }
 }
 
