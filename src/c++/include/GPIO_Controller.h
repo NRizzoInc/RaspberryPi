@@ -19,6 +19,7 @@
 #include "constants.h"
 #include "LED_Controller.h"
 #include "Button_Controller.h"
+#include "Motor_Controller.h"
 #include "packet.h"
 
 // 3rd Party Includes
@@ -38,7 +39,7 @@ using MapParentMaps = std::unordered_map<
 /**
  * @brief Handles all GPIO related operations
  */
-class GPIO_Controller : public LED::LEDController, public Button::ButtonController {
+class GPIO_Controller : public LED::LEDController, public Button::ButtonController, public Motor::MotorController {
     public:
         /********************************************** Constructors **********************************************/
         GPIO_Controller();

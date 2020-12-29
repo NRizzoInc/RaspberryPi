@@ -43,11 +43,15 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     const json& data = json::parse(pkt_buf);
     CommonPkt translated_pkt;
 
-    translated_pkt.cntrl.led.red    = findIfExists<bool>(data, {"control", "led", "red"});
-    translated_pkt.cntrl.led.yellow = findIfExists<bool>(data, {"control", "led", "yellow"});
-    translated_pkt.cntrl.led.green  = findIfExists<bool>(data, {"control", "led", "green"});
-    translated_pkt.cntrl.led.blue   = findIfExists<bool>(data, {"control", "led", "blue"});
-    translated_pkt.ACK              = findIfExists<bool>(data, {"ACK"});
+    translated_pkt.cntrl.led.red        = findIfExists<bool>(data, {"control", "led",   "red"       });
+    translated_pkt.cntrl.led.yellow     = findIfExists<bool>(data, {"control", "led",   "yellow"    });
+    translated_pkt.cntrl.led.green      = findIfExists<bool>(data, {"control", "led",   "green"     });
+    translated_pkt.cntrl.led.blue       = findIfExists<bool>(data, {"control", "led",   "blue"      });
+    translated_pkt.cntrl.motor.forward  = findIfExists<bool>(data, {"control", "motor", "forward"   });
+    translated_pkt.cntrl.motor.backward = findIfExists<bool>(data, {"control", "motor", "backward"  });
+    translated_pkt.cntrl.motor.right    = findIfExists<bool>(data, {"control", "motor", "right"     });
+    translated_pkt.cntrl.motor.left     = findIfExists<bool>(data, {"control", "motor", "left"      });
+    translated_pkt.ACK                  = findIfExists<bool>(data, {"ACK"});
 
     return translated_pkt;
 }
@@ -63,12 +67,18 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
     // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
     // key-values are seperated by commas not ':'
     json json_pkt = {{
-        "control", {{
-            "led", {
-                {"red",      pkt.cntrl.led.red},
-                {"yellow",   pkt.cntrl.led.yellow},
-                {"green",    pkt.cntrl.led.green},
-                {"blue",     pkt.cntrl.led.blue}
+        "control", {
+            {"led", {
+                {"red",         pkt.cntrl.led.red},
+                {"yellow",      pkt.cntrl.led.yellow},
+                {"green",       pkt.cntrl.led.green},
+                {"blue",        pkt.cntrl.led.blue}
+            }},
+            {"motor", {
+                {"forward",     pkt.cntrl.motor.forward},
+                {"backward",    pkt.cntrl.motor.backward},
+                {"right",       pkt.cntrl.motor.right},
+                {"left",        pkt.cntrl.motor.left}
             }}
         }},
         {"ACK", pkt.ACK}

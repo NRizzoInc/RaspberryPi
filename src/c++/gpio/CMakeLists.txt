@@ -3,6 +3,7 @@ add_library(GPIO_Controller
     GPIO_Controller.cpp
     LED_Controller.cpp
     Button_Controller.cpp
+    Motor_Controller.cpp
     GPIO_Base.cpp
 ) 
 

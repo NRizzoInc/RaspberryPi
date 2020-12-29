@@ -13,6 +13,7 @@ GPIO_Controller::GPIO_Controller()
     // call constructors for parents
     : LED::LEDController()
     , Button::ButtonController()
+    , Motor::MotorController()
 
     // init vars
     , color_to_led_btn_pairs (generateLedBtnPairs())
@@ -81,6 +82,10 @@ ReturnCodes GPIO_Controller::init() const {
         cerr << "Failed to properly init buttons" << endl;
         return ReturnCodes::Error;
     }
+    if (MotorController::init() != ReturnCodes::Success) {
+        cerr << "Failed to properly init motors" << endl;
+        return ReturnCodes::Error;
+    }
 
     // set callback so that when the button is pressed, the LED's state changes
     ButtonController::setBtnCallback([&](const std::string& color, const bool btn_state){
@@ -94,20 +99,34 @@ ReturnCodes GPIO_Controller::init() const {
 
 ReturnCodes GPIO_Controller::setShouldThreadExit(const bool new_status) const {
     // only return success if both were successful
-    return \
-        LEDController::setShouldThreadExit(new_status) == ReturnCodes::Success &&
-        ButtonController::setShouldThreadExit(new_status) == ReturnCodes::Success ?
-            ReturnCodes::Success : ReturnCodes::Error;
+    bool rtn {true};
+    rtn &= LEDController::setShouldThreadExit(new_status)       == ReturnCodes::Success;
+    rtn &= ButtonController::setShouldThreadExit(new_status)    == ReturnCodes::Success;
+    rtn &= MotorController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
+    return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 
 }
 
 ReturnCodes GPIO_Controller::gpioHandlePkt(const Network::CommonPkt& pkt) const {
-    const auto& leds_status {pkt.cntrl.led};
-    setLED("blue",          leds_status.blue);
-    setLED("green",         leds_status.green);
-    setLED("red",           leds_status.red);
-    setLED("yellow",        leds_status.yellow);
-    return ReturnCodes::Success;
+    bool rtn {true}; // changes to false if any return not Success
+
+    // handle leds
+    const auto& leds_status  {pkt.cntrl.led};
+    rtn &= ReturnCodes::Success == setLED("blue",          leds_status.blue);
+    rtn &= ReturnCodes::Success == setLED("green",         leds_status.green);
+    rtn &= ReturnCodes::Success == setLED("red",           leds_status.red);
+    rtn &= ReturnCodes::Success == setLED("yellow",        leds_status.yellow);
+
+    // handle motors
+    const auto& motor_status         { pkt.cntrl.motor };
+    rtn &= ReturnCodes::Success == ChangeMotorDir(
+        motor_status.forward,
+        motor_status.backward,
+        motor_status.left,
+        motor_status.right
+    );
+
+    return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 }
 
 
@@ -196,6 +215,7 @@ Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
     to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
     to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
     to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
+    to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testLoop);
     to_rtn["server"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     to_rtn["client"]      = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);
     to_rtn["none"]        = reinterpret_cast<void(GPIO_Controller::*)()>(&GPIO_Controller::doNothing);

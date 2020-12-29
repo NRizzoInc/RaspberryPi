@@ -29,8 +29,16 @@ struct led_pkt_t {
     bool blue;
 }; // end of led_pkt_t
 
+struct motor_pkt_t {
+    bool forward;   // true if pressed forward key
+    bool backward;  // true if pressed backward key
+    bool right;     // true if pressed right key 
+    bool left;      // true if pressed left key
+}; // end of motor_pkt_t
+
 struct control_t {
     led_pkt_t led;
+    motor_pkt_t motor;
 }; // end of control_t
 
 struct CommonPkt {
