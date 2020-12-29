@@ -10,17 +10,21 @@ namespace RPI {
 namespace gpio {
 namespace LED {
 
+/**************************************** Static Member Variables *****************************************/
+
+const LEDMap LEDController::color_to_leds {{
+    {"red",     22},
+    {"yellow",  23},
+    {"green",   24},
+    {"blue",    25}
+}};
+
+
 /********************************************** Constructors **********************************************/
 LEDController::LEDController()
     // pin mappings -- http://wiringpi.com/pins/
     // gpio readall -- care about WPi column
     : GPIOBase{}
-    , color_to_leds ({
-            {"red",     22},
-            {"yellow",  23},
-            {"green",   24},
-            {"blue",    25}
-        })
 {
     // stub
 }
@@ -57,11 +61,11 @@ ReturnCodes LEDController::init() const {
 }
 
 /********************************************* Getters/Setters *********************************************/
-std::vector<std::string> LEDController::getLedColorList() const {
+std::vector<std::string> LEDController::getLedColorList() {
     return Helpers::Map::getMapKeys(color_to_leds);
 }
 
-const LEDMap& LEDController::getLedMap() const {
+const LEDMap& LEDController::getLedMap() {
     return color_to_leds;
 }
 

@@ -8,16 +8,20 @@ namespace RPI {
 
 namespace gpio {
 
+/**************************************** Static Member Variables *****************************************/
+
+// define the mode to function map
+const ModeMap       GPIO_Controller::mode_to_action         {GPIO_Controller::createFnMap()};
+const MapParentMaps GPIO_Controller::color_to_led_btn_pairs {GPIO_Controller::generateLedBtnPairs()};
+
 /********************************************** Constructors **********************************************/
-GPIO_Controller::GPIO_Controller()
+GPIO_Controller::GPIO_Controller(const std::uint8_t motor_i2c_addr)
     // call constructors for parents
     : LED::LEDController()
     , Button::ButtonController()
-    , Motor::MotorController()
+    , Motor::MotorController(motor_i2c_addr)
 
     // init vars
-    , color_to_led_btn_pairs (generateLedBtnPairs())
-    , mode_to_action (createFnMap())
     , run_thread{}
     , started_thread{false}
     , has_cleaned_up{false}
@@ -53,11 +57,11 @@ ReturnCodes GPIO_Controller::cleanup() {
 }
 
 /********************************************* Getters/Setters *********************************************/
-std::vector<std::string> GPIO_Controller::getPairColorList() const {
+std::vector<std::string> GPIO_Controller::getPairColorList() {
     return Helpers::Map::getMapKeys(color_to_led_btn_pairs);
 }
 
-std::vector<std::string> GPIO_Controller::getModes() const {
+std::vector<std::string> GPIO_Controller::getModes() {
     return Helpers::Map::getMapKeys(mode_to_action);
 }
 
@@ -163,12 +167,12 @@ ReturnCodes GPIO_Controller::run(const CLI::Results::ParseResults& flags) {
 
 /********************************************* Helper Functions ********************************************/
 
-MapParentMaps GPIO_Controller::generateLedBtnPairs() const {
+MapParentMaps GPIO_Controller::generateLedBtnPairs() {
     MapParentMaps to_rtn;
 
     // compile list of colors both LED & Buttons share
-    auto& led_mapping {getLedMap()};
-    auto& btn_mapping {getBtnMap()};
+    auto& led_mapping {LEDController::getLedMap()};
+    auto& btn_mapping {ButtonController::getBtnMap()};
 
     // only add to master list if both contain the string
     for (std::string color : Helpers::Map::getMapKeys(led_mapping)) {
@@ -209,8 +213,8 @@ void GPIO_Controller::callSelFn(
 }
 
 
-Helpers::Map::ClassFnMap<GPIO_Controller> GPIO_Controller::createFnMap() const {
-    Helpers::Map::ClassFnMap<GPIO_Controller> to_rtn;
+ModeMap GPIO_Controller::createFnMap() {
+    ModeMap to_rtn;
     // TODO: Figure out way to make reinterpret_cast automatic
     to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
     to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);

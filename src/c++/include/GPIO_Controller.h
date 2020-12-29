@@ -36,13 +36,22 @@ using MapParentMaps = std::unordered_map<
     >
 >;
 
+class GPIO_Controller; // forward declare for mapping
+using ModeMap = Helpers::Map::ClassFnMap<GPIO_Controller>;
+
 /**
  * @brief Handles all GPIO related operations
  */
 class GPIO_Controller : public LED::LEDController, public Button::ButtonController, public Motor::MotorController {
     public:
         /********************************************** Constructors **********************************************/
-        GPIO_Controller();
+
+        /**
+         * @brief Construct a gpio controller responsible for managing all things relating to the gpio
+         * (i.e. buttons, leds, motors, etc...)
+         * @param motor_i2c_addr The address of the motor controller i2c board
+         */
+        GPIO_Controller(const std::uint8_t motor_i2c_addr);
         virtual ~GPIO_Controller();
 
         /********************************************* Getters/Setters *********************************************/
@@ -50,13 +59,13 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * @brief: Gets a list of colors that are shared between LEDs & Buttons
          * @returns: Vector<string> of each color
          */
-        std::vector<std::string> getPairColorList() const;
+        static std::vector<std::string> getPairColorList();
 
         /**
          * @brief Get the list of possible modes that map to functions
          * @return The possible modes (case-sensitive)
          */
-        std::vector<std::string> getModes() const;
+        static std::vector<std::string> getModes();
 
         /**
          * @brief Determines if all GPIO modules are init
@@ -110,27 +119,29 @@ class GPIO_Controller : public LED::LEDController, public Button::ButtonControll
          * }
          * 
          */
-        const MapParentMaps                             color_to_led_btn_pairs;
-        const Helpers::Map::ClassFnMap<GPIO_Controller> mode_to_action;         // maps a mode name to a gpio function
+        static const MapParentMaps                      color_to_led_btn_pairs; // static bc same for all gpio objects
+        static const ModeMap                            mode_to_action;         // maps a mode name to a gpio function
         std::thread                                     run_thread;             // thread that contains run()
-        std::atomic_bool                                started_thread;         // need to wait for thread to start before joining
+        std::atomic_bool                                started_thread;         // wait for thread start before joining
         std::mutex                                      thread_mutex;
-        std::condition_variable                         thread_cv;              // true if client needs to tell the server something
-        bool                                            has_cleaned_up;         // makes sure cleanup doesnt happen twice
+        std::condition_variable                         thread_cv;              // unblock if client has pkt to send
+        bool                                            has_cleaned_up;         // ensures cleanup doesnt happen twice
         
         /********************************************* Helper Functions ********************************************/
         /**
          * @brief: Helps construct color_to_led_btn_pairs based on what colors they share
          * @returns: The constructed map of shared colors
+         * @note static so that it can be used to create the static member variable
          */
-        MapParentMaps generateLedBtnPairs() const;
+        static MapParentMaps generateLedBtnPairs();
 
 
         /**
          * @brief Create a Fn Map object
-         * @return The function map object 
+         * @return The function map object
+         * @note static so that it can be used to create the static member variable
          */
-        Helpers::Map::ClassFnMap<GPIO_Controller> createFnMap() const;
+        static ModeMap createFnMap();
 
         /**
          * @brief Helper function that ... literally does nothing

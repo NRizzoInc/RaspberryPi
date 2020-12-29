@@ -53,7 +53,12 @@ class ButtonController : public GPIOBase {
          */
         std::vector<std::string> getBtnColorList() const;
 
-        const BtnMap& getBtnMap() const;
+        /**
+         * @brief Get the color to button mapping
+         * @note static so that it can be used to create the static member variable
+         * @return BtnMap& 
+         */
+        static const BtnMap& getBtnMap();
 
         /**
          * @brief Set the callback to occur when a button's state is changed 
@@ -83,7 +88,7 @@ class ButtonController : public GPIOBase {
         /******************************************** Private Variables ********************************************/
         // maps color to a buttons info: {"color": {pin#, isPressed}}
         // cannot be const because the bool "isPressed" needs to be able to change
-        mutable BtnMap color_to_btns;
+        static BtnMap color_to_btns;
 
         // callback for when a button's state changes
         mutable BtnCallback btn_cb;

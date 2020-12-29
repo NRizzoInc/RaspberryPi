@@ -9,18 +9,21 @@ namespace RPI {
 namespace gpio {
 namespace Button {
 
+/**************************************** Static Member Variables *****************************************/
+
+BtnMap ButtonController::color_to_btns {{
+    // get mappings in terminal with `gpio readall`
+    // go by "wPi" column
+    // init each button as "unpressed" = false
+    {"red",     std::make_pair(26, false)},
+    {"yellow",  std::make_pair(27, false)},
+    {"green",   std::make_pair(28, false)},
+    {"blue",    std::make_pair(29, false)}
+}};
+
 /********************************************** Constructors **********************************************/
 ButtonController::ButtonController()
     : GPIOBase{}
-    , color_to_btns ({
-            // get mappings in terminal with `gpio readall`
-            // go by "wPi" column
-            // init each button as "unpressed" = false
-            {"red",     std::make_pair(26, false)},
-            {"yellow",  std::make_pair(27, false)},
-            {"green",   std::make_pair(28, false)},
-            {"blue",    std::make_pair(29, false)}
-        })
 {
     // stub
 }
@@ -59,7 +62,7 @@ std::vector<std::string> ButtonController::getBtnColorList() const {
     return Helpers::Map::getMapKeys(color_to_btns);
 }
 
-const BtnMap& ButtonController::getBtnMap() const {
+const BtnMap& ButtonController::getBtnMap() {
     return color_to_btns;
 }
 
