@@ -21,20 +21,16 @@ using std::cerr;
 using std::endl;
 
 int main(int argc, char* argv[]) {
-    /* ============================================ Create GPIO Obj =========================================== */
-    // create single static gpio obj to controll rpi
-    // static needed so it can be accessed in ctrl+c lambda
-    static RPI::gpio::GPIO_Controller gpio_handler;
-
     /* ============================================ Parse CLI Flags =========================================== */
     // object that parses the command line inputs
     RPI::gpio::CLI_Parser cli_parser(
         argc,
         argv,
-        gpio_handler.getModes(),
-        gpio_handler.getLedColorList(),
+        RPI::gpio::GPIO_Controller::getModes(),
+        RPI::gpio::GPIO_Controller::getLedColorList(),
         "GPIO App"
     );
+
     // will have to convert string values to required type
     // note: will have to manually convert color str into list by splitting commas
     RPI::CLI::Results::ParseResults parse_res;
@@ -48,6 +44,14 @@ int main(int argc, char* argv[]) {
     const bool is_client {parse_res[RPI::CLI::Results::MODE] == "client"};
     const bool is_server {parse_res[RPI::CLI::Results::MODE] == "server"};
     const bool is_net    { is_client || is_server }; // true if client or server
+
+    /* ============================================ Create GPIO Obj =========================================== */
+    // create single static gpio obj to controll rpi
+    // static needed so it can be accessed in ctrl+c lambda
+    static RPI::gpio::GPIO_Controller gpio_handler{
+        // motor i2c addr (convert hex string to int using base 16)
+        static_cast<std::uint8_t>(std::stoi(parse_res[RPI::CLI::Results::MOTOR_ADDR], 0, 16))
+    };
 
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda

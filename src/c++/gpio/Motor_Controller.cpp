@@ -9,10 +9,10 @@ using std::cerr;
 using std::endl;
 
 /********************************************** Constructors **********************************************/
-MotorController::MotorController()
+MotorController::MotorController(const std::uint8_t motor_i2c_addr)
     : GPIOBase{}
-    , motor_i2c_addr{0x40} // TODO: make this a cli arg (gotten with `i2cdetect -y 1`)
-    , motor_i2c_fd{-1}     // invalid
+    , motor_i2c_addr{motor_i2c_addr}    // should be 0x40
+    , motor_i2c_fd{-1}                  // invalid
 {
     // stub
 }
