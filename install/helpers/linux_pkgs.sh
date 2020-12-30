@@ -16,7 +16,19 @@ apt install -y \
     gcc-7 g++-7 \
     mesa-common-dev \
     build-essential \
-    x264 \
+    pkg-config
+
+
+# camera packages
+apt install -y \
+    libx264-dev \
+    libgtk-3-dev \
+    libavcodec-dev libavformat-dev libswscale-dev libv4l-dev \
+    libxvidcore-dev libjpeg-dev libpng-dev libtiff-dev \
+    gfortran openexr libatlas-base-dev \
+    libtbb2 libtbb-dev libdc1394-22-dev \
+    python3-dev python3-numpy
+
 
 apt upgrade -y
 
