@@ -47,6 +47,12 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+# need to be sudo
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root ('sudo')"
+    exit
+fi
+
 # deduse library paths
 opencvRootDir="${externDir}/OpenCV"
 opencvContribDir="${opencvRootDir}/opencv_contrib"
@@ -60,6 +66,7 @@ if [[ ${mode} == "install" ]]; then
         mkdir -p build && \
         cd build && \
         cmake \
+            -D CMAKE_CXX_FLAGS="-Wno-psabi" \
             -D CMAKE_BUILD_TYPE=RELEASE \
             -D CMAKE_INSTALL_PREFIX=/usr/local \
             -D INSTALL_C_EXAMPLES=ON \
