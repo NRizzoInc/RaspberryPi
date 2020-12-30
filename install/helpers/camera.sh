@@ -1,12 +1,12 @@
 #!/bin/bash
-#@file: Builds and Installs External OpenCV Library
+#@file: Builds and Installs External OpenCV & RPI Camera Library
 
 # CLI Flags
 print_flags () {
     echo "========================================================================================================================="
     echo "Usage: camera.sh"
     echo "========================================================================================================================="
-    echo "Helper utility to setup the OpenCV external library in this repo to stream video to client"
+    echo "Helper utility to setup the OpenCV & RPI Camera external libraries in this repo to stream video to client"
     echo "========================================================================================================================="
     echo "How to use:" 
     echo "  To Start: ./camera.sh [flags]"
@@ -54,9 +54,9 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # deduse library paths
-opencvRootDir="${externDir}/OpenCV"
-opencvContribDir="${opencvRootDir}/opencv_contrib"
-opencvDir="${opencvRootDir}/opencv"
+cameraExternDir="${externDir}/camera"
+opencvContribDir="${cameraExternDir}/opencv_contrib"
+opencvDir="${cameraExternDir}/opencv"
 if [[ ${mode} == "install" ]]; then
 
     # install gpio lib, have to be in the correct dir for this (chain commands)

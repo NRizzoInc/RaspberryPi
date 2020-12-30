@@ -8,8 +8,8 @@
 	path = extern/pistache
 	url = https://github.com/oktal/pistache.git
 [submodule "extern/OpenCV/opencv"]
-	path = extern/OpenCV/opencv
+	path = extern/camera/opencv
 	url = git@github.com:opencv/opencv.git
 [submodule "extern/OpenCV/opencv_contrib"]
-	path = extern/OpenCV/opencv_contrib
+	path = extern/camera/opencv_contrib
 	url = git@github.com:opencv/opencv_contrib.git
