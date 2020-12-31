@@ -122,6 +122,14 @@ ReturnCodes CLI_Parser::addFlags() {
         ->check(::CLI::Range(1024, 65535))
         ;
 
+    /****************************************** Camera Flags *****************************************/
+
+    add_option("-f,--frames", cli_res[CLI::Results::VID_FRAMES])
+        ->description("The number of frames to capture before stopping the video (-1 = infinite)")
+        ->required(false)
+        ->default_val("-1")
+        ;
+
     return ReturnCodes::Success;
 }
 

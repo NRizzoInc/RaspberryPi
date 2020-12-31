@@ -48,6 +48,7 @@ namespace CLI::Results {
     constexpr auto NET_PORT         = "net-port"   ;
     constexpr auto WEB_PORT         = "web-port"   ;
     constexpr auto MOTOR_ADDR       = "motor-addr" ;
+    constexpr auto VID_FRAMES       = "frames" ;
 }; // end of CLI::Results namespace
 
 }; // end of RPI namespace

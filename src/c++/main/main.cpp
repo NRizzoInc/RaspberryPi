@@ -71,8 +71,8 @@ int main(int argc, char* argv[]) {
     /* ======================================== Create Server OR Client ======================================= */
 
     // TODO: remove & add to server
-    // TODO: have # frames be CLI arg (only 1 for testing)
-    static RPI::Camera::CamHandler Camera{1};
+    const int max_frames {std::stoi(parse_res[RPI::CLI::Results::VID_FRAMES])};
+    static RPI::Camera::CamHandler Camera{max_frames};
 
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
