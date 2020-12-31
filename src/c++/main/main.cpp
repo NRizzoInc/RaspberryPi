@@ -77,9 +77,6 @@ int main(int argc, char* argv[]) {
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
-    // store handler to chain with other potential handlers due to other libraries (ahem... crow)
-    // using their own signal handler that would overwrite mine
-    // reference: https://stackoverflow.com/a/10701909/13933174
     std::signal(SIGINT, [](int signum) {
         cout << "Caught ctrl+c: " << signum << endl;
         if(gpio_handler.setShouldThreadExit(true) != RPI::ReturnCodes::Success) {
