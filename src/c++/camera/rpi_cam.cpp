@@ -66,11 +66,24 @@ void CamHandler::RunFrameGrabber() {
 
     // start capture
     // loop until max frame count or told to stop
-    start_time = std::chrono::system_clock::now();
+    start_time      = std::chrono::system_clock::now();
+    auto curr_time  = std::chrono::system_clock::now();
     while (!getShouldStop() && (max_frames == -1 || frame_count < max_frames)) {
 
         RaspiCam_Cv::grab();
         RaspiCam_Cv::retrieve(image);
+
+        // add timestamp to frame
+        curr_time  = std::chrono::system_clock::now();
+        cv::putText(
+            image,                                          // target frames
+            Helpers::Timing::GetCurrTimecode(curr_time),    // timecode/stamp text to write
+            cv::Point(10, image.rows / 2),                  // top-left position
+            cv::FONT_HERSHEY_DUPLEX,                        // font style
+            1.0,
+            CV_RGB(118, 185, 0),                            // font color
+            2
+        );
 
         // increment frame count
         ++frame_count;
@@ -79,7 +92,6 @@ void CamHandler::RunFrameGrabber() {
     }
 
     // TODO: add helper include to auto convert start/end time to timecode string and print time elapsed
-    // auto end_time {std::chrono::system_clock::now()};
     
     // stop
     cout << "Stopping camera" << endl;

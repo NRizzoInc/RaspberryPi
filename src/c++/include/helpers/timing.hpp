@@ -2,13 +2,18 @@
 #define TIMING_HPP
 
 // Standard Includes
-#include <chrono>
+#include <chrono>   // clock
+#include <ctime>    // localtime
+#include <iomanip>  // put_time
+#include <sstream>  // stringstream
 
 // Our Includes
 
 // 3rd Party Includes
 
 namespace Helpers::Timing {
+
+constexpr auto timecode_repr {"%Y-%m-%d %H:%M:%S"};
 
 /**
  * @brief Determines if the required amount of time has passed since start
@@ -27,6 +32,18 @@ bool hasTimeElapsed(
     const auto end_time = std::chrono::steady_clock::now();
     const auto elapsed_time = std::chrono::duration_cast<timeUnit>(end_time - start_time).count();
     return elapsed_time > duration;
+}
+
+
+inline std::string GetCurrTimecode(const std::chrono::_V2::system_clock::time_point curr_time) {
+    auto in_time_t {std::chrono::system_clock::to_time_t(curr_time)};
+    std::stringstream time_str;
+    time_str << std::put_time(
+        std::localtime(&in_time_t),
+        timecode_repr // TODO: add ms?
+    );
+
+    return time_str.str();
 }
 
 }; // end of Helpers::Timing namespace

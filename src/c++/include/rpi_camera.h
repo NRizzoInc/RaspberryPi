@@ -10,9 +10,11 @@
 
 // Our Includes
 #include "constants.h"
+#include "timing.hpp"
 
 // 3rd Party Includes
 #include <raspicam_cv.h>
+#include <opencv2/imgproc.hpp> // for putText()
 
 namespace RPI {
 
