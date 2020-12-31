@@ -4,6 +4,7 @@ add_library(RPI_Camera
 ) 
 
 target_link_libraries(RPI_Camera
+    ${Raspicam_LIBRARIES}
 )
 
 target_compile_options(RPI_Camera

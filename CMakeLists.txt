@@ -26,6 +26,7 @@ find_package(JSON REQUIRED) # using https://github.com/nlohmann/json
 find_package(CLI11 REQUIRED) # using https://cliutils.gitlab.io/CLI11Tutorial/
 find_package(WiringPi REQUIRED) # using https://github.com/WiringPi/WiringPi
 find_package(Pistache REQUIRED) # using https://github.com/pistacheio/pistache
+find_package(Raspicam REQUIRED) # using https://github.com/cedricve/raspicam
 
 # Include the package's header files
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/c++/include") # contains OUR headers
@@ -34,6 +35,7 @@ include_directories(SYSTEM ${JSON_INCLUDE_DIR}) # use system to ingore release w
 include_directories(${CLI11_INCLUDE_DIR})
 include_directories(${WiringPi_INCLUDE_DIR}) # pair with target_link_libraries(<projName> ${WiringPi_LIBS})
 include_directories(${Pistache_INCLUDE_DIR}) # pair with Pistache_LIBRARIES
+include_directories(${Raspicam_INCLUDE_DIR}) # pair with Raspicam_LIBRARIES
 # include_directories(${Boost_INCLUDE_DIRS}) # pair with Boost_LIBRARIES
 
 
