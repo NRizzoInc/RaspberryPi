@@ -58,10 +58,11 @@ if [[ ${mode} == "install" ]]; then
         mkdir -p build && \
         cd build && \
         cmake .. && \
-        make && \
-        make install \
-            || echo "Failed to build: try running ./install/helpers/linux_pkgs.sh to get requirements" \
-            && ldconfig
+        make \
+            || echo "Failed to build: try running ./install/helpers/linux_pkgs.sh to get requirements"
+        # TODO: determine if should "isntall" libs -- needs to be sudo
+        # make install \
+            # && ldconfig
 
 else # clean
     echo "===================== Cleaning Raspicam Library! ====================="
