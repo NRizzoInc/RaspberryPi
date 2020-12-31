@@ -31,7 +31,7 @@ print_flags () {
     echo "    -s | --submodules: Fetch & Update all the git submodules in this repo"
     echo "    -g | --gpio: Build and Install the c++ gpio library from source"
     echo "    -w | --web: Build and Install the c++ web-app library \"pistache\" to capture keyboard input for client"
-    echo "    -c | --camera: Build and Install the c++ camera library \"opencv\" to stream video to the client"
+    echo "    -c | --camera: Build and Install the c++ camera library to stream video to the client"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
 }
