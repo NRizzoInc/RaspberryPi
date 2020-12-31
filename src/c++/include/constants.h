@@ -25,6 +25,13 @@ namespace Constants {
         constexpr int           ACPT_TIMEOUT    {5}; // ctrl+c takes 5 sec to work pre-connect
     } // end of Network namespace
 
+    namespace Camera {
+        constexpr int           VID_WIDTH       {640};
+        constexpr int           VID_HEIGHT      {480};
+        constexpr int           VID_FRAMERATE   {10}; // TODO: upgrade to 25 if 10 is okay
+
+    }; //end of camera namespace
+
 }; // end of constants namespace
 
 namespace CLI::Results {
