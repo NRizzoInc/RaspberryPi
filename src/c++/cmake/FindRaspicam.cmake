@@ -5,10 +5,13 @@
 # Raspicam_INCLUDE_DIR  - Location of the Raspicam header
 
 # paths come from Raspicam build script (called from setup script)
-set(Raspicam_BINS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern/camera/raspicam/build/src")
-set(Raspicam_HEADERS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern/camera/raspicam/src")
+set(Raspicam_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern/camera/raspicam/")
+set(Raspicam_BUILD_DIR "${Raspicam_ROOT_DIR}/build")
+set(Raspicam_BINS_DIR "${Raspicam_BUILD_DIR}/src")
+set(Raspicam_HEADERS_DIR "${Raspicam_ROOT_DIR}/src")
 find_library(Raspicam_LIBRARIES
-    NAMES libraspicam.so raspicam raspicam_cv libraspicam_cv.so libraspicam_cv
+    NAMES raspicam_cv  
+    NAMES raspicam
     HINTS ${Raspicam_BINS_DIR}
 )
 find_path(Raspicam_INCLUDE_DIR
@@ -25,9 +28,24 @@ if (NOT Raspicam_LIBRARIES)
     )
     # try to find again now that it was installed
     find_library(Raspicam_LIBRARIES
-    NAMES libraspicam.so raspicam raspicam_cv libraspicam_cv.so libraspicam_cv
-    HINTS ${Raspicam_BINS_DIR}
-)
+        NAMES raspicam_cv  
+        NAMES raspicam
+        HINTS ${Raspicam_BINS_DIR}
+    )
+endif()
+
+# add additional libs/includes needed
+find_package(OpenCV REQUIRED) # note: FindOpenCV.cmake provided by apt pkg
+if(OpenCV_FOUND)
+    set(Raspicam_INCLUDE_DIR
+        ${Raspicam_INCLUDE_DIR}
+        ${OpenCV_INCLUDE_DIRS}
+    )
+
+    set(Raspicam_LIBRARIES 
+        ${Raspicam_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+    )
 endif()
 
 

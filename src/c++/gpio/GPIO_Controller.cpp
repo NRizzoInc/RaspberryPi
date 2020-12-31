@@ -196,6 +196,7 @@ ModeMap GPIOController::createFnMap() {
     to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testLoop);
     to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["client"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
+    to_rtn["camera"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["none"]        = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     return to_rtn;
 }

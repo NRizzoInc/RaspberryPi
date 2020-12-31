@@ -12,7 +12,6 @@
 #include "constants.h"
 
 // 3rd Party Includes
-#include <raspicam.h>
 #include <raspicam_cv.h>
 
 namespace RPI {

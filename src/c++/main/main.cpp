@@ -15,6 +15,7 @@
 #include "tcp_client.h"
 #include "tcp_base.h"
 #include "backend.h"
+#include "rpi_camera.h"
 
 using std::cout;
 using std::cerr;
@@ -41,8 +42,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     // determine if dealing with server or client
-    const bool is_client {parse_res[RPI::CLI::Results::MODE] == "client"};
-    const bool is_server {parse_res[RPI::CLI::Results::MODE] == "server"};
+    const bool is_client { parse_res[RPI::CLI::Results::MODE] == "client" };
+    const bool is_server { parse_res[RPI::CLI::Results::MODE] == "server" };
+    const bool is_cam    { parse_res[RPI::CLI::Results::MODE] == "camera" };
     const bool is_net    { is_client || is_server }; // true if client or server
 
     /* ============================================ Create GPIO Obj =========================================== */
@@ -66,6 +68,13 @@ int main(int argc, char* argv[]) {
     // Create UI Event Listener to interact with client
     static RPI::UI::WebApp net_ui{net_agent, std::stoi(parse_res[RPI::CLI::Results::WEB_PORT])};
 
+    /* ======================================== Create Server OR Client ======================================= */
+
+    // TODO: remove & add to server
+    // TODO: have # frames be CLI arg (only 1 for testing)
+    static RPI::Camera::CamHandler Camera{1};
+
+
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
     // store handler to chain with other potential handlers due to other libraries (ahem... crow)
@@ -79,6 +88,10 @@ int main(int argc, char* argv[]) {
         
         if(net_agent->setExitCode(true) != RPI::ReturnCodes::Success) {
             cerr << "Error: Failed to stop network thread" << endl;
+        }
+
+        if(Camera.setShouldStop(true) != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to stop camera thread" << endl;
         }
 
         net_ui.stopWebApp();
@@ -111,8 +124,15 @@ int main(int argc, char* argv[]) {
         });
     }
 
+    if (is_cam) {
+        thread_list.push_back(std::thread{
+            [&](){
+                Camera.RunFrameGrabber();
+            }
+        });
+    }
     // startup client or server in a thread
-    if (is_net) {
+    else if (is_net) {
         cout << "Started net agent" << endl;
         net_agent->runNetAgent(false);
     }
