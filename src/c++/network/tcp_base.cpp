@@ -16,6 +16,7 @@ TcpBase::TcpBase()
     , net_agent_thread{}
     , started_thread{false}
     , has_cleaned_up{false}
+    // , latest_frame{""}
 {
     // stub
 }
@@ -66,6 +67,19 @@ void TcpBase::setRecvCallback(const RecvPktCallback& recv_callback) {
     recv_cb = recv_callback;
 }
 
+const std::vector<char>& TcpBase::getLatestCamFrame() {
+    // lock to make sure data can be gotten without new data being written
+    std::unique_lock<std::mutex> lk{frame_mutex};
+    return latest_frame;
+}
+
+
+ReturnCodes TcpBase::setLatestCamFrame(const std::vector<char>& new_frame) {
+    // lock to make sure data can be written without it trying to be read simultaneously
+    std::unique_lock<std::mutex> lk{frame_mutex};
+    latest_frame = new_frame;
+    return ReturnCodes::Success;
+}
 
 /****************************************** Shared Common Functions ****************************************/
 
