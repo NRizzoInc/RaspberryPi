@@ -16,7 +16,6 @@ TcpBase::TcpBase()
     , net_agent_thread{}
     , started_thread{false}
     , has_cleaned_up{false}
-    // , latest_frame{""}
 {
     // stub
 }

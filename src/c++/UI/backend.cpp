@@ -210,13 +210,14 @@ void WebApp::handleVidReq(
 ) {
     try {
         // stores pixel data
-        char img_buf[] = "";
-        const std::size_t img_size {sizeof(img_buf)};
+        const std::vector<char>& frame            { client_ptr->getLatestCamFrame() };
+        const std::size_t img_size                { frame.size() };
+        const char* frame_buf                     { img_size > 0 ? client_ptr->getLatestCamFrame().data() : "" };
 
         // actually send the pixel data back to GET request
         res.send(
             Pistache::Http::Code::Ok,
-            img_buf, img_size,
+            frame_buf, img_size,
             Pistache::Http::Mime::MediaType(
                 Pistache::Http::Mime::Type::Image, // main type
                 Pistache::Http::Mime::Subtype::Jpeg // sub type
