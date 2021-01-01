@@ -13,7 +13,7 @@
 
 namespace Helpers::Timing {
 
-constexpr auto timecode_repr {"%Y-%m-%d %H:%M:%S"};
+constexpr auto timecode_repr {"%Y-%m-%dT%H:%M:%S"};
 
 /**
  * @brief Determines if the required amount of time has passed since start
