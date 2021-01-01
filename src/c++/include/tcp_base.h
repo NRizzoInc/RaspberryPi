@@ -145,10 +145,10 @@ class TcpBase : public Packet {
         /******************************************** Private Variables ********************************************/
 
         std::atomic_bool            should_exit;        // true if should exit/stop connection
-        std::thread                 net_agent_thread;   // holds the thread proc for runNetAgent()
+        std::thread                 net_agent_thread;   // holds the thread proc for netAgentFn()
         std::thread                 cam_vid_thread;     // holds the thread proc for VideoStreamHandler()
-        std::atomic_bool            started_thread;     // need to send an initization message for first packet
-        std::mutex                  thread_mutex;
+        std::atomic_bool            started_threads;    // need to send an initization message for first packet
+        std::mutex                  thread_mutex;       // mutex controlling access to the classes threads (start/join)
         std::condition_variable     thread_cv;          // true if client needs to tell the server something
         bool                        has_cleaned_up;     // makes sure cleanup doesnt happen twice
 

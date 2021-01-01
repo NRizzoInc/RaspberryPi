@@ -14,7 +14,7 @@ TcpBase::TcpBase()
     : Packet{}
     , should_exit{false}
     , net_agent_thread{}
-    , started_thread{false}
+    , started_threads{false}
     , has_cleaned_up{false}
 {
     // stub
@@ -35,7 +35,7 @@ ReturnCodes TcpBase::cleanup() {
     thread_cv.wait_for(
         lk,
         std::chrono::milliseconds(200),
-        [&](){ return started_thread.load(); }
+        [&](){ return started_threads.load(); }
     );
 
     // block until thread ends
@@ -86,7 +86,7 @@ void TcpBase::runNetAgent(const bool print_data) {
     }};
 
     // unlock & notify so joiner can continue
-    started_thread.store(true);
+    started_threads.store(true);
     start_thread_lk.unlock();
     thread_cv.notify_all();
     
