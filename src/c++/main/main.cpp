@@ -72,7 +72,9 @@ int main(int argc, char* argv[]) {
 
     // TODO: remove & add to server
     const int max_frames {std::stoi(parse_res[RPI::CLI::Results::VID_FRAMES])};
-    static RPI::Camera::CamHandler Camera{max_frames};
+    // only setup camera if available from server or camera test code
+    const bool should_init_cam { is_cam || is_server };
+    static RPI::Camera::CamHandler Camera{max_frames, should_init_cam};
 
 
     /* ========================================= Create Ctrl+C Handler ======================================== */

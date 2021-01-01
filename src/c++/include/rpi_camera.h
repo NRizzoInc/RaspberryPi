@@ -39,8 +39,11 @@ class CamHandler : public raspicam::RaspiCam_Cv {
         /**
          * @brief Construct a new camera handler object
          * @param max_frame_count (defualts to -1 = infinite) If set, only this number of frames will be taken
+         * @param should_init (default=true) Initialize obj in constructor 
+         * (If false, you will have to call SetupCam() manually).
+         * Needed if running client code on non-rpi w/o camera to open 
          */
-        CamHandler(const int max_frame_count=-1);
+        CamHandler(const int max_frame_count=-1, const bool should_init=true);
         virtual ~CamHandler();
 
         /********************************************* Getters/Setters *********************************************/

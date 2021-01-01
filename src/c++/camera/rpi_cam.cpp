@@ -11,14 +11,16 @@ using std::endl;
 
 /********************************************** Constructors **********************************************/
 
-CamHandler::CamHandler(const int max_frame_count)
+CamHandler::CamHandler(const int max_frame_count, const bool should_init)
     : raspicam::RaspiCam_Cv{}
     , frame_count{0}
     , max_frames{max_frame_count}       // defaults to infinite = -1
     , stop_grabbing{false}
 {
-    if(SetupCam() != ReturnCodes::Success) {
-        cerr << "Error: Failed to setup raspicam" << endl;
+    if (should_init) {
+        if(SetupCam() != ReturnCodes::Success) {
+            cerr << "Error: Failed to setup raspicam" << endl;
+        }
     }
 }
 
