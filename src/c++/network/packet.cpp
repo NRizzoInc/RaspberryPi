@@ -21,15 +21,19 @@ Packet::~Packet() {
 /********************************************* Getters/Setters *********************************************/
 
 const CommonPkt& Packet::getCurrentPkt() const {
+    // lock to make sure data can be gotten without new data being written
+    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
     return msg_pkt;
 }
 
 ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
+    // lock to make sure data can be written without it trying to be read simultaneously
+    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
     msg_pkt = updated_pkt;
     return ReturnCodes::Success;
 }
 
-const std::vector<char>& Packet::getLatestCamFrame() {
+const std::vector<char>& Packet::getLatestCamFrame() const {
     // lock to make sure data can be gotten without new data being written
     std::unique_lock<std::mutex> lk{frame_mutex};
     return latest_frame;

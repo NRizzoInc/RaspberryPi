@@ -74,7 +74,7 @@ class Packet {
          * @return Reference to the char buffer in the form of a char vector
          * @note Needs to use a mutex bc of read/write race condition with server
          */
-        virtual const std::vector<char>& getLatestCamFrame();
+        virtual const std::vector<char>& getLatestCamFrame() const;
 
         /**
          * @brief Set the latest frame from the camera video stream
@@ -111,11 +111,14 @@ class Packet {
 
     private:
         /******************************************** Private Variables ********************************************/
-        CommonPkt msg_pkt;  // holds the most up to date information from client (inits to all zeros)
+
+        // regular data packet variables
+        CommonPkt               msg_pkt;            // holds the most up to date information from client
+        mutable std::mutex      reg_pkt_mutex;      // controls access to the `msg_pkt` data
 
         // camera pkt variables
-        std::vector<char>           latest_frame;       // contains the most up to date camera frame
-        std::mutex                  frame_mutex;        // controls access to the `latest_frame` data
+        std::vector<char>       latest_frame;       // contains the most up to date camera frame
+        mutable std::mutex      frame_mutex;        // controls access to the `latest_frame` data
 
 
         /********************************************* Helper Functions ********************************************/
