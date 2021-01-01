@@ -30,6 +30,7 @@ const std::string   URL_BASE_IP          {"http://127.0.0.1"};
 enum class WebAppUrlsNames {
     // LANDING_PAGE, //TODO: get redirect to work
     MAIN_PAGE,
+    CAM_PAGE,
     SHUTDOWN_PAGE,
     STATIC,
 };
@@ -38,6 +39,7 @@ enum class WebAppUrlsNames {
 const std::unordered_map<WebAppUrlsNames, std::string> WebAppUrls {
     // {WebAppUrlsNames::LANDING_PAGE, "/"}, //TODO: get redirect to work
     {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"},
+    {WebAppUrlsNames::CAM_PAGE, "/Camera"}, // from perspective of html file, static is one back
     {WebAppUrlsNames::SHUTDOWN_PAGE, "/Shutdown"},
     {WebAppUrlsNames::STATIC, "../static"}, // from perspective of html file, static is one back
 };
@@ -110,6 +112,11 @@ class WebApp {
          * (updates packet for client to be sent to server)
          */
         void recvMainData(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
+
+        /**
+         * @brief Responsible for sending the latest camera video frame to web app
+         */
+        void handleVidReq(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
 
         // TODO: Get redirect to work (hard to do function generator/flexible with this bind)
         ///**

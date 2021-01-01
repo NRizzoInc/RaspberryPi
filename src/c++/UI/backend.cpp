@@ -84,6 +84,14 @@ ReturnCodes WebApp::setupSites() {
         Pistache::Rest::Routes::bind(&WebApp::recvMainData, this)
     );
 
+    // video stream page
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::CAM_PAGE),
+        Pistache::Rest::Routes::bind(&WebApp::handleVidReq, this)
+    );
+
+
     // shutdown/close page
     Pistache::Rest::Routes::Get(
         web_app_router,
@@ -193,6 +201,32 @@ void WebApp::recvMainData(
     } catch (std::exception& err) {
         cout << "ERROR: Bad web app data: " << err.what() << endl;
         res.send(Pistache::Http::Code::Bad_Request, "Bad Data Sent!\n");
+    }
+}
+
+void WebApp::handleVidReq(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    try {
+        // stores pixel data
+        char img_buf[] = "";
+        const std::size_t img_size {sizeof(img_buf)};
+
+        // actually send the pixel data back to GET request
+        res.send(
+            Pistache::Http::Code::Ok,
+            img_buf, img_size,
+            Pistache::Http::Mime::MediaType(
+                Pistache::Http::Mime::Type::Image, // main type
+                Pistache::Http::Mime::Subtype::Jpeg // sub type
+            )
+        );
+
+    } catch (std::exception& err) {
+        constexpr auto err_str {"ERROR: Handling web app video data"};
+        cout << err_str << ": " << err.what() << endl;
+        res.send(Pistache::Http::Code::Bad_Request, err_str);
     }
 }
 
