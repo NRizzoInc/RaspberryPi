@@ -77,21 +77,6 @@ class TcpBase : public Packet {
          */
         void runNetAgent(const bool print_data);
 
-        /**
-         * @brief Get the latest frame from the camera video stream
-         * @return Reference to the char buffer in the form of a char vector
-         * @note Needs to use a mutex bc of read/write race condition with server
-         */
-        virtual const std::vector<char>& getLatestCamFrame();
-
-        /**
-         * @brief Set the latest frame from the camera video stream
-         * @return Success if no issues
-         * @note Needs to use a mutex bc of read/write race condition with server
-         */
-        virtual ReturnCodes setLatestCamFrame(const std::vector<char>& new_frame);
-
-
     protected:
         /****************************************** Shared Common Functions ****************************************/
 
@@ -159,10 +144,6 @@ class TcpBase : public Packet {
         std::mutex                  thread_mutex;
         std::condition_variable     thread_cv;          // true if client needs to tell the server something
         bool                        has_cleaned_up;     // makes sure cleanup doesnt happen twice
-
-        // camera variables
-        std::vector<char>           latest_frame;       // contains the most up to date camera frame
-        std::mutex                  frame_mutex;        // controls access to the `latest_frame` data
 
 }; // end of TcpClient class
 

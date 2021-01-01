@@ -7,6 +7,7 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <mutex>
 
 // Our Includes
 #include "constants.h"
@@ -68,6 +69,20 @@ class Packet {
 
         virtual ReturnCodes updatePkt(const CommonPkt& updated_pkt);
 
+        /**
+         * @brief Get the latest frame from the camera video stream
+         * @return Reference to the char buffer in the form of a char vector
+         * @note Needs to use a mutex bc of read/write race condition with server
+         */
+        virtual const std::vector<char>& getLatestCamFrame();
+
+        /**
+         * @brief Set the latest frame from the camera video stream
+         * @return Success if no issues
+         * @note Needs to use a mutex bc of read/write race condition with server
+         */
+        virtual ReturnCodes setLatestCamFrame(const std::vector<char>& new_frame);
+
         /*************************************** Packet Read/Write Functions ***************************************/
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
 
@@ -97,6 +112,10 @@ class Packet {
     private:
         /******************************************** Private Variables ********************************************/
         CommonPkt msg_pkt;  // holds the most up to date information from client (inits to all zeros)
+
+        // camera pkt variables
+        std::vector<char>           latest_frame;       // contains the most up to date camera frame
+        std::mutex                  frame_mutex;        // controls access to the `latest_frame` data
 
 
         /********************************************* Helper Functions ********************************************/
