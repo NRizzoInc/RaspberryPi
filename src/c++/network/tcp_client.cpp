@@ -102,6 +102,10 @@ void TcpClient::netAgentFn(const bool print_data) {
     cout << "Exiting client" << endl;
 }
 
+void TcpClient::VideoStreamHandler() {
+    // stub
+}
+
 
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)

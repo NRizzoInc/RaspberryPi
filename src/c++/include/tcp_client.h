@@ -58,6 +58,11 @@ class TcpClient : public TcpBase {
          */
         virtual void netAgentFn(const bool print_data) override;
 
+        /**
+         * @brief Starts up a non-blocking function to recv video frames from server camera 
+         */
+        virtual void VideoStreamHandler() override;
+
     private:
         /******************************************** Private Variables ********************************************/
 

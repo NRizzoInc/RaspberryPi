@@ -153,6 +153,10 @@ void TcpServer::netAgentFn(const bool print_data) {
     }
 }
 
+void TcpServer::VideoStreamHandler() {
+    // stub
+}
+
 ReturnCodes TcpServer::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);

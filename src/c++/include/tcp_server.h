@@ -52,6 +52,12 @@ class TcpServer : public TcpBase {
          */
         virtual void netAgentFn(const bool print_data) override;
 
+        /**
+         * @brief Starts up a non-blocking function to send video frames from camera to client
+         */
+        virtual void VideoStreamHandler() override;
+
+
     private:
         /******************************************** Private Variables ********************************************/
 

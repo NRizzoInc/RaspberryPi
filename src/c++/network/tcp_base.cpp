@@ -80,6 +80,11 @@ void TcpBase::runNetAgent(const bool print_data) {
         netAgentFn(print_data);
     }};
 
+    cam_vid_thread = std::thread{[this]() {
+        // dont pin fn to TcpBase since it should be overridden by derived classes
+        VideoStreamHandler();
+    }};
+
     // unlock & notify so joiner can continue
     started_thread.store(true);
     start_thread_lk.unlock();

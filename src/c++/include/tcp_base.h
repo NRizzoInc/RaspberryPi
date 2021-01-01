@@ -126,6 +126,12 @@ class TcpBase : public Packet {
         virtual void netAgentFn(const bool print_data) = 0;
 
         /**
+         * @brief The function to run regarding video frames when starting up the TCP server/client
+         * (override so that it can be called by runNetAgent() in a thread)
+         */
+        virtual void VideoStreamHandler() = 0;
+
+        /**
          * @brief Function called by the destructor to close the sockets
          * @note This should be called at beginining of derived quit()
          */
@@ -140,6 +146,7 @@ class TcpBase : public Packet {
 
         std::atomic_bool            should_exit;        // true if should exit/stop connection
         std::thread                 net_agent_thread;   // holds the thread proc for runNetAgent()
+        std::thread                 cam_vid_thread;     // holds the thread proc for VideoStreamHandler()
         std::atomic_bool            started_thread;     // need to send an initization message for first packet
         std::mutex                  thread_mutex;
         std::condition_variable     thread_cv;          // true if client needs to tell the server something
