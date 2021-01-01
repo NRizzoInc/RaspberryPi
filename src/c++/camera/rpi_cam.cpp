@@ -74,15 +74,21 @@ void CamHandler::RunFrameGrabber() {
         RaspiCam_Cv::retrieve(image);
 
         // add timestamp to frame
-        curr_time  = std::chrono::system_clock::now();
+        curr_time               = std::chrono::system_clock::now();
+        std::string timecode    { Helpers::Timing::GetCurrTimecode(curr_time) };
+        const int fontFace      { cv::FONT_HERSHEY_SIMPLEX };
+        const double fontScale  { 1.0 };
+        const int thickness     { 2 };
+        auto timecode_size      { cv::getTextSize(timecode, fontFace, fontScale, thickness, 0) };
         cv::putText(
             image,                                          // target frames
-            Helpers::Timing::GetCurrTimecode(curr_time),    // timecode/stamp text to write
-            cv::Point(10, image.rows / 2),                  // top-left position
-            cv::FONT_HERSHEY_DUPLEX,                        // font style
-            1.0,
-            CV_RGB(118, 185, 0),                            // font color
-            2
+            timecode,                                       // timecode/stamp text to write
+            cv::Point(50, 50),                              // top-left position (otherwise out of screen)
+            fontFace,                                       // font style
+            fontScale,                                      
+            CV_RGB(255, 255, 255),                          // font color (white)
+            thickness,
+            false                                           // relative to top-left
         );
 
         // increment frame count
