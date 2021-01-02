@@ -111,7 +111,7 @@ void TcpClient::netAgentFn(const bool print_data) {
 
 void TcpClient::VideoStreamHandler() {
     // connect to camera server (if failed to connect, just stop)
-    if(connectToServer(ctrl_data_sock_fd, server_ip, ctrl_data_port) != ReturnCodes::Success) {
+    if(connectToServer(cam_data_sock_fd, server_ip, cam_data_port) != ReturnCodes::Success) {
         cerr << "ERROR: Failed to connect to server camera @" << formatIpAddr(server_ip, cam_data_port) << endl;
         return;
     } else {
