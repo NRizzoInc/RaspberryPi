@@ -43,7 +43,7 @@ ReturnCodes CamHandler::setShouldStop(const bool new_status) {
     return ReturnCodes::Success;
 }
 
-ReturnCodes CamHandler::setGrabCallback(std::function<void(const std::vector<char>& frame)> _grab_cb) {
+ReturnCodes CamHandler::setGrabCallback(GrabFrameCb _grab_cb) {
     grab_cb = _grab_cb;
     return ReturnCodes::Success;
 }
