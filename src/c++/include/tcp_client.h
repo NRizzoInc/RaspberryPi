@@ -66,9 +66,9 @@ class TcpClient : public TcpBase {
     private:
         /******************************************** Private Variables ********************************************/
 
-        int                         client_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
+        int                         ctrl_sock_fd;     // tcp socket file descriptor that sends control data to server
         std::string                 server_ip;          // ip address of the server
-        int                         server_port;        // port number of the server
+        int                         server_ctrl_port;   // port number to send control data to the server
         std::atomic_bool            pkt_ready;          // alert send cv to unlock
         std::mutex                  data_mutex;
         std::condition_variable     has_new_msg;        // true if client needs to tell the server something

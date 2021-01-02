@@ -13,9 +13,9 @@ namespace Network {
 TcpServer::TcpServer(const int port_num, const bool should_init)
     : TcpBase{}
     , listen_sock_fd{-1}            // init to invalid
-    , data_sock_fd{-1}              // init to invalid
+    , ctrl_sock_fd{-1}              // init to invalid
     , client_ip{}                   // empty string bc no client yet
-    , listen_port{port_num}         // wait to accept connections at this port
+    , ctrl_listen_port{port_num}    // wait to accept connections at this port for regular pkts
 {
     // first check if should not init
     if (!should_init) return;
@@ -47,10 +47,10 @@ ReturnCodes TcpServer::acceptClient() {
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
-    cout << "Waiting to accept connection @" << formatIpAddr(GetPublicIp(), listen_port) << endl;
-    while (!getExitCode() && data_sock_fd < 0) {
+    cout << "Waiting to accept connection @" << formatIpAddr(GetPublicIp(), ctrl_listen_port) << endl;
+    while (!getExitCode() && ctrl_sock_fd < 0) {
         // call the accept API on the socket and forward connection to data socket
-        data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
+        ctrl_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
     }
 
     // if should exit, do not continue
@@ -59,11 +59,11 @@ ReturnCodes TcpServer::acceptClient() {
     }
 
     // if the data socket does not open successfully, close the listening socket
-    if(data_sock_fd < 0) {
+    if(ctrl_sock_fd < 0) {
         cout << "ERROR: Failed to accept connect" << endl;
-        if(data_sock_fd >= 0) {
-            close(data_sock_fd);
-            data_sock_fd = - 1;
+        if(ctrl_sock_fd >= 0) {
+            close(ctrl_sock_fd);
+            ctrl_sock_fd = - 1;
         }
         return ReturnCodes::Error;
     }
@@ -73,7 +73,7 @@ ReturnCodes TcpServer::acceptClient() {
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::RECV_TIMEOUT;
     timeout.tv_usec = 0;
-    setsockopt(data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(ctrl_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // Print the client address (convert network address to char)
     cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << endl; 
@@ -99,7 +99,7 @@ void TcpServer::netAgentFn(const bool print_data) {
                 /********************************* Receiving From Server ********************************/
                 // call recvData, passing buf, to receive data
                 // save the return value of recvData in a data_size variable
-                const int data_size {recvData(data_sock_fd, buf)};
+                const int data_size {recvData(ctrl_sock_fd, buf)};
 
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
@@ -145,9 +145,9 @@ void TcpServer::netAgentFn(const bool print_data) {
             }
 
             // at end of while, reset data socket to attempt to make new connection with same listener
-            if (data_sock_fd > 0) {
-                close(data_sock_fd);
-                data_sock_fd = -1;
+            if (ctrl_sock_fd > 0) {
+                close(ctrl_sock_fd);
+                ctrl_sock_fd = -1;
             }
         }
     }
@@ -181,7 +181,7 @@ ReturnCodes TcpServer::initSock() {
     // init struct for address to bind socket
     sockaddr_in my_addr {};
     my_addr.sin_family = AF_INET;                   // address family is AF_INET (IPV4)
-    my_addr.sin_port = htons(listen_port);          // convert listen_port to network number format
+    my_addr.sin_port = htons(ctrl_listen_port);     // convert ctrl_listen_port to network number format
     my_addr.sin_addr.s_addr = htonl(INADDR_ANY);    // accept conn from all Network Interface Cards (NIC)
 
     // bind the socket to the port
@@ -212,9 +212,9 @@ void TcpServer::quit() {
         listen_sock_fd = -1;
     }
 
-    if (data_sock_fd > 0) {
-        close(data_sock_fd);
-        data_sock_fd = -1;
+    if (ctrl_sock_fd > 0) {
+        close(ctrl_sock_fd);
+        ctrl_sock_fd = -1;
     }
 }
 

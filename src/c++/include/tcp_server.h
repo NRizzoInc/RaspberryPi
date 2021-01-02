@@ -62,9 +62,9 @@ class TcpServer : public TcpBase {
         /******************************************** Private Variables ********************************************/
 
         int             listen_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
-        int             data_sock_fd;       // tcp socket file descriptor to communciate data with client
+        int             ctrl_sock_fd;       // tcp socket file descriptor to recv control data from client
         std::string     client_ip;          // ip address of connected client
-        int             listen_port;        // port number of client
+        int             ctrl_listen_port;   // port number for socket receiving control data from client
 
         /********************************************* Helper Functions ********************************************/
 
