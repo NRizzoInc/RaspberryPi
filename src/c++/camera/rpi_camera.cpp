@@ -131,8 +131,8 @@ ReturnCodes CamHandler::SetupCam() {
     // TODO: make sure is using h264 raw encoding to mp4
     RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC1 );
     RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC3 );
-    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_WIDTH, Constants::Camera::VID_WIDTH );
-    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_HEIGHT, Constants::Camera::VID_HEIGHT );
+    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_WIDTH, Constants::Camera::FRAME_WIDTH );
+    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_HEIGHT, Constants::Camera::FRAME_HEIGHT );
     RaspiCam_Cv::set( CV_CAP_PROP_FPS, Constants::Camera::VID_FRAMERATE );
 
     // open camera after setting correct settings

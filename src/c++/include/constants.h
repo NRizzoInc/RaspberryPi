@@ -26,8 +26,9 @@ namespace Constants {
     } // end of Network namespace
 
     namespace Camera {
-        constexpr int           VID_WIDTH       {640};
-        constexpr int           VID_HEIGHT      {480};
+        constexpr int           FRAME_WIDTH     {640};
+        constexpr int           FRAME_HEIGHT    {480};
+        constexpr int           FRAME_SIZE      {FRAME_WIDTH*FRAME_HEIGHT};
         constexpr int           VID_FRAMERATE   {10}; // TODO: upgrade to 25 if 10 is okay
 
     }; //end of camera namespace
