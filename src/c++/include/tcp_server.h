@@ -26,12 +26,12 @@ class TcpServer : public TcpBase {
 
         /**
          * @brief Construct a new Tcp Server object
-         * @param ctrl_listen_port The port number for the server to listen for control packets from client
+         * @param ctrl_data_port The port number for the server to listen for control packets from client
          * @param cam_send_port The port number for the camera data to be sent to client
          * @param should_init False: do not init (most likely bc should run client)
          */
         TcpServer(
-            const int ctrl_listen_port,
+            const int ctrl_data_port,
             const int cam_send_port,
             const bool should_init
         );
@@ -69,7 +69,7 @@ class TcpServer : public TcpBase {
         int             listen_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
         int             ctrl_sock_fd;       // tcp socket file descriptor to recv control data from client
         std::string     client_ip;          // ip address of connected client
-        int             ctrl_listen_port;   // port number for socket receiving control data from client
+        int             ctrl_data_port;   // port number for socket receiving control data from client
 
         // camera vars
         int             cam_listen_sock_fd; // tcp file descriptor to wait for camera conn

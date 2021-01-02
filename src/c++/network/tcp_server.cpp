@@ -10,12 +10,12 @@ namespace Network {
 
 /********************************************** Constructors **********************************************/
 
-TcpServer::TcpServer(const int ctrl_listen_port, const int cam_send_port, const bool should_init)
+TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bool should_init)
     : TcpBase{}
     , listen_sock_fd{-1}                    // init to invalid
     , ctrl_sock_fd{-1}                      // init to invalid
     , client_ip{}                           // empty string bc no client yet
-    , ctrl_listen_port{ctrl_listen_port}    // wait to accept connections at this port for regular pkts
+    , ctrl_data_port{ctrl_data_port}    // wait to accept connections at this port for regular pkts
     , cam_listen_sock_fd{-1}                // init to invalid
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
@@ -50,7 +50,8 @@ ReturnCodes TcpServer::acceptClient() {
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
-    cout << "Waiting to accept connection @" << formatIpAddr(GetPublicIp(), ctrl_listen_port) << endl;
+    cout << "Waiting to accept control data connection @" << formatIpAddr(GetPublicIp(), ctrl_data_port) << endl;
+    cout << "Waiting to accept camera  data connection @" << formatIpAddr(GetPublicIp(), cam_data_port) << endl;
     while (!getExitCode() && ctrl_sock_fd < 0) {
         // call the accept API on the socket and forward connection to data socket
         ctrl_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
@@ -184,7 +185,7 @@ ReturnCodes TcpServer::initSock() {
     // init struct for address to bind socket
     sockaddr_in my_addr {};
     my_addr.sin_family = AF_INET;                   // address family is AF_INET (IPV4)
-    my_addr.sin_port = htons(ctrl_listen_port);     // convert ctrl_listen_port to network number format
+    my_addr.sin_port = htons(ctrl_data_port);     // convert ctrl_data_port to network number format
     my_addr.sin_addr.s_addr = htonl(INADDR_ANY);    // accept conn from all Network Interface Cards (NIC)
 
     // bind the socket to the port
