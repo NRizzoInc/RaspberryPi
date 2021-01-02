@@ -129,6 +129,13 @@ int main(int argc, char* argv[]) {
             return gpio_handler.gpioHandlePkt(pkt);
         });
 
+        if(Camera.setGrabCallback([&](const std::vector<char>& grabbed_frame) {
+                net_agent->setLatestCamFrame(grabbed_frame);
+            }
+        ) != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to set camera grab callback" << endl;
+        }
+
     } else {
         // is client (startup web app interface for receiving commands)
         thread_list.push_back(std::thread{
