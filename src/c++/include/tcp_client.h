@@ -72,7 +72,7 @@ class TcpClient : public TcpBase {
     private:
         /******************************************** Private Variables ********************************************/
 
-        int                         ctrl_sock_fd;       // tcp socket file descriptor that sends control data to server
+        int                         ctrl_data_sock_fd;  // tcp socket file descriptor that sends control data to server
         std::string                 server_ip;          // ip address of the server
         int                         server_ctrl_port;   // port number to send control data to the server
         std::atomic_bool            pkt_ready;          // alert send cv to unlock

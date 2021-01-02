@@ -66,15 +66,15 @@ class TcpServer : public TcpBase {
     private:
         /******************************************** Private Variables ********************************************/
 
-        int             listen_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
-        int             ctrl_sock_fd;       // tcp socket file descriptor to recv control data from client
-        std::string     client_ip;          // ip address of connected client
-        int             ctrl_data_port;   // port number for socket receiving control data from client
+        int             ctrl_listen_sock_fd;        // tcp socket file descriptor to accept connections from client
+        int             ctrl_data_sock_fd;          // tcp socket file descriptor to recv control data from client
+        std::string     client_ip;                  // ip address of connected client
+        int             ctrl_data_port;             // port number for socket receiving control data from client
 
         // camera vars
-        int             cam_listen_sock_fd; // tcp file descriptor to wait for camera conn
-        int             cam_data_sock_fd;   // tcp file descriptor to transfer camera data
-        int             cam_data_port;      // port number for camera data transfer to client
+        int             cam_listen_sock_fd;         // tcp file descriptor to wait for camera conn
+        int             cam_data_sock_fd;           // tcp file descriptor to transfer camera data
+        int             cam_data_port;              // port number for camera data transfer to client
 
         /********************************************* Helper Functions ********************************************/
 

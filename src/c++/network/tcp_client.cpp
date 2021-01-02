@@ -16,7 +16,7 @@ TcpClient::TcpClient(
     const bool should_init
 )
     : TcpBase{}
-    , ctrl_sock_fd{-1}                      // init to invalid
+    , ctrl_data_sock_fd{-1}                 // init to invalid
     , server_ip{ip_addr}                    // ip address to try to reach server
     , server_ctrl_port{ctrl_port_num}       // port the client tries to reach the server at for sending control pkts
     , pkt_ready{true}                       // will be set false immediately after sending first message
@@ -94,7 +94,7 @@ void TcpClient::netAgentFn(const bool print_data) {
         }
 
         // send the stringified json to the server
-        if(sendData(ctrl_sock_fd, send_pkt, pkt_size) < 0) {
+        if(sendData(ctrl_data_sock_fd, send_pkt, pkt_size) < 0) {
             cout << "Terminate - the other endpoint has closed the socket" << endl;
             setExitCode(true);
             break;
@@ -116,24 +116,24 @@ void TcpClient::VideoStreamHandler() {
 
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
-    ctrl_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    ctrl_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     // check if the socket creation was successful
-    if (ctrl_sock_fd < 0){ 
+    if (ctrl_data_sock_fd < 0){ 
         cout << "ERROR: Opening Client Socket" << endl;
         return ReturnCodes::Error;
     }
 
     // set the options for the socket
     int option(1);
-    setsockopt(ctrl_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+    setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
     timeout.tv_usec = 0;
-    setsockopt(ctrl_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     return ReturnCodes::Success;
 }
@@ -143,9 +143,9 @@ void TcpClient::quit() {
     setExitCode(true);
 
     // if client socket is open, close it and set to -1
-    if(ctrl_sock_fd >= 0) {
-        close(ctrl_sock_fd);
-        ctrl_sock_fd = -1;
+    if(ctrl_data_sock_fd >= 0) {
+        close(ctrl_data_sock_fd);
+        ctrl_data_sock_fd = -1;
     }
 }
 
@@ -156,9 +156,9 @@ ReturnCodes TcpClient::connectToServer() {
     server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert str ip to binary ip representation
     server_addr.sin_port        = htons(server_ctrl_port);      // convert server_ctrl_port to network number format
 
-    if (connect(ctrl_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) { 
-        if(ctrl_sock_fd >= 0) {
-            close(ctrl_sock_fd);
+    if (connect(ctrl_data_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) { 
+        if(ctrl_data_sock_fd >= 0) {
+            close(ctrl_data_sock_fd);
         }
         return ReturnCodes::Error;
     }

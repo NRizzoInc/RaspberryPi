@@ -12,10 +12,10 @@ namespace Network {
 
 TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bool should_init)
     : TcpBase{}
-    , listen_sock_fd{-1}                    // init to invalid
-    , ctrl_sock_fd{-1}                      // init to invalid
+    , ctrl_listen_sock_fd{-1}               // init to invalid
+    , ctrl_data_sock_fd{-1}                 // init to invalid
     , client_ip{}                           // empty string bc no client yet
-    , ctrl_data_port{ctrl_data_port}    // wait to accept connections at this port for regular pkts
+    , ctrl_data_port{ctrl_data_port}        // wait to accept connections at this port for regular pkts
     , cam_listen_sock_fd{-1}                // init to invalid
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
@@ -52,9 +52,9 @@ ReturnCodes TcpServer::acceptClient() {
     // should stop looping when the connection has been made (i.e. data sock is positive)
     cout << "Waiting to accept control data connection @" << formatIpAddr(GetPublicIp(), ctrl_data_port) << endl;
     cout << "Waiting to accept camera  data connection @" << formatIpAddr(GetPublicIp(), cam_data_port) << endl;
-    while (!getExitCode() && ctrl_sock_fd < 0) {
+    while (!getExitCode() && (ctrl_data_sock_fd < 0 || cam_data_sock_fd < 0)) {
         // call the accept API on the socket and forward connection to data socket
-        ctrl_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
+        ctrl_data_sock_fd = ::accept(ctrl_listen_sock_fd, (struct sockaddr*) &client_addr, &addr_l);
     }
 
     // if should exit, do not continue
@@ -63,11 +63,11 @@ ReturnCodes TcpServer::acceptClient() {
     }
 
     // if the data socket does not open successfully, close the listening socket
-    if(ctrl_sock_fd < 0) {
+    if(ctrl_data_sock_fd < 0) {
         cout << "ERROR: Failed to accept connect" << endl;
-        if(ctrl_sock_fd >= 0) {
-            close(ctrl_sock_fd);
-            ctrl_sock_fd = - 1;
+        if(ctrl_data_sock_fd >= 0) {
+            close(ctrl_data_sock_fd);
+            ctrl_data_sock_fd = - 1;
         }
         return ReturnCodes::Error;
     }
@@ -77,7 +77,7 @@ ReturnCodes TcpServer::acceptClient() {
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::RECV_TIMEOUT;
     timeout.tv_usec = 0;
-    setsockopt(ctrl_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // Print the client address (convert network address to char)
     cout << "New connection from " << inet_ntoa(client_addr.sin_addr) << endl; 
@@ -103,7 +103,7 @@ void TcpServer::netAgentFn(const bool print_data) {
                 /********************************* Receiving From Server ********************************/
                 // call recvData, passing buf, to receive data
                 // save the return value of recvData in a data_size variable
-                const int data_size {recvData(ctrl_sock_fd, buf)};
+                const int data_size {recvData(ctrl_data_sock_fd, buf)};
 
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
@@ -149,9 +149,9 @@ void TcpServer::netAgentFn(const bool print_data) {
             }
 
             // at end of while, reset data socket to attempt to make new connection with same listener
-            if (ctrl_sock_fd > 0) {
-                close(ctrl_sock_fd);
-                ctrl_sock_fd = -1;
+            if (ctrl_data_sock_fd > 0) {
+                close(ctrl_data_sock_fd);
+                ctrl_data_sock_fd = -1;
             }
         }
     }
@@ -163,24 +163,24 @@ void TcpServer::VideoStreamHandler() {
 
 ReturnCodes TcpServer::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
-    listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    ctrl_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     // check if the socket creation was successful
-    if (listen_sock_fd < 0){ 
+    if (ctrl_listen_sock_fd < 0){ 
         cout << "ERROR: Opening Listen Socket" << endl;
         return ReturnCodes::Error;
     }
 
     // set the options for the socket
     int option(1);
-    setsockopt(listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+    setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
     timeout.tv_usec = 0;
-    setsockopt(listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // init struct for address to bind socket
     sockaddr_in my_addr {};
@@ -189,18 +189,18 @@ ReturnCodes TcpServer::initSock() {
     my_addr.sin_addr.s_addr = htonl(INADDR_ANY);    // accept conn from all Network Interface Cards (NIC)
 
     // bind the socket to the port
-    if (bind(listen_sock_fd, (struct sockaddr*)&my_addr, sizeof(my_addr)) < 0) { 
+    if (bind(ctrl_listen_sock_fd, (struct sockaddr*)&my_addr, sizeof(my_addr)) < 0) { 
         cout << "ERROR: Failed to bind socket" << endl;
-        if(listen_sock_fd>=0) {
-            close(listen_sock_fd);
+        if(ctrl_listen_sock_fd>=0) {
+            close(ctrl_listen_sock_fd);
         }
         return ReturnCodes::Error;
     }
 
     // accept at most 1 client at a time, and set the socket in a listening state
-    if (listen(listen_sock_fd, 1) < 0) { 
+    if (listen(ctrl_listen_sock_fd, 1) < 0) { 
         cout << "ERROR: Failed to listen to socket" << endl;
-        close(listen_sock_fd);
+        close(ctrl_listen_sock_fd);
         return ReturnCodes::Error;
     }
     return ReturnCodes::Success;
@@ -211,14 +211,14 @@ void TcpServer::quit() {
     setExitCode(true);
 
     // if listen socket is open, close it and set to -1
-    if (listen_sock_fd > 0) {
-        close(listen_sock_fd);
-        listen_sock_fd = -1;
+    if (ctrl_listen_sock_fd > 0) {
+        close(ctrl_listen_sock_fd);
+        ctrl_listen_sock_fd = -1;
     }
 
-    if (ctrl_sock_fd > 0) {
-        close(ctrl_sock_fd);
-        ctrl_sock_fd = -1;
+    if (ctrl_data_sock_fd > 0) {
+        close(ctrl_data_sock_fd);
+        ctrl_data_sock_fd = -1;
     }
 }
 
