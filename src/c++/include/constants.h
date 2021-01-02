@@ -13,10 +13,13 @@ enum class ReturnCodes {
 };
 
 namespace Constants {
-    // http://wiringpi.com/reference/software-pwm-library/
-    constexpr int LED_SOFT_PWM_MIN      {0};
-    constexpr int LED_SOFT_PWM_MAX      {100};
-    constexpr int LED_SOFT_PWM_RANGE    {LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN};
+
+    namespace GPIO {
+        // http://wiringpi.com/reference/software-pwm-library/
+        constexpr int LED_SOFT_PWM_MIN      {0};
+        constexpr int LED_SOFT_PWM_MAX      {100};
+        constexpr int LED_SOFT_PWM_RANGE    {LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN};
+    }; // end of Constants::GPIO namespace
 
     namespace Network {
         constexpr std::size_t   MAX_DATA_SIZE   {512};
