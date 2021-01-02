@@ -71,6 +71,8 @@ ReturnCodes TcpServer::acceptClient() {
         ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
         cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
         return ReturnCodes::Error;
+    } else if (inet_ntoa(ctrl_client_addr.sin_addr) != inet_ntoa(cam_client_addr.sin_addr)) {
+        cout << "Warning: Accepted connections from two different ip addresses!" << endl;
     }
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
