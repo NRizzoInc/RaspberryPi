@@ -1,6 +1,6 @@
 # use this to find in main dir
 add_library(RPI_Camera
-    rpi_cam.cpp
+    rpi_camera.cpp
 ) 
 
 target_link_libraries(RPI_Camera
