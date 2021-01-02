@@ -65,7 +65,6 @@ ReturnCodes TcpServer::acceptClient(
         // call the accept API on the socket and forward connection to data socket
         data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &client_addr_l);
     }
-    cout << "Past accepting " + conn_desc + "\n";
 
     // if should exit, do not continue
     if (getExitCode()) {
@@ -86,8 +85,12 @@ ReturnCodes TcpServer::acceptClient(
     timeout.tv_usec = 0;
     setsockopt(data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
-    // Print the client address (convert network address to char)
-    cout << "New " << conn_desc << " connection from " << inet_ntoa(client_addr.sin_addr) << endl; 
+    // Print the client address (convert network address to char) 
+    // -- print as single stream to prevent thread cout stream overlap
+    const std::string new_conn_desc {
+        "New " + conn_desc + " connection from " + formatIpAddr(inet_ntoa(client_addr.sin_addr), port)
+    };
+    cout << new_conn_desc << endl; 
 
     // save the client IP in the m_ip string
     client_ip = inet_ntoa(client_addr.sin_addr);
