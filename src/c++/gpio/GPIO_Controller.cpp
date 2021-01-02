@@ -132,17 +132,17 @@ ReturnCodes GPIOController::gpioHandlePkt(const Network::CommonPkt& pkt) const {
 
 ReturnCodes GPIOController::run(const CLI::Results::ParseResults& flags) {
     // get required variables from flag mapping
-    const auto& mode        {flags.at(CLI::Results::MODE)};
-    const auto& colors      {Helpers::splitStr(',', flags.at(CLI::Results::COLORS))};
+    const auto& mode        {flags.at(CLI::Results::ParseKeys::MODE)};
+    const auto& colors      {Helpers::splitStr(',', flags.at(CLI::Results::ParseKeys::COLORS))};
     const auto& interval    {
                                 static_cast<unsigned int>(
-                                    std::stoi(flags.at(CLI::Results::INTERVAL))
+                                    std::stoi(flags.at(CLI::Results::ParseKeys::INTERVAL))
                                 )
                             };
-    const auto& duration    {std::stoi(flags.at(CLI::Results::DURATION))};
+    const auto& duration    {std::stoi(flags.at(CLI::Results::ParseKeys::DURATION))};
     const auto& rate        {
                                 static_cast<unsigned int>(
-                                    std::stoi(flags.at(CLI::Results::RATE))
+                                    std::stoi(flags.at(CLI::Results::ParseKeys::RATE))
                                 )
                             };
 

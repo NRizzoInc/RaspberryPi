@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     // determine if dealing with server or client
-    const bool is_client { parse_res[RPI::CLI::Results::MODE] == "client" };
-    const bool is_server { parse_res[RPI::CLI::Results::MODE] == "server" };
-    const bool is_cam    { parse_res[RPI::CLI::Results::MODE] == "camera" };
+    const bool is_client { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "client" };
+    const bool is_server { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "server" };
+    const bool is_cam    { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "camera" };
     const bool is_net    { is_client || is_server }; // true if client or server
 
     /* ============================================ Create GPIO Obj =========================================== */
@@ -52,26 +52,35 @@ int main(int argc, char* argv[]) {
     // static needed so it can be accessed in ctrl+c lambda
     static RPI::gpio::GPIOController gpio_handler{
         // motor i2c addr (convert hex string to int using base 16)
-        static_cast<std::uint8_t>(std::stoi(parse_res[RPI::CLI::Results::MOTOR_ADDR], 0, 16))
+        static_cast<std::uint8_t>(
+            std::stoi(parse_res[RPI::CLI::Results::ParseKeys::MOTOR_ADDR], 0, 16)
+        )
     };
 
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
     // if is_client, do not init the server (and vice-versa)
-    const int net_port {std::stoi(parse_res[RPI::CLI::Results::CTRL_PORT])}; // dont convert this twice
+    const int net_port {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CTRL_PORT])}; // dont convert this twice
     static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
-          (RPI::Network::TcpBase*) new RPI::Network::TcpClient{parse_res[RPI::CLI::Results::IP], net_port, is_client} :
-          (RPI::Network::TcpBase*) new RPI::Network::TcpServer{net_port, !is_client}
+            (RPI::Network::TcpBase*) new RPI::Network::TcpClient{
+                parse_res[RPI::CLI::Results::ParseKeys::IP],
+                net_port,
+                is_client
+            } :
+            (RPI::Network::TcpBase*) new RPI::Network::TcpServer{
+                net_port,
+                !is_client
+            }
     };
 
     // Create UI Event Listener to interact with client
-    static RPI::UI::WebApp net_ui{net_agent, std::stoi(parse_res[RPI::CLI::Results::WEB_PORT])};
+    static RPI::UI::WebApp net_ui{net_agent, std::stoi(parse_res[RPI::CLI::Results::ParseKeys::WEB_PORT])};
 
     /* ======================================== Create Server OR Client ======================================= */
 
     // TODO: remove & add to server
-    const int max_frames {std::stoi(parse_res[RPI::CLI::Results::VID_FRAMES])};
+    const int max_frames {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::VID_FRAMES])};
     // only setup camera if available from server or camera test code
     const bool should_init_cam { is_cam || is_server };
     static RPI::Camera::CamHandler Camera{max_frames, should_init_cam};

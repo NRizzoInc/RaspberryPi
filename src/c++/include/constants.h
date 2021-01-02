@@ -35,21 +35,24 @@ namespace Constants {
 }; // end of constants namespace
 
 namespace CLI::Results {
-    // shortening of parse results mapping
-    using ParseResults = std::unordered_map<std::string, std::string>;
 
-    // cannot use std::string in constexpr (auto == char[])
-    constexpr auto MODE             = "mode"       ;
-    constexpr auto COLORS           = "names"      ;
-    constexpr auto INTERVAL         = "interval"   ;
-    constexpr auto RATE             = "rate"       ;
-    constexpr auto DURATION         = "duration"   ;
-    constexpr auto IP               = "ip"         ;
-    constexpr auto CTRL_PORT        = "ctrl-port"  ;
-    constexpr auto CAM_PORT         = "cam-port"   ;
-    constexpr auto WEB_PORT         = "web-port"   ;
-    constexpr auto MOTOR_ADDR       = "motor-addr" ;
-    constexpr auto VID_FRAMES       = "frames" ;
+    // keys for the mapping of the CLI results (stored in ParseResults)
+    enum class ParseKeys {
+        MODE,
+        COLORS,
+        INTERVAL,
+        RATE,
+        DURATION,
+        IP,
+        CTRL_PORT,
+        CAM_PORT,
+        WEB_PORT,
+        MOTOR_ADDR,
+        VID_FRAMES
+    }; // end of ParseResults's keys
+
+    // maps CLI's results (stored in string form) as {ParseKeys::<key> : value}
+    using ParseResults = std::unordered_map<ParseKeys, std::string>;
 }; // end of CLI::Results namespace
 
 }; // end of RPI namespace
