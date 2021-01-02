@@ -60,16 +60,21 @@ int main(int argc, char* argv[]) {
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
     // if is_client, do not init the server (and vice-versa)
-    const int net_port {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CTRL_PORT])}; // dont convert this twice
+    // dont ports to ints twice
+    const int ctrl_port {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CTRL_PORT])};
+    const int cam_port  {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CAM_PORT])};
     static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
             (RPI::Network::TcpBase*) new RPI::Network::TcpClient{
                 parse_res[RPI::CLI::Results::ParseKeys::IP],
-                net_port,
+                ctrl_port,
+                cam_port,
                 is_client
-            } :
+            } 
+            :
             (RPI::Network::TcpBase*) new RPI::Network::TcpServer{
-                net_port,
+                ctrl_port,
+                cam_port,
                 !is_client
             }
     };

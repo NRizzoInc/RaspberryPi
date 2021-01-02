@@ -10,12 +10,15 @@ namespace Network {
 
 /********************************************** Constructors **********************************************/
 
-TcpServer::TcpServer(const int port_num, const bool should_init)
+TcpServer::TcpServer(const int ctrl_listen_port, const int cam_send_port, const bool should_init)
     : TcpBase{}
-    , listen_sock_fd{-1}            // init to invalid
-    , ctrl_sock_fd{-1}              // init to invalid
-    , client_ip{}                   // empty string bc no client yet
-    , ctrl_listen_port{port_num}    // wait to accept connections at this port for regular pkts
+    , listen_sock_fd{-1}                    // init to invalid
+    , ctrl_sock_fd{-1}                      // init to invalid
+    , client_ip{}                           // empty string bc no client yet
+    , ctrl_listen_port{ctrl_listen_port}    // wait to accept connections at this port for regular pkts
+    , cam_listen_sock_fd{-1}                // init to invalid
+    , cam_data_sock_fd{-1}                  // init to invalid
+    , cam_data_port{cam_send_port}          // port for the camera data connection
 {
     // first check if should not init
     if (!should_init) return;

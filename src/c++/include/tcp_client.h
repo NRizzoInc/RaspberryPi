@@ -31,10 +31,16 @@ class TcpClient : public TcpBase {
         /**
          * @brief Construct a new Tcp Client object
          * @param ip_addr The ip address of the server
-         * @param port_num The port number of the server
+         * @param ctrl_port_num The port number the server is waiting to accept control packet connections on
+         * @param cam_port_num The port for the camera data connection
          * @param should_init False: do not init (most likely bc should run server)
          */
-        TcpClient(const std::string& ip_addr, const int port_num, const bool should_init);
+        TcpClient(
+            const std::string& ip_addr,
+            const int ctrl_port_num,
+            const int cam_port_num,
+            const bool should_init
+        );
         virtual ~TcpClient();
 
         /********************************************* Getters/Setters *********************************************/
@@ -66,12 +72,16 @@ class TcpClient : public TcpBase {
     private:
         /******************************************** Private Variables ********************************************/
 
-        int                         ctrl_sock_fd;     // tcp socket file descriptor that sends control data to server
+        int                         ctrl_sock_fd;       // tcp socket file descriptor that sends control data to server
         std::string                 server_ip;          // ip address of the server
         int                         server_ctrl_port;   // port number to send control data to the server
         std::atomic_bool            pkt_ready;          // alert send cv to unlock
         std::mutex                  data_mutex;
         std::condition_variable     has_new_msg;        // true if client needs to tell the server something
+
+        // camera vars
+        int                         cam_sock_fd;        // tcp file descriptor for camera data from server
+        int                         cam_data_port;      // port number for getting camera from server
 
         /********************************************* Helper Functions ********************************************/
 

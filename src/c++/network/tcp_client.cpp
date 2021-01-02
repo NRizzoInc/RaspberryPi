@@ -9,12 +9,19 @@ using std::endl;
 
 /********************************************** Constructors **********************************************/
 
-TcpClient::TcpClient(const std::string& ip_addr, const int port_num, const bool should_init)
+TcpClient::TcpClient(
+    const std::string& ip_addr,
+    const int ctrl_port_num,
+    const int cam_port_num,
+    const bool should_init
+)
     : TcpBase{}
-    , ctrl_sock_fd{-1}              // init to invalid
-    , server_ip{ip_addr}            // ip address to try to reach server
-    , server_ctrl_port{port_num}    // port the client tries to reach the server at for sending control pkts
-    , pkt_ready{true}               // will be set false immediately after sending first message
+    , ctrl_sock_fd{-1}                      // init to invalid
+    , server_ip{ip_addr}                    // ip address to try to reach server
+    , server_ctrl_port{ctrl_port_num}       // port the client tries to reach the server at for sending control pkts
+    , pkt_ready{true}                       // will be set false immediately after sending first message
+    , cam_sock_fd{-1}                       // init to invalid
+    , cam_data_port{cam_port_num}           // port to attempt to connect to client to send camera data
 {
     // first check if should not init
     if (!should_init) return;
