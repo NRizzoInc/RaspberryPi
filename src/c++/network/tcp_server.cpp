@@ -56,7 +56,7 @@ ReturnCodes TcpServer::acceptClient(int& data_sock_fd, const std::string& conn_d
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
-    while (!getExitCode() && (ctrl_data_sock_fd < 0 || cam_data_sock_fd < 0)) {
+    while (!getExitCode() && data_sock_fd < 0) {
         // call the accept API on the socket and forward connection to data socket
         data_sock_fd = ::accept(data_sock_fd, (struct sockaddr*) &client_addr, &client_addr_l);
     }
@@ -67,7 +67,7 @@ ReturnCodes TcpServer::acceptClient(int& data_sock_fd, const std::string& conn_d
     }
 
     // if the data socket does not open successfully, close the listening socket
-    if(ctrl_data_sock_fd < 0 || cam_data_sock_fd < 0) {
+    if(data_sock_fd < 0) {
         cout << "ERROR: Failed to accept " << conn_desc << " connection" << endl;
         data_sock_fd = CloseOpenSock(data_sock_fd);
         return ReturnCodes::Error;
