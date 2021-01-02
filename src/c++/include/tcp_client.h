@@ -80,7 +80,7 @@ class TcpClient : public TcpBase {
         std::condition_variable     has_new_msg;        // true if client needs to tell the server something
 
         // camera vars
-        int                         cam_sock_fd;        // tcp file descriptor for camera data from server
+        int                         cam_data_sock_fd;   // tcp file descriptor for camera data from server
         int                         cam_data_port;      // port number for getting camera from server
 
         /********************************************* Helper Functions ********************************************/

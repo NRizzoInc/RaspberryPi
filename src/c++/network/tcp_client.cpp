@@ -20,7 +20,7 @@ TcpClient::TcpClient(
     , server_ip{ip_addr}                    // ip address to try to reach server
     , ctrl_data_port{ctrl_port_num}         // port the client tries to reach the server at for sending control pkts
     , pkt_ready{true}                       // will be set false immediately after sending first message
-    , cam_sock_fd{-1}                       // init to invalid
+    , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_port_num}           // port to attempt to connect to client to send camera data
 {
     // first check if should not init
