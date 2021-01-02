@@ -68,6 +68,15 @@ void TcpBase::setRecvCallback(const RecvPktCallback& recv_callback) {
 
 /****************************************** Shared Common Functions ****************************************/
 
+int TcpBase::CloseOpenSock(int sock_fd) {
+    if(sock_fd >= 0) {
+        close(sock_fd);
+        sock_fd = - 1;
+    }
+    return sock_fd;
+}
+
+
 void TcpBase::runNetAgent(const bool print_data) {
     // create a lock that prevents joiner from trying to join() before ready
     // if thread is not initialized yet, join() will occur before thread is started

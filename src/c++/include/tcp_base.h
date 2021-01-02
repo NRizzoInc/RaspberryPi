@@ -141,6 +141,13 @@ class TcpBase : public Packet {
     protected:
         RecvPktCallback             recv_cb;            // callback for when a packet is received
 
+        /**
+         * @brief Helper function that closes and sets a socket file descriptor to -1 if it is open
+         * @param sock_fd The socket file descriptor to close if open
+         * @return The socket file descriptors new value (-1)
+         */
+        virtual int CloseOpenSock(int sock_fd);
+
     private:
         /******************************************** Private Variables ********************************************/
 
