@@ -48,10 +48,14 @@ ReturnCodes TcpServer::acceptClient(int& data_sock_fd, const std::string& conn_d
     sockaddr_in client_addr;
     socklen_t client_addr_l = sizeof(client_addr);
 
+    // cannot cout due to threads' prints overlapping (save into single string to print at once)
+    const std::string accept_wait_msg {
+        "Waiting to accept " + conn_desc + " data connection @" + formatIpAddr(GetPublicIp(), port)
+    };
+    cout << accept_wait_msg << endl;
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
-    cout << "Waiting to accept " << conn_desc << " data connection @" << formatIpAddr(GetPublicIp(), port) << endl;
     while (!getExitCode() && (ctrl_data_sock_fd < 0 || cam_data_sock_fd < 0)) {
         // call the accept API on the socket and forward connection to data socket
         data_sock_fd = ::accept(data_sock_fd, (struct sockaddr*) &client_addr, &client_addr_l);
