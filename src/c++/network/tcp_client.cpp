@@ -18,7 +18,7 @@ TcpClient::TcpClient(
     : TcpBase{}
     , ctrl_data_sock_fd{-1}                 // init to invalid
     , server_ip{ip_addr}                    // ip address to try to reach server
-    , server_ctrl_port{ctrl_port_num}       // port the client tries to reach the server at for sending control pkts
+    , ctrl_data_port{ctrl_port_num}         // port the client tries to reach the server at for sending control pkts
     , pkt_ready{true}                       // will be set false immediately after sending first message
     , cam_sock_fd{-1}                       // init to invalid
     , cam_data_port{cam_port_num}           // port to attempt to connect to client to send camera data
@@ -29,7 +29,7 @@ TcpClient::TcpClient(
     // call the function to create socket, set the options and bind,
     // and close the socket and return if not successful
     if(initSock() != ReturnCodes::Success) {
-        cout << "ERROR: Initializing Client Socket" << endl;
+        cout << "ERROR: Initializing Client Sockets" << endl;
         quit();
         return;
     }
@@ -60,7 +60,7 @@ void TcpClient::netAgentFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
     if(connectToServer() != ReturnCodes::Success) {
-        cerr << "ERROR: Failed to connect to server @" << formatIpAddr(server_ip, server_ctrl_port) << endl;
+        cerr << "ERROR: Failed to connect to server @" << formatIpAddr(server_ip, ctrl_data_port) << endl;
         return;
     } else {
         cout << "Success: Connect to server" << endl;
@@ -154,7 +154,7 @@ ReturnCodes TcpClient::connectToServer() {
     sockaddr_in server_addr     {};
     server_addr.sin_family      = AF_INET;                      // address family is AF_INET (IPV4)
     server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert str ip to binary ip representation
-    server_addr.sin_port        = htons(server_ctrl_port);      // convert server_ctrl_port to network number format
+    server_addr.sin_port        = htons(ctrl_data_port);        // convert ctrl_data_port to network number format
 
     if (connect(ctrl_data_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) { 
         if(ctrl_data_sock_fd >= 0) {
