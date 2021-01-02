@@ -127,7 +127,8 @@ void TcpClient::VideoStreamHandler() {
         // check if the data_size is smaller than 0
         // (if so, print message bc might have been fluke)
         if (data_size < 0) {
-            cout << "Terminate - camera socket recv error" << endl;
+            cout << "Error: Failed to recv camera data" << endl;
+            continue; // dont try to save a bad frame
         }
 
         // check if the data_size is equal to 0 (time to exit bc server killed conn)
