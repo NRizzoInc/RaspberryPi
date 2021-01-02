@@ -95,7 +95,7 @@ void TcpClient::netAgentFn(const bool print_data) {
 
         // send the stringified json to the server
         if(sendData(ctrl_data_sock_fd, send_pkt, pkt_size) < 0) {
-            cout << "Terminate - the other endpoint has closed the socket" << endl;
+            cout << "Terminate - the other control endpoint has closed the socket" << endl;
             setExitCode(true);
             break;
         }
