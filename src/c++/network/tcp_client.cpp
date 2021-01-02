@@ -60,7 +60,8 @@ void TcpClient::netAgentFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
     if(connectToServer() != ReturnCodes::Success) {
-        cerr << "ERROR: Failed to connect to server @" << formatIpAddr(server_ip, ctrl_data_port) << endl;
+        cerr << "ERROR: Failed to connect to server control @" << formatIpAddr(server_ip, ctrl_data_port) << endl;
+        cerr << "ERROR: Failed to connect to server camera @" << formatIpAddr(server_ip, cam_data_port) << endl;
         return;
     } else {
         cout << "Success: Connect to server" << endl;
@@ -117,16 +118,22 @@ void TcpClient::VideoStreamHandler() {
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     ctrl_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    cam_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     // check if the socket creation was successful
     if (ctrl_data_sock_fd < 0){ 
-        cout << "ERROR: Opening Client Socket" << endl;
+        cout << "ERROR: Opening Client Control Socket" << endl;
+        return ReturnCodes::Error;
+    }
+    if (cam_data_sock_fd < 0){ 
+        cout << "ERROR: Opening Client Camera Socket" << endl;
         return ReturnCodes::Error;
     }
 
     // set the options for the socket
     int option(1);
     setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+    setsockopt(cam_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
@@ -134,6 +141,7 @@ ReturnCodes TcpClient::initSock() {
     timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
     timeout.tv_usec = 0;
     setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(cam_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     return ReturnCodes::Success;
 }
@@ -143,23 +151,30 @@ void TcpClient::quit() {
     setExitCode(true);
 
     // if client socket is open, close it and set to -1
-    if(ctrl_data_sock_fd >= 0) {
-        close(ctrl_data_sock_fd);
-        ctrl_data_sock_fd = -1;
-    }
+    ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
 }
 
 ReturnCodes TcpClient::connectToServer() {
     // init struct for address to connect to
-    sockaddr_in server_addr     {};
-    server_addr.sin_family      = AF_INET;                      // address family is AF_INET (IPV4)
-    server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert str ip to binary ip representation
-    server_addr.sin_port        = htons(ctrl_data_port);        // convert ctrl_data_port to network number format
+    sockaddr_in ctrl_addr     {};
+    sockaddr_in cam_addr      {};
+    // address family is AF_INET (IPV4)
+    ctrl_addr.sin_family      = AF_INET;
+    cam_addr.sin_family       = AF_INET;
+    // convert str ip to binary ip representation
+    ctrl_addr.sin_addr.s_addr = inet_addr(server_ip.c_str());
+    cam_addr.sin_addr.s_addr  = inet_addr(server_ip.c_str());
+    // convert ctrl_data_port to network number format
+    ctrl_addr.sin_port        = htons(ctrl_data_port);
+    cam_addr.sin_port         = htons(cam_data_port);
 
-    if (connect(ctrl_data_sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) { 
-        if(ctrl_data_sock_fd >= 0) {
-            close(ctrl_data_sock_fd);
-        }
+    if (
+        connect(ctrl_data_sock_fd, (struct sockaddr*)&ctrl_addr, sizeof(ctrl_addr)) < 0
+        ||
+        connect(cam_data_sock_fd, (struct sockaddr*)&cam_addr, sizeof(cam_addr)) < 0
+    ) {
+        ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
+        cam_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
         return ReturnCodes::Error;
     }
 
