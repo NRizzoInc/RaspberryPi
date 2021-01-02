@@ -43,22 +43,18 @@ TcpServer::~TcpServer() {
 
 /********************************************* Server Functions ********************************************/
 
-ReturnCodes TcpServer::acceptClient() {
+ReturnCodes TcpServer::acceptClient(int& data_sock_fd, const std::string& conn_desc, const int port) {
     // prepare the struct to store the client address
-    sockaddr_in ctrl_client_addr;
-    sockaddr_in cam_client_addr;
-    socklen_t ctrl_addr_l = sizeof(ctrl_client_addr);
-    socklen_t cam_addr_l = sizeof(cam_client_addr);
+    sockaddr_in client_addr;
+    socklen_t client_addr_l = sizeof(client_addr);
 
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
-    cout << "Waiting to accept control data connection @" << formatIpAddr(GetPublicIp(), ctrl_data_port) << endl;
-    cout << "Waiting to accept camera  data connection @" << formatIpAddr(GetPublicIp(), cam_data_port) << endl;
+    cout << "Waiting to accept " << conn_desc << " data connection @" << formatIpAddr(GetPublicIp(), port) << endl;
     while (!getExitCode() && (ctrl_data_sock_fd < 0 || cam_data_sock_fd < 0)) {
         // call the accept API on the socket and forward connection to data socket
-        ctrl_data_sock_fd = ::accept(ctrl_listen_sock_fd, (struct sockaddr*) &ctrl_client_addr, &ctrl_addr_l);
-        cam_data_sock_fd = ::accept(cam_listen_sock_fd, (struct sockaddr*) &ctrl_client_addr, &cam_addr_l);
+        data_sock_fd = ::accept(data_sock_fd, (struct sockaddr*) &client_addr, &client_addr_l);
     }
 
     // if should exit, do not continue
@@ -68,12 +64,9 @@ ReturnCodes TcpServer::acceptClient() {
 
     // if the data socket does not open successfully, close the listening socket
     if(ctrl_data_sock_fd < 0 || cam_data_sock_fd < 0) {
-        cout << "ERROR: Failed to accept connections" << endl;
-        ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
-        cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+        cout << "ERROR: Failed to accept " << conn_desc << " connection" << endl;
+        data_sock_fd = CloseOpenSock(data_sock_fd);
         return ReturnCodes::Error;
-    } else if (inet_ntoa(ctrl_client_addr.sin_addr) != inet_ntoa(cam_client_addr.sin_addr)) {
-        cout << "Warning: Accepted connections from two different ip addresses!" << endl;
     }
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
@@ -81,14 +74,13 @@ ReturnCodes TcpServer::acceptClient() {
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::RECV_TIMEOUT;
     timeout.tv_usec = 0;
-    setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-    setsockopt(cam_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // Print the client address (convert network address to char)
-    cout << "New connection from " << inet_ntoa(ctrl_client_addr.sin_addr) << endl; 
+    cout << "New " << conn_desc << " connection from " << inet_ntoa(client_addr.sin_addr) << endl; 
 
     // save the client IP in the m_ip string
-    client_ip = inet_ntoa(ctrl_client_addr.sin_addr);
+    client_ip = inet_ntoa(client_addr.sin_addr);
     return ReturnCodes::Success;
 }
 
@@ -111,7 +103,7 @@ void TcpServer::netAgentFn(const bool print_data) {
     while(!getExitCode()) {
 
         // wait for a client to connect
-        if(acceptClient() == ReturnCodes::Success) {
+        if(acceptClient(ctrl_data_sock_fd, "control", ctrl_data_port) == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
             while(!getExitCode()) {
@@ -175,7 +167,8 @@ void TcpServer::VideoStreamHandler() {
     while(!getExitCode()) {
 
         // wait for a client to connect
-        if(acceptClient() == ReturnCodes::Success) {
+        // note: extra space on desc string to even out prints
+        if(acceptClient(cam_data_sock_fd, "camera ", cam_data_port) == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
             while(!getExitCode()) {
