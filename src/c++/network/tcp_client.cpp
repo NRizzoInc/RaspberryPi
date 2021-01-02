@@ -59,12 +59,11 @@ ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
 void TcpClient::netAgentFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
-    if(connectToServer() != ReturnCodes::Success) {
+    if(connectToServer(ctrl_data_sock_fd, server_ip, ctrl_data_port) != ReturnCodes::Success) {
         cerr << "ERROR: Failed to connect to server control @" << formatIpAddr(server_ip, ctrl_data_port) << endl;
-        cerr << "ERROR: Failed to connect to server camera @" << formatIpAddr(server_ip, cam_data_port) << endl;
         return;
     } else {
-        cout << "Success: Connect to server" << endl;
+        cout << "Success: Connect to server control stream" << endl;
     }
 
     // loop to receive data and send data to server
@@ -111,7 +110,14 @@ void TcpClient::netAgentFn(const bool print_data) {
 }
 
 void TcpClient::VideoStreamHandler() {
-    // stub
+    // connect to camera server (if failed to connect, just stop)
+    if(connectToServer(ctrl_data_sock_fd, server_ip, ctrl_data_port) != ReturnCodes::Success) {
+        cerr << "ERROR: Failed to connect to server camera @" << formatIpAddr(server_ip, cam_data_port) << endl;
+        return;
+    } else {
+        cout << "Success: Connect to camera server stream" << endl;
+    }
+    
 }
 
 
@@ -154,27 +160,14 @@ void TcpClient::quit() {
     ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
 }
 
-ReturnCodes TcpClient::connectToServer() {
-    // init struct for address to connect to
-    sockaddr_in ctrl_addr     {};
-    sockaddr_in cam_addr      {};
-    // address family is AF_INET (IPV4)
-    ctrl_addr.sin_family      = AF_INET;
-    cam_addr.sin_family       = AF_INET;
-    // convert str ip to binary ip representation
-    ctrl_addr.sin_addr.s_addr = inet_addr(server_ip.c_str());
-    cam_addr.sin_addr.s_addr  = inet_addr(server_ip.c_str());
-    // convert ctrl_data_port to network number format
-    ctrl_addr.sin_port        = htons(ctrl_data_port);
-    cam_addr.sin_port         = htons(cam_data_port);
+ReturnCodes TcpClient::connectToServer(int& sock_fd, const std::string& ip, const int port) {
+    sockaddr_in server_addr     {};                         // init struct for address to connect to
+    server_addr.sin_family      = AF_INET;                  // address family is AF_INET (IPV4)
+    server_addr.sin_addr.s_addr = inet_addr(ip.c_str());    // convert str ip to binary ip representation
+    server_addr.sin_port        = htons(port);              // convert port to network number format
 
-    if (
-        connect(ctrl_data_sock_fd, (struct sockaddr*)&ctrl_addr, sizeof(ctrl_addr)) < 0
-        ||
-        connect(cam_data_sock_fd, (struct sockaddr*)&cam_addr, sizeof(cam_addr)) < 0
-    ) {
-        ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
-        cam_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
+    if (connect(sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        sock_fd = CloseOpenSock(sock_fd);
         return ReturnCodes::Error;
     }
 

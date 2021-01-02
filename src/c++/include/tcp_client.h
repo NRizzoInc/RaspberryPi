@@ -93,10 +93,12 @@ class TcpClient : public TcpBase {
 
         /**
          * @brief Responsible for connecting to server prior to communicating with server
-         * 
+         * @param sock_fd The socket file descriptor to open the connection from (reference so can close on fail)
+         * @param ip The ip to connect to
+         * @param port The port to connect to 
          * @return ReturnCodes 
          */
-        ReturnCodes connectToServer();
+        ReturnCodes connectToServer(int& sock_fd, const std::string& ip, const int port);
 
         /**
          * @brief Function called at the end of running client to close the sockets
