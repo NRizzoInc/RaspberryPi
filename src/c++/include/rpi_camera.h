@@ -71,8 +71,9 @@ class CamHandler : public raspicam::RaspiCam_Cv {
 
         /**
          * @brief Main function to start grabbing frames from the camera
+         * @param should_save (default=true) If true, saves the last grabbed frame to disk
          */
-        void RunFrameGrabber();
+        void RunFrameGrabber(const bool should_save=true);
 
     private:
         /******************************************** Private Variables ********************************************/

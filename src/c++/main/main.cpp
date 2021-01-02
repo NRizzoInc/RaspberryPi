@@ -138,10 +138,11 @@ int main(int argc, char* argv[]) {
         });
     }
 
+    // camera test
     if (is_cam) {
         thread_list.push_back(std::thread{
             [&](){
-                Camera.RunFrameGrabber();
+                Camera.RunFrameGrabber(true);
             }
         });
     }

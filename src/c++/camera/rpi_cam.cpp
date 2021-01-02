@@ -58,7 +58,7 @@ ReturnCodes CamHandler::OpenCam() {
 }
 
 
-void CamHandler::RunFrameGrabber() {
+void CamHandler::RunFrameGrabber(const bool should_save) {
     cout << "Capturing "
          << (max_frames == -1 ? "infinite" : std::to_string(max_frames))
          << " frames" << endl;
@@ -106,9 +106,11 @@ void CamHandler::RunFrameGrabber() {
 
 
     // save video (TODO: eventually turn to stream)
-    constexpr auto filepath {"raspicam_cv_image.jpg"};
-	cv::imwrite(filepath, image);
-	cout << "Image saved at " << filepath << endl;
+    if (should_save) {
+        constexpr auto filepath {"raspicam_cv_image.jpg"};
+        cv::imwrite(filepath, image);
+        cout << "Image saved at " << filepath << endl;
+    }
 }
 
 /********************************************* Helper Functions ********************************************/
