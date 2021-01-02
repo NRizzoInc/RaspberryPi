@@ -45,13 +45,20 @@ class TcpServer : public TcpBase {
 
         /**
          * @brief Accept a new connection and stores the IP of the client
-         * @param data_sock_fd the sock file descriptor to use when accepting client (reference so it can be modified)
+         * @param listen_sock_fd the sock file descriptor that is listening such that it can accepting client
+         * @param data_sock_fd the sock file descriptor to assigned the accepted client to
          * @param conn_desc A string stating the purpose of the connection (i.e. camera/control)
          * @param port The port to accept the client connection on
+         * @note the socket file descriptors are references so they can be modified
          * @return Success if connected successfully
          * @return Error if failed to connect to client
          */
-        ReturnCodes acceptClient(int& data_sock_fd, const std::string& conn_desc, const int port);
+        ReturnCodes acceptClient(
+            int& listen_sock_fd,
+            int& data_sock_fd,
+            const std::string& conn_desc,
+            const int port
+        );
 
     protected:
 

@@ -43,7 +43,12 @@ TcpServer::~TcpServer() {
 
 /********************************************* Server Functions ********************************************/
 
-ReturnCodes TcpServer::acceptClient(int& data_sock_fd, const std::string& conn_desc, const int port) {
+ReturnCodes TcpServer::acceptClient(
+    int& listen_sock_fd,
+    int& data_sock_fd,
+    const std::string& conn_desc,
+    const int port
+) {
     // prepare the struct to store the client address
     sockaddr_in client_addr;
     socklen_t client_addr_l = sizeof(client_addr);
@@ -58,8 +63,9 @@ ReturnCodes TcpServer::acceptClient(int& data_sock_fd, const std::string& conn_d
     // should stop looping when the connection has been made (i.e. data sock is positive)
     while (!getExitCode() && data_sock_fd < 0) {
         // call the accept API on the socket and forward connection to data socket
-        data_sock_fd = ::accept(data_sock_fd, (struct sockaddr*) &client_addr, &client_addr_l);
+        data_sock_fd = ::accept(listen_sock_fd, (struct sockaddr*) &client_addr, &client_addr_l);
     }
+    cout << "Past accepting " + conn_desc + "\n";
 
     // if should exit, do not continue
     if (getExitCode()) {
@@ -69,7 +75,7 @@ ReturnCodes TcpServer::acceptClient(int& data_sock_fd, const std::string& conn_d
     // if the data socket does not open successfully, close the listening socket
     if(data_sock_fd < 0) {
         cout << "ERROR: Failed to accept " << conn_desc << " connection" << endl;
-        data_sock_fd = CloseOpenSock(data_sock_fd);
+        listen_sock_fd = CloseOpenSock(listen_sock_fd);
         return ReturnCodes::Error;
     }
 
@@ -107,7 +113,7 @@ void TcpServer::netAgentFn(const bool print_data) {
     while(!getExitCode()) {
 
         // wait for a client to connect
-        if(acceptClient(ctrl_data_sock_fd, "control", ctrl_data_port) == ReturnCodes::Success) {
+        if(acceptClient(ctrl_listen_sock_fd, ctrl_data_sock_fd, "control", ctrl_data_port) == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
             while(!getExitCode()) {
@@ -172,7 +178,7 @@ void TcpServer::VideoStreamHandler() {
 
         // wait for a client to connect
         // note: extra space on desc string to even out prints
-        if(acceptClient(cam_data_sock_fd, "camera ", cam_data_port) == ReturnCodes::Success) {
+        if(acceptClient(cam_listen_sock_fd, cam_data_sock_fd, "camera ", cam_data_port) == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
             while(!getExitCode()) {
