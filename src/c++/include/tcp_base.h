@@ -99,9 +99,14 @@ class TcpBase : public Packet {
          * @brief Receives data from remote host.
          * @param socket_fd The receiving socket's file descriptor
          * @param buf buffer where the received data is stored
+         * @param max_buf_size The max size of the buffer to store the received data (defaults to network max)
          * @return number of bytes received (-1 if error occurred)
          */
-        virtual int recvData(int socket_fd, char* buf);
+        virtual int recvData(
+            int socket_fd,
+            char* buf,
+            const std::size_t max_buf_size=Constants::Network::MAX_DATA_SIZE
+        );
 
         /**
          * @brief Send data to remote host.

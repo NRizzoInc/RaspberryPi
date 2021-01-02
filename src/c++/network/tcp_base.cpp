@@ -109,16 +109,20 @@ std::string TcpBase::formatIpAddr(const std::string& ip, const int port) const {
     return {ip + ":" + std::to_string(port)};
 }
 
-int TcpBase::recvData(int socket_fd, char* buf) {
+int TcpBase::recvData(
+    int socket_fd,
+    char* buf,
+    const std::size_t max_buf_size
+) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
         return -1;
     }
 
     // call the recv API
-    int rcv_size = ::recv(socket_fd, buf, Constants::Network::MAX_DATA_SIZE, 0);
+    int rcv_size = ::recv(socket_fd, buf, max_buf_size, 0);
 
-    // check if the recv size is ok or not
+    /*
     if(rcv_size < 0) {
         std::cout << "ERROR: Receive" << std::endl;
 
@@ -129,6 +133,8 @@ int TcpBase::recvData(int socket_fd, char* buf) {
             socket_fd = -1;
         }
     }
+    */
+
     return rcv_size;
 }
 
