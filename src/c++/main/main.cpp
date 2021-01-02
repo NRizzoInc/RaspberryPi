@@ -106,7 +106,9 @@ int main(int argc, char* argv[]) {
             cerr << "Error: Failed to stop camera thread" << endl;
         }
 
-        net_ui.stopWebApp();
+        if(net_ui.stopWebApp() != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to stop web app" << endl;
+        }
     });
 
     /* ========================================== Initialize & Start ========================================= */
