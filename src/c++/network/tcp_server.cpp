@@ -19,6 +19,7 @@ TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bo
     , cam_listen_sock_fd{-1}                // init to invalid
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
+    , has_new_cam_data{true}                // will be set false immediately after sending first message
 {
     // first check if should not init
     if (!should_init) return;
@@ -91,6 +92,17 @@ ReturnCodes TcpServer::acceptClient() {
     return ReturnCodes::Success;
 }
 
+ReturnCodes TcpServer::setLatestCamFrame(const std::vector<char>& new_frame) {
+    Packet::setLatestCamFrame(new_frame);
+    has_new_cam_data.store(true);
+    return ReturnCodes::Success;
+}
+
+const std::vector<char>& TcpServer::getLatestCamFrame() const {
+    has_new_cam_data.store(false);
+    return Packet::getLatestCamFrame();
+}
+
 void TcpServer::netAgentFn(const bool print_data) {
     // create a char buffer that hold the max allowed size
     char buf[Constants::Network::MAX_DATA_SIZE];
@@ -147,20 +159,58 @@ void TcpServer::netAgentFn(const bool print_data) {
 
                 // reset the buffer for a new read
                 memset(buf, 0, sizeof(buf));
-
-                // server does not need to send data to client (YET)
-                // TODO: implement method to send camera data to client
             }
 
             // at end of while, reset data socket to attempt to make new connection with same listener
             ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
-            cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
         }
     }
 }
 
 void TcpServer::VideoStreamHandler() {
-    // stub
+    // server has to send the most up to date video frame to the client
+    // keep sending until told to stop
+
+    // loop to keep trying to connect to new clients until told to stop
+    while(!getExitCode()) {
+
+        // wait for a client to connect
+        if(acceptClient() == ReturnCodes::Success) {
+
+            // loop to receive data and send data with client
+            while(!getExitCode()) {
+            
+                // wait until there is a new message (or first message)
+                // or until server is about to timeout
+                std::unique_lock<std::mutex> data_lock(cam_data_mutex);
+                cam_data_cv.wait_for(
+                    data_lock,
+                    std::chrono::seconds(Constants::Network::RECV_TIMEOUT-1),
+                    [&](){return has_new_cam_data.load();}
+                );
+
+                /********************************* Sending Camera Data to Client ********************************/
+                const std::vector<char> cam_frame {getLatestCamFrame()};
+                data_lock.unlock();             // unlock after leaving critical region
+
+                // send the stringified json to the server
+                if(sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size()) < 0) {
+                    cout << "Terminate - the other endpoint has closed the socket" << endl;
+                    setExitCode(true);
+                    break;
+                }
+
+                // client does not need to receive from server (YET)
+                // TODO: implement method to receive camera data from server
+
+                // inform updatePkt function that camera packet has been sent
+                cam_data_cv.notify_one();
+            }
+
+            // at end of while, reset data socket to attempt to make new connection with same listener
+            cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+        }
+    }
 }
 
 ReturnCodes TcpServer::initSock() {

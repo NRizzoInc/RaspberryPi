@@ -117,7 +117,47 @@ void TcpClient::VideoStreamHandler() {
     } else {
         cout << "Success: Connect to camera server stream" << endl;
     }
-    
+
+    // create a char buffer that hold the max allowed size
+    char buf[Constants::Camera::FRAME_SIZE];
+
+    /********************************* Receiving From Server ********************************/
+    while(!getExitCode()) {
+        // call recvData, passing buf, to receive data
+        // save the return value of recvData in a data_size variable
+        const int data_size {recvData(cam_data_sock_fd, buf)};
+
+        // check if the data_size is smaller than 0
+        // (if so, print message bc might have been fluke)
+        if (data_size < 0) {
+            cout << "Terminate - camera socket recv error" << endl;
+        }
+
+        // check if the data_size is equal to 0 (time to exit bc server killed conn)
+        // break, but dont exit so server can wait for new client to connect
+        else if (data_size == 0) {
+            cout << "Terminate - the other camera endpoint has closed the socket" << endl;
+            break;
+        } 
+
+        // if no issues, save the new video frame
+        constexpr auto save_frame_err {"Failed to update camera data from server"};
+        try {
+            // convert const char* buf -> std::vector<char> by providing the start ptr and size
+            if(setLatestCamFrame(std::vector<char>(buf, buf+data_size)) != ReturnCodes::Success) {
+                cerr << save_frame_err << endl;
+            }
+        } catch (std::exception& err) {
+            cerr << save_frame_err << endl;
+            cerr << err.what() << endl;
+        }
+
+        // reset the buffer for a new read
+        memset(buf, 0, sizeof(buf));
+    }
+
+    // at end of while, reset data socket to attempt to make new connection with same listener
+    cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
 }
 
 

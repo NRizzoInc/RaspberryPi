@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <unistd.h> // for socket close()
 #include <cstring> // for memset
+#include <atomic> // for memset
 
 // Our Includes
 #include "constants.h"
@@ -62,19 +63,35 @@ class TcpServer : public TcpBase {
          */
         virtual void VideoStreamHandler() override;
 
+        /**
+         * @brief Set the latest frame from the camera video stream (and set bool saying there is new data)
+         * @return Success if no issues
+         * @note Bool is used to prevent over sending of the same traffic over and over again
+         */
+        virtual ReturnCodes setLatestCamFrame(const std::vector<char>& new_frame) override;
+
+        /**
+         * @brief Get the latest frame from the camera video stream (and set new atomic flag to false)
+         * @return Reference to the char buffer in the form of a char vector
+         */
+        virtual const std::vector<char>& getLatestCamFrame() const override;
+
 
     private:
         /******************************************** Private Variables ********************************************/
 
-        int             ctrl_listen_sock_fd;        // tcp socket file descriptor to accept connections from client
-        int             ctrl_data_sock_fd;          // tcp socket file descriptor to recv control data from client
-        std::string     client_ip;                  // ip address of connected client
-        int             ctrl_data_port;             // port number for socket receiving control data from client
+        int                      ctrl_listen_sock_fd; // tcp socket file descriptor to accept connections from client
+        int                      ctrl_data_sock_fd;   // tcp socket file descriptor to recv control data from client
+        std::string              client_ip;           // ip address of connected client
+        int                      ctrl_data_port;      // port number for socket receiving control data from client
 
         // camera vars
-        int             cam_listen_sock_fd;         // tcp file descriptor to wait for camera conn
-        int             cam_data_sock_fd;           // tcp file descriptor to transfer camera data
-        int             cam_data_port;              // port number for camera data transfer to client
+        int                      cam_listen_sock_fd;  // tcp file descriptor to wait for camera conn
+        int                      cam_data_sock_fd;    // tcp file descriptor to transfer camera data
+        int                      cam_data_port;       // port number for camera data transfer to client
+        std::condition_variable  cam_data_cv;         // notify in order for server to send camera data to client
+        std::mutex               cam_data_mutex;      // mutex to lock when accessing the camera data
+        mutable std::atomic_bool has_new_cam_data;    // true if there is new data to send
 
         /********************************************* Helper Functions ********************************************/
 
