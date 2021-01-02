@@ -43,6 +43,10 @@ ReturnCodes TcpBase::cleanup() {
         net_agent_thread.join();
     }
 
+    if(cam_vid_thread.joinable()) {
+        cam_vid_thread.join();
+    }
+
     // call quit once thread for derived client/server is over
     // quit should be overriden by derived classes for proper cleanup
     quit();
