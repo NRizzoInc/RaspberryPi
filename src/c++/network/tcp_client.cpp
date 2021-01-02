@@ -215,7 +215,7 @@ ReturnCodes TcpClient::connectToServer(
         sock_fd = CloseOpenSock(sock_fd);
         return ReturnCodes::Error;
     } else {
-        cout << "Success: Connect to server " + conn_desc + " stream" << endl;
+        cout << "Success: Connected to server " + conn_desc + " stream @" + formatIpAddr(ip, port) << endl;
     }
 
     return ReturnCodes::Success;
