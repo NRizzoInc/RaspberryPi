@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
     // if is_client, do not init the server (and vice-versa)
-    const int net_port {std::stoi(parse_res[RPI::CLI::Results::NET_PORT])}; // dont convert this twice
+    const int net_port {std::stoi(parse_res[RPI::CLI::Results::CTRL_PORT])}; // dont convert this twice
     static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
           (RPI::Network::TcpBase*) new RPI::Network::TcpClient{parse_res[RPI::CLI::Results::IP], net_port, is_client} :

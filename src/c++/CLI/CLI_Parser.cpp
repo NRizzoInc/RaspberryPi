@@ -97,10 +97,17 @@ ReturnCodes CLI_Parser::addFlags() {
         ->check(::CLI::ValidIPV4)
         ;
 
-    add_option("-p,--net-port", cli_res[CLI::Results::NET_PORT])
-        ->description("The server's/client's port number")
+    add_option("-p,--control-port", cli_res[CLI::Results::CTRL_PORT])
+        ->description("The server's/client's port number for controlling the robot's movement")
         ->required(false)
         ->default_val("55555")
+        ->check(::CLI::Range(1024, 65535))
+        ;
+
+    add_option("--cam-port", cli_res[CLI::Results::CAM_PORT])
+        ->description("The server's/client's port number for sending & receiving camera data")
+        ->required(false)
+        ->default_val("55556")
         ->check(::CLI::Range(1024, 65535))
         ;
 

@@ -45,7 +45,8 @@ namespace CLI::Results {
     constexpr auto RATE             = "rate"       ;
     constexpr auto DURATION         = "duration"   ;
     constexpr auto IP               = "ip"         ;
-    constexpr auto NET_PORT         = "net-port"   ;
+    constexpr auto CTRL_PORT        = "ctrl-port"  ;
+    constexpr auto CAM_PORT         = "cam-port"   ;
     constexpr auto WEB_PORT         = "web-port"   ;
     constexpr auto MOTOR_ADDR       = "motor-addr" ;
     constexpr auto VID_FRAMES       = "frames" ;
