@@ -43,6 +43,12 @@ ReturnCodes CamHandler::setShouldStop(const bool new_status) {
     return ReturnCodes::Success;
 }
 
+ReturnCodes CamHandler::setGrabCallback(std::function<void(const std::vector<char>& frame)> _grab_cb) {
+    grab_cb = _grab_cb;
+    return ReturnCodes::Success;
+}
+
+
 /********************************************* Camera Functions ********************************************/
 
 ReturnCodes CamHandler::OpenCam() {
@@ -98,6 +104,11 @@ void CamHandler::RunFrameGrabber(const bool should_save) {
         ++frame_count;
 
         // TODO: optional arg to print frame count? (--verbose?)
+
+        // use grab callback if provided
+        if (grab_cb) {
+            grab_cb(image);
+        }
     }
 
     // stop

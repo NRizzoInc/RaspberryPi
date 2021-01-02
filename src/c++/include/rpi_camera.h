@@ -7,6 +7,7 @@
 #include <thread> // for this_thread
 #include <chrono> // for time units
 #include <atomic>
+#include <functional>
 
 // Our Includes
 #include "constants.h"
@@ -23,8 +24,6 @@ namespace Camera {
 
 // for convenience within this namesapce bc super long
 using time_point = std::chrono::_V2::system_clock::time_point;
-
-
 
 /**
  * @brief Extends the raspicam opencv camera class
@@ -61,6 +60,15 @@ class CamHandler : public raspicam::RaspiCam_Cv {
          */
         ReturnCodes setShouldStop(const bool new_status);
 
+        /**
+         * @brief Sets the Grab Callback function to use when a camera frame is grabbed
+         * @param grab_cb The callback to use
+         * @param grab_cb Returns: callback should be void return
+         * @param grab_cb param: char vector containing the frames pixels (aka const std::vector<char>& frame)
+         * @return ReturnCodes Success if set correctly
+         */
+        ReturnCodes setGrabCallback(std::function<void(const std::vector<char>& frame)> grab_cb);
+
         /********************************************* Camera Functions ********************************************/
 
         /**
@@ -78,10 +86,11 @@ class CamHandler : public raspicam::RaspiCam_Cv {
     private:
         /******************************************** Private Variables ********************************************/
 
-        int                     frame_count;                // current number of grabbed frames
-        const int               max_frames;                 // the max # frames to grab (-1 = infinite)
-        std::atomic_bool        stop_grabbing;              // if true, the grabbing loop will stop
-        time_point              start_time;                 // when camera started grabbing
+        int                                                 frame_count;   // current number of grabbed frames
+        const int                                           max_frames;    // the max # frames to grab (-1 = infinite)
+        std::atomic_bool                                    stop_grabbing; // if true, the grabbing loop will stop
+        time_point                                          start_time;    // when camera started grabbing
+        std::function<void(const std::vector<char>& frame)> grab_cb;       // callback to use when a frame is grabbed
 
         /********************************************* Helper Functions ********************************************/
 
