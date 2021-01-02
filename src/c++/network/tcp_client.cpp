@@ -195,6 +195,7 @@ void TcpClient::quit() {
 
     // if client socket is open, close it and set to -1
     ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
+    cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
 }
 
 ReturnCodes TcpClient::connectToServer(
