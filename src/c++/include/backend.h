@@ -74,7 +74,7 @@ class WebApp {
         /**
          * @brief Responsible for stopping the web app (if started it will run forever)
          */
-        void stopWebApp();
+        ReturnCodes stopWebApp();
 
     private:
         /******************************************** Private Variables ********************************************/

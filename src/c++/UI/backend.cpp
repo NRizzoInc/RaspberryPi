@@ -51,13 +51,13 @@ void WebApp::startWebApp(const bool print_urls) {
     web_app.serveThreaded();
 }
 
-void WebApp::stopWebApp() {
+ReturnCodes WebApp::stopWebApp() {
     // causes issues trying to close web app if it is not open
     if (is_running) {
         is_running = false;
-        return;
+        web_app.shutdown();
     }
-    web_app.shutdown();
+    return ReturnCodes::Success;
 }
 
 /******************************************** Web/Route Functions *******************************************/
