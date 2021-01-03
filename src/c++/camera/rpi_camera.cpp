@@ -76,7 +76,7 @@ void CamHandler::RunFrameGrabber(const bool should_save) {
     // loop until max frame count or told to stop
     start_time      = std::chrono::system_clock::now();
     auto curr_time  = start_time;
-    cout << "Starting Capture " << Helpers::Timing::GetCurrTimecode(start_time) << endl;
+    cout << "Starting Camera Capture: " << Helpers::Timing::GetCurrTimecode(start_time) << endl;
     while (!getShouldStop() && (max_frames == -1 || frame_count < max_frames)) {
 
         RaspiCam_Cv::grab();
@@ -107,7 +107,8 @@ void CamHandler::RunFrameGrabber(const bool should_save) {
 
         // use grab callback if provided
         if (grab_cb) {
-            grab_cb(image);
+            // cv::Mat stored as std::vector<uchar (aka unsigned char)> but needed as std::vector<char>
+            grab_cb(std::vector<char>(image.begin<char>(), image.end<char>()));
         }
     }
 
@@ -116,7 +117,6 @@ void CamHandler::RunFrameGrabber(const bool should_save) {
     RaspiCam_Cv::release();
 
 
-    // save video (TODO: eventually turn to stream)
     if (should_save) {
         constexpr auto filepath {"raspicam_cv_image.jpg"};
         cv::imwrite(filepath, image);
