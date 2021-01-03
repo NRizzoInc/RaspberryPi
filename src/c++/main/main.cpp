@@ -155,8 +155,9 @@ int main(int argc, char* argv[]) {
             }
         });
     }
+
     // startup client or server in a thread
-    else if (is_net) {
+    if (is_net) {
         cout << "Started net agent" << endl;
         net_agent->runNetAgent(false);
     }
