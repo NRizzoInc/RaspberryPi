@@ -215,11 +215,11 @@ ReturnCodes TcpClient::connectToServer(
 
     // note, due to threading cout stream overlapping, couts should print a single concated string 
     if (connect(sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        cerr << "ERROR: Failed to connect to server " + conn_desc + " @" + formatIpAddr(ip, port) << endl;
+        cerr << "ERROR: Failed to connect to server " + conn_desc + " @" + formatIpAddr(ip, port) + "\n";
         sock_fd = CloseOpenSock(sock_fd);
         return ReturnCodes::Error;
     } else {
-        cout << "Success: Connected to server " + conn_desc + " stream @" + formatIpAddr(ip, port) << endl;
+        cout << "Success: Connected to server " + conn_desc + " stream @" + formatIpAddr(ip, port) + "\n";
     }
 
     return ReturnCodes::Success;
