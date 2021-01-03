@@ -129,13 +129,13 @@ void TcpServer::netAgentFn(const bool print_data) {
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
                 if (data_size < 0) {
-                    cout << "Terminate - control socket recv error" << endl;
+                    cout << "Terminate - client control socket recv error" << endl;
                 }
 
                 // check if the data_size is equal to 0 (time to exit bc client killed conn)
                 // break, but dont exit so server can wait for new client to connect
                 else if (data_size == 0) {
-                    cout << "Terminate - the other control  endpoint has closed the socket" << endl;
+                    cout << "Terminate - the client's control endpoint has closed the socket" << endl;
                     break;
                 } 
 
@@ -199,15 +199,14 @@ void TcpServer::VideoStreamHandler() {
                 const std::vector<char> cam_frame {getLatestCamFrame()};
                 data_lock.unlock();             // unlock after leaving critical region
 
-                // send the stringified json to the server
-                if(sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size()) < 0) {
-                    cout << "Terminate - the camera other endpoint has closed the socket" << endl;
-                    setExitCode(true);
-                    break;
+                const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
+                if(send_size < 0) {
+                    cout << "Error: Failed to send camera data to client endpoint" << endl;
+                    continue; // skip this send
+                } else if (send_size == 0) {
+                    cout << "Terminate - the client's camera endpoint has closed the socket" << endl;
+                    break; // try to wait for new connection
                 }
-
-                // client does not need to receive from server (YET)
-                // TODO: implement method to receive camera data from server
 
                 // inform updatePkt function that camera packet has been sent
                 cam_data_cv.notify_one();
