@@ -145,8 +145,8 @@ int main(int argc, char* argv[]) {
         });
     }
 
-    // camera test
-    if (is_cam) {
+    // need to start camera if testing camera or running server
+    if (is_cam || !is_client) {
         thread_list.push_back(std::thread{
             [&](){
                 Camera.RunFrameGrabber(true);
