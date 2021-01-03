@@ -63,6 +63,19 @@ class CamHandler : public raspicam::RaspiCam_Cv {
         ReturnCodes setShouldStop(const bool new_status);
 
         /**
+         * @brief Checks if camera should be actively capturing frames
+         * @return true if camera should be recording
+         * @return false if camera should stop/not be recording
+         */
+        bool getShouldRecord() const;
+
+        /**
+         * @brief Set whether or not the camera should be actively capturing frames
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes setShouldRecord(const bool new_status);
+
+        /**
          * @brief Sets the Grab Callback function to use when a camera frame is grabbed
          * @param grab_cb The callback to use
          * @param grab_cb Returns: callback should be void return
@@ -81,16 +94,18 @@ class CamHandler : public raspicam::RaspiCam_Cv {
 
         /**
          * @brief Main function to start grabbing frames from the camera
+         * @param record_immed True if camera should start capturing frames immediately
          * @param should_save (default=true) If true, saves the last grabbed frame to disk
          */
-        void RunFrameGrabber(const bool should_save=true);
+        void RunFrameGrabber(const bool record_immed, const bool should_save=true);
 
     private:
         /******************************************** Private Variables ********************************************/
 
         int                         frame_count;   // current number of grabbed frames
         const int                   max_frames;    // the max # frames to grab (-1 = infinite)
-        std::atomic_bool            stop_grabbing; // if true, the grabbing loop will stop
+        std::atomic_bool            stop_thread;   // if true, the grabbing thread will stop
+        std::atomic_bool            is_recording;  // if true, thread keeps going but grabbing will stop
         time_point                  start_time;    // when camera started grabbing
         GrabFrameCb                 grab_cb;       // callback to use when a frame is grabbed
 

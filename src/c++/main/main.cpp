@@ -150,7 +150,8 @@ int main(int argc, char* argv[]) {
         thread_list.push_back(std::thread{
             [&](){
                 // only save frames to disk if running camera test
-                Camera.RunFrameGrabber(is_cam);
+                // TODO: only start recording immediately if is camera test (set based on control pkt)
+                Camera.RunFrameGrabber(is_cam, is_cam);
             }
         });
     }

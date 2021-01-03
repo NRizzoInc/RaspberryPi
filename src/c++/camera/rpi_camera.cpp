@@ -15,7 +15,8 @@ CamHandler::CamHandler(const int max_frame_count, const bool should_init)
     : raspicam::RaspiCam_Cv{}
     , frame_count{0}
     , max_frames{max_frame_count}       // defaults to infinite = -1
-    , stop_grabbing{false}
+    , stop_thread{false}
+    , is_recording{false}
 {
     if (should_init) {
         if(SetupCam() != ReturnCodes::Success) {
@@ -31,7 +32,7 @@ CamHandler::~CamHandler() {
 /********************************************* Getters/Setters *********************************************/
 
 bool CamHandler::getShouldStop() const {
-    return stop_grabbing.load();
+    return stop_thread.load();
 }
 
 /**
@@ -39,7 +40,16 @@ bool CamHandler::getShouldStop() const {
  * @return ReturnCodes Success if no issues
  */
 ReturnCodes CamHandler::setShouldStop(const bool new_status) {
-    stop_grabbing.store(new_status);
+    stop_thread.store(new_status);
+    return ReturnCodes::Success;
+}
+
+bool CamHandler::getShouldRecord() const {
+    return is_recording.load();
+}
+
+ReturnCodes CamHandler::setShouldRecord(const bool new_status) {
+    is_recording.store(new_status);
     return ReturnCodes::Success;
 }
 
@@ -64,7 +74,13 @@ ReturnCodes CamHandler::OpenCam() {
 }
 
 
-void CamHandler::RunFrameGrabber(const bool should_save) {
+void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save) {
+
+    // if should start recording immediately, set accordingly
+    if(setShouldRecord(record_immed) != ReturnCodes::Success) {
+        cerr << "Failed to set camera recording status" << endl;
+    } 
+
     cout << "Capturing "
          << (max_frames == -1 ? "infinite" : std::to_string(max_frames))
          << " frames" << endl;
@@ -78,6 +94,9 @@ void CamHandler::RunFrameGrabber(const bool should_save) {
     auto curr_time  = start_time;
     cout << "Starting Camera Capture: " << Helpers::Timing::GetCurrTimecode(start_time) << endl;
     while (!getShouldStop() && (max_frames == -1 || frame_count < max_frames)) {
+
+        // do not capture frames unless set to
+        if(!getShouldRecord()) continue;
 
         RaspiCam_Cv::grab();
         RaspiCam_Cv::retrieve(image);
