@@ -100,12 +100,14 @@ class TcpBase : public Packet {
          * @param socket_fd The receiving socket's file descriptor
          * @param buf buffer where the received data is stored
          * @param max_buf_size The max size of the buffer to store the received data (defaults to network max)
+         * @param wait_for_all (default=false) set to true if should wait for the full "max_buf_size" to be received
          * @return number of bytes received (-1 if error occurred)
          */
         virtual int recvData(
             int socket_fd,
             char* buf,
-            const std::size_t max_buf_size=Constants::Network::MAX_DATA_SIZE
+            const std::size_t max_buf_size=Constants::Network::MAX_DATA_SIZE,
+            const bool wait_for_all=false
         );
 
         /**

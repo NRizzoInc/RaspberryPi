@@ -112,7 +112,8 @@ std::string TcpBase::formatIpAddr(const std::string& ip, const int port) const {
 int TcpBase::recvData(
     int socket_fd,
     char* buf,
-    const std::size_t max_buf_size
+    const std::size_t max_buf_size,
+    const bool wait_for_all
 ) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
@@ -120,7 +121,9 @@ int TcpBase::recvData(
     }
 
     // call the recv API
-    int rcv_size = ::recv(socket_fd, buf, max_buf_size, 0);
+    cout << "receiving max data size: " << max_buf_size << endl;
+    const int recv_flags { wait_for_all ? MSG_WAITALL : 0 };
+    int rcv_size = ::recv(socket_fd, buf, max_buf_size, recv_flags);
 
     /*
     if(rcv_size < 0) {

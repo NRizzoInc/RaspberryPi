@@ -125,7 +125,7 @@ void TcpClient::VideoStreamHandler() {
     while(!getExitCode()) {
         // call recvData, passing buf, to receive data
         // save the return value of recvData in a data_size variable
-        const int data_size {recvData(cam_data_sock_fd, buf, Constants::Camera::FRAME_SIZE)};
+        const int data_size {recvData(cam_data_sock_fd, buf, Constants::Camera::FRAME_SIZE, true)};
 
         // check if the data_size is smaller than 0
         // (if so, print message bc might have been fluke)
