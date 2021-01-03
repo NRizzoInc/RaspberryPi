@@ -16,7 +16,7 @@ CamHandler::CamHandler(const int max_frame_count, const bool should_init)
     , frame_count{0}
     , max_frames{max_frame_count}       // defaults to infinite = -1
     , stop_thread{false}
-    , is_recording{false}
+    , should_record{false}
 {
     if (should_init) {
         if(SetupCam() != ReturnCodes::Success) {
@@ -45,11 +45,11 @@ ReturnCodes CamHandler::setShouldStop(const bool new_status) {
 }
 
 bool CamHandler::getShouldRecord() const {
-    return is_recording.load();
+    return should_record.load();
 }
 
 ReturnCodes CamHandler::setShouldRecord(const bool new_status) {
-    is_recording.store(new_status);
+    should_record.store(new_status);
     return ReturnCodes::Success;
 }
 

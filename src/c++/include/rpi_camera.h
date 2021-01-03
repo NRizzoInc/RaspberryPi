@@ -105,7 +105,7 @@ class CamHandler : public raspicam::RaspiCam_Cv {
         int                         frame_count;   // current number of grabbed frames
         const int                   max_frames;    // the max # frames to grab (-1 = infinite)
         std::atomic_bool            stop_thread;   // if true, the grabbing thread will stop
-        std::atomic_bool            is_recording;  // if true, thread keeps going but grabbing will stop
+        std::atomic_bool            should_record; // if true, thread keeps going but grabbing will stop
         time_point                  start_time;    // when camera started grabbing
         GrabFrameCb                 grab_cb;       // callback to use when a frame is grabbed
 

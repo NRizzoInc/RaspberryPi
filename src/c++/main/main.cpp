@@ -146,12 +146,12 @@ int main(int argc, char* argv[]) {
     }
 
     // need to start camera if testing camera or running server
-    if (is_cam || !is_client) {
+    if (is_cam || is_server) {
         thread_list.push_back(std::thread{
             [&](){
                 // only save frames to disk if running camera test
-                // TODO: only start recording immediately if is camera test (set based on control pkt)
-                Camera.RunFrameGrabber(is_cam, is_cam);
+                // TODO: only start recording immediately if is camera test (or turned on by control pkt)
+                Camera.RunFrameGrabber(true, is_cam);
             }
         });
     }
