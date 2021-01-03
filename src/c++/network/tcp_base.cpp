@@ -138,7 +138,7 @@ int TcpBase::recvData(
     return rcv_size;
 }
 
-int TcpBase::sendData(int socket_fd, const char* buf, const size_t size_to_tx) {
+int TcpBase::sendData(int& socket_fd, const char* buf, const size_t size_to_tx) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
         return -1;

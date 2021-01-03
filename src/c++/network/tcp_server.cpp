@@ -189,14 +189,14 @@ void TcpServer::VideoStreamHandler() {
                 );
 
                 /********************************* Sending Camera Data to Client ********************************/
-                const std::vector<char> cam_frame {getLatestCamFrame()};
+                const std::vector<char>& cam_frame {getLatestCamFrame()};
                 data_lock.unlock();             // unlock after leaving critical region
 
                 const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
                 if(send_size < 0) {
                     cout << "Error: Failed to send camera data to client endpoint" << endl;
                     continue; // skip this send
-                } else if (send_size == 0) {
+                } else if (send_size == 0 || send_size != Constants::Camera::FRAME_SIZE) {
                     cout << "Terminate - the client's camera endpoint has closed the socket" << endl;
                     break; // try to wait for new connection
                 }

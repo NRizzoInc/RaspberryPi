@@ -115,7 +115,7 @@ class TcpBase : public Packet {
          * @param size_to_tx size to transmit
          * @return number of bytes sent (-1 if error occurred, 0 if closed connection)
          */
-        virtual int sendData(int socket_fd, const char* buf, const size_t size_to_tx);
+        virtual int sendData(int& socket_fd, const char* buf, const size_t size_to_tx);
 
         /**
          * @brief Creates the socket, bind it & sets options. Override to be called in constructor
