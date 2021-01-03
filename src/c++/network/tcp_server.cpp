@@ -286,9 +286,11 @@ void TcpServer::quit() {
     // set exit status to be true
     setExitCode(true);
 
-    // if listen socket is open, close it and set to -1
+    // if sockets are still open, close them and set to -1
     ctrl_listen_sock_fd = CloseOpenSock(ctrl_listen_sock_fd);
-    ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
+    ctrl_data_sock_fd   = CloseOpenSock(ctrl_data_sock_fd);
+    cam_listen_sock_fd  = CloseOpenSock(cam_listen_sock_fd);
+    cam_data_sock_fd    = CloseOpenSock(cam_data_sock_fd);
 }
 
 
