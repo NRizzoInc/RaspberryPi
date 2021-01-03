@@ -92,10 +92,13 @@ void TcpClient::netAgentFn(const bool print_data) {
         }
 
         // send the stringified json to the server
-        if(sendData(ctrl_data_sock_fd, send_pkt, pkt_size) < 0) {
-            cout << "Terminate - the other control endpoint has closed the socket" << endl;
+        const int send_size {sendData(ctrl_data_sock_fd, send_pkt, pkt_size)};
+        if(send_size < 0) {
+            cout << "Error: - Failed to send control data to server" << endl;
             setExitCode(true);
             break;
+        } else if(send_size == 0) {
+            cout << "Terminate - the server's control endpoint has closed the socket" << endl;
         }
 
         // client does not need to receive from server (YET)
@@ -134,7 +137,7 @@ void TcpClient::VideoStreamHandler() {
         // check if the data_size is equal to 0 (time to exit bc server killed conn)
         // break, but dont exit so server can wait for new client to connect
         else if (data_size == 0) {
-            cout << "Terminate - the other camera endpoint has closed the socket" << endl;
+            cout << "Terminate - the server's camera endpoint has closed the socket" << endl;
             break;
         } 
 
