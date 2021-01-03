@@ -115,9 +115,16 @@ class TcpBase : public Packet {
          * @param socket_fd The receiving socket's file descriptor
          * @param buf pointer to the buffer where the data to be sent is stored
          * @param size_to_tx size to transmit
+         * @param ignore_broken_pipe (default=false) true if should ignore broken pipes
+         * (other host closes conn) & instead returns EPIPE (negative)
          * @return number of bytes sent (-1 if error occurred, 0 if closed connection)
          */
-        virtual int sendData(int& socket_fd, const char* buf, const size_t size_to_tx);
+        virtual int sendData(
+            int& socket_fd,
+            const char* buf,
+            const size_t size_to_tx,
+            const bool ignore_broken_pipe=false
+        );
 
         /**
          * @brief Creates the socket, bind it & sets options. Override to be called in constructor

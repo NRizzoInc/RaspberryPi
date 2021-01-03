@@ -121,7 +121,6 @@ int TcpBase::recvData(
     }
 
     // call the recv API
-    cout << "receiving max data size: " << max_buf_size << endl;
     const int recv_flags { wait_for_all ? MSG_WAITALL : 0 };
     int rcv_size = ::recv(socket_fd, buf, max_buf_size, recv_flags);
 
@@ -141,24 +140,29 @@ int TcpBase::recvData(
     return rcv_size;
 }
 
-int TcpBase::sendData(int& socket_fd, const char* buf, const size_t size_to_tx) {
+int TcpBase::sendData(
+    int& socket_fd,
+    const char* buf,
+    const size_t size_to_tx,
+    const bool ignore_broken_pipe
+) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
         return -1;
     }
 
     // send the data through sckfd
-    const int sent_size = ::send(socket_fd, buf, size_to_tx, 0);
+    const int send_flags { ignore_broken_pipe ? MSG_NOSIGNAL : 0};
+    const int sent_size = ::send(socket_fd, buf, size_to_tx, send_flags);
 
     // error check (-1 in case of errors)
     // if error close the socket and exit
     if(sent_size < 0) {
-        std::cout << "ERROR: Send" << std::endl;
+        cout << "ERROR: Send" << std::endl;
         if(socket_fd >= 0) {
             close(socket_fd);
             socket_fd = -1;
         }
-        return -4;
     }
     return sent_size;
 }

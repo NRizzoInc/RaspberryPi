@@ -76,11 +76,12 @@ ReturnCodes TcpServer::acceptClient(
     }
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
-    // without timeout recv might be blocking and loop might not end
+    // without timeout recv/send might be blocking and loop might not end
     struct timeval timeout;
     timeout.tv_sec = Constants::Network::RECV_TIMEOUT;
     timeout.tv_usec = 0;
     setsockopt(data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(data_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // Print the client address (convert network address to char) 
     // -- print as single stream to prevent thread cout stream overlap
@@ -192,13 +193,12 @@ void TcpServer::VideoStreamHandler() {
                 const std::vector<char>& cam_frame {getLatestCamFrame()};
                 data_lock.unlock();             // unlock after leaving critical region
 
-                const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
-                if(send_size < 0) {
-                    cout << "Error: Failed to send camera data to client endpoint" << endl;
-                    continue; // skip this send
-                } else if (send_size == 0 || send_size != Constants::Camera::FRAME_SIZE) {
+                const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size(), true)};
+                if(send_size == EPIPE || send_size == 0 || send_size != Constants::Camera::FRAME_SIZE) {
                     cout << "Terminate - the client's camera endpoint has closed the socket" << endl;
                     break; // try to wait for new connection
+                } else if(send_size < 0) {
+                    cout << "Error: Failed to send camera data to client endpoint" << endl;
                 }
 
                 // inform updatePkt function that camera packet has been sent
@@ -238,7 +238,9 @@ ReturnCodes TcpServer::initSock() {
     timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
     timeout.tv_usec = 0;
     setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
     setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // init struct for address to bind socket
     sockaddr_in ctrl_addr {};   // holds data on the control conn address
