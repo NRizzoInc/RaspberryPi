@@ -9,7 +9,8 @@ using std::cerr;
 using std::endl;
 
 /********************************************** Constructors **********************************************/
-Packet::Packet() 
+Packet::Packet()
+    : latest_frame(Constants::Camera::FRAME_SIZE, '0') // init to black frame (0s) to make sure size != 0
 {
     // stub
 }
