@@ -74,6 +74,7 @@ ReturnCodes CamHandler::OpenCam() {
 }
 
 
+// note: have to concat strings (not stream it) bc of threading cout overlaps
 void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save) {
 
     // if should start recording immediately, set accordingly
@@ -82,8 +83,8 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
     } 
 
     cout << "Capturing "
-         << (max_frames == -1 ? "infinite" : std::to_string(max_frames))
-         << " frames" << endl;
+         + (max_frames == -1 ? "infinite" : std::to_string(max_frames))
+         + " frames" << endl;
 
     // place to store the grabbed frame
     cv::Mat image;
@@ -92,7 +93,8 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
     // loop until max frame count or told to stop
     start_time      = std::chrono::system_clock::now();
     auto curr_time  = start_time;
-    cout << "Starting Camera Capture: " << Helpers::Timing::GetCurrTimecode(start_time) << endl;
+
+    cout << "Starting Camera Capture: " + Helpers::Timing::GetCurrTimecode(start_time) + '\n';
     while (!getShouldStop() && (max_frames == -1 || frame_count < max_frames)) {
 
         // do not capture frames unless set to
@@ -132,14 +134,14 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
     }
 
     // stop
-    cout << "Stopping Camera: " << Helpers::Timing::GetCurrTimecode(curr_time) << endl;
+    cout << "Stopping Camera: " + Helpers::Timing::GetCurrTimecode(curr_time) << endl;
     RaspiCam_Cv::release();
 
 
     if (should_save) {
         constexpr auto filepath {"raspicam_cv_image.jpg"};
         cv::imwrite(filepath, image);
-        cout << "Image saved at " << filepath << endl;
+        cout << "Image saved at " + std::string(filepath) << endl;
     }
 }
 

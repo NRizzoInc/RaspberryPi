@@ -53,11 +53,8 @@ ReturnCodes TcpServer::acceptClient(
     sockaddr_in client_addr;
     socklen_t client_addr_l = sizeof(client_addr);
 
-    // cannot cout due to threads' prints overlapping (save into single string to print at once)
-    const std::string accept_wait_msg {
-        "Waiting to accept " + conn_desc + " data connection @" + formatIpAddr(GetPublicIp(), port)
-    };
-    cout << accept_wait_msg << endl;
+    // cannot cout normally "<<" due to threads' prints overlapping (save into single string to print at once)
+    cout << "Waiting to accept " + conn_desc + " data connection @" + formatIpAddr(GetPublicIp(), port) + "\n";
 
     // wrap accept call in loop (due to timeout) to allow for program to be killed
     // should stop looping when the connection has been made (i.e. data sock is positive)
@@ -87,10 +84,7 @@ ReturnCodes TcpServer::acceptClient(
 
     // Print the client address (convert network address to char) 
     // -- print as single stream to prevent thread cout stream overlap
-    const std::string new_conn_desc {
-        "New " + conn_desc + " connection from " + formatIpAddr(inet_ntoa(client_addr.sin_addr), port)
-    };
-    cout << new_conn_desc << endl; 
+    cout << "New " + conn_desc + " connection from " + formatIpAddr(inet_ntoa(client_addr.sin_addr), port) + "\n";
 
     // save the client IP in the m_ip string
     client_ip = inet_ntoa(client_addr.sin_addr);
@@ -180,8 +174,7 @@ void TcpServer::VideoStreamHandler() {
     while(!getExitCode()) {
 
         // wait for a client to connect
-        // note: extra space on desc string to even out prints
-        if(acceptClient(cam_listen_sock_fd, cam_data_sock_fd, "camera ", cam_data_port) == ReturnCodes::Success) {
+        if(acceptClient(cam_listen_sock_fd, cam_data_sock_fd, "camera", cam_data_port) == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
             while(!getExitCode()) {
