@@ -149,7 +149,8 @@ int main(int argc, char* argv[]) {
     if (is_cam || !is_client) {
         thread_list.push_back(std::thread{
             [&](){
-                Camera.RunFrameGrabber(true);
+                // only save frames to disk if running camera test
+                Camera.RunFrameGrabber(is_cam);
             }
         });
     }
