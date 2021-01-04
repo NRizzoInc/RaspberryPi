@@ -131,6 +131,7 @@ class TcpBase : public Packet {
          * @return number of bytes sent (RtnCode == Success if no issues)
          * - max size is std::uint32_t bc thats the max packet length
          * @todo Handle packet sizes larger that automatically loop when sending packets
+         * @note sends will not result in a broken SIGPIPE signal to prevent program from being killed
          */
         virtual SendRtn sendData(
             int& socket_fd,

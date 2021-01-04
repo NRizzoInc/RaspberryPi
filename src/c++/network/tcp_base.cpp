@@ -199,7 +199,7 @@ SendRtn TcpBase::sendData(
     std::string str_pkt {header_pkt.toString()};
 
     const int max_header_size {sizeof(HeaderPkt_t)};
-    const int header_sent_size = ::send(socket_fd, str_pkt.c_str(), max_header_size, 0);
+    const int header_sent_size = ::send(socket_fd, str_pkt.c_str(), max_header_size, MSG_NOSIGNAL);
     if(header_sent_size < 0) {
         // TODO: print this if --verbose
         cerr << "ERROR: Send header packet (" << header_sent_size << "/" << max_header_size << ")" << endl;
@@ -209,7 +209,7 @@ SendRtn TcpBase::sendData(
 
     /************************************** send actual data pkts *************************************/
     // send actual data now that other side knows size of this packet
-    const int sent_size = ::send(socket_fd, buf, size_to_tx, 0);
+    const int sent_size = ::send(socket_fd, buf, size_to_tx, MSG_NOSIGNAL);
     if (sent_size < 0 || sent_size != static_cast<int>(size_to_tx)) {
         // TODO: print this if --verbose
         cerr << "ERROR: Sending Data (" << sent_size << "/" << size_to_tx << ")" << endl;

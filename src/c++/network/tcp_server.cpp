@@ -199,8 +199,6 @@ void TcpServer::VideoStreamHandler() {
 
                 /********************************* Sending Camera Data to Client ********************************/
                 const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
-                data_lock.unlock();             // unlock after leaving critical region
-
                 const SendRtn send_rtn {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
 
                 if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
@@ -209,8 +207,6 @@ void TcpServer::VideoStreamHandler() {
                     break; // try to wait for new connection (dont end program bc client may reconnect)
                 }
 
-                // inform updatePkt function that camera packet has been sent
-                cam_data_cv.notify_one();
             }
 
             // at end of while, reset data socket to attempt to make new connection with same listener
@@ -297,8 +293,11 @@ void TcpServer::quit() {
     setExitCode(true);
 
     // if sockets are still open, close them and set to -1
+    cout << "Cleanup: closing control sockets" << endl;
     ctrl_listen_sock_fd = CloseOpenSock(ctrl_listen_sock_fd);
     ctrl_data_sock_fd   = CloseOpenSock(ctrl_data_sock_fd);
+
+    cout << "Cleanup: closing camera  sockets" << endl;
     cam_listen_sock_fd  = CloseOpenSock(cam_listen_sock_fd);
     cam_data_sock_fd    = CloseOpenSock(cam_data_sock_fd);
 }
