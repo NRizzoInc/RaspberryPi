@@ -36,7 +36,7 @@ TcpClient::TcpClient(
 }
 
 TcpClient::~TcpClient() {
-    quit();
+    // quit() called by TcpBase
 }
 
 /********************************************* Getters/Setters *********************************************/
@@ -191,7 +191,9 @@ void TcpClient::quit() {
     setExitCode(true);
 
     // if client socket is open, close it and set to -1
+    cout << "Cleanup: closing control sockets" << endl;
     ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
+    cout << "Cleanup: closing camera sockets" << endl;
     cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
 }
 

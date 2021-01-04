@@ -90,6 +90,10 @@ class TcpServer : public TcpBase {
     private:
         /******************************************** Private Variables ********************************************/
 
+        // misc vars
+        std::atomic_bool         close_conns;         // true if a connection has been closed (meaning all should)
+
+        // control vars
         int                      ctrl_listen_sock_fd; // tcp socket file descriptor to accept connections from client
         int                      ctrl_data_sock_fd;   // tcp socket file descriptor to recv control data from client
         std::string              client_ip;           // ip address of connected client
@@ -102,7 +106,6 @@ class TcpServer : public TcpBase {
         std::condition_variable  cam_data_cv;         // notify in order for server to send camera data to client
         std::mutex               cam_data_mutex;      // mutex to lock when accessing the camera data
         mutable std::atomic_bool has_new_cam_data;    // true if there is new data to send
-        std::atomic_bool         close_conns;         // true if a connection has been closed (meaning all should)
 
         /********************************************* Helper Functions ********************************************/
 

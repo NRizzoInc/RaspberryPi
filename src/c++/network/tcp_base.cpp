@@ -26,7 +26,7 @@ TcpBase::~TcpBase() {
 
 ReturnCodes TcpBase::cleanup() {
     // dont double cleanup
-    if (has_cleaned_up) return ReturnCodes::Success;
+    if (has_cleaned_up.load()) return ReturnCodes::Success;
 
     // wait to block until a thread has been setup
     // otherwise thread is empty and joins immediately
@@ -51,7 +51,7 @@ ReturnCodes TcpBase::cleanup() {
     // quit should be overriden by derived classes for proper cleanup
     quit();
 
-    has_cleaned_up = true;
+    has_cleaned_up.store(true);
     return ReturnCodes::Success;
 }
 

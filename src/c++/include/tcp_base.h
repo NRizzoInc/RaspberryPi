@@ -184,7 +184,7 @@ class TcpBase : public Packet {
         std::atomic_bool            started_threads;    // need to send an initization message for first packet
         std::mutex                  thread_mutex;       // mutex controlling access to the classes threads (start/join)
         std::condition_variable     thread_cv;          // true if client needs to tell the server something
-        bool                        has_cleaned_up;     // makes sure cleanup doesnt happen twice
+        std::atomic_bool            has_cleaned_up;     // makes sure cleanup doesnt happen twice
 
 }; // end of TcpClient class
 

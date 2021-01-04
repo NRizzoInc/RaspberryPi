@@ -12,6 +12,7 @@ namespace Network {
 
 TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bool should_init)
     : TcpBase{}
+    , close_conns{false}                    // set true if one socket gets closed, set back to false on restart
     , ctrl_listen_sock_fd{-1}               // init to invalid
     , ctrl_data_sock_fd{-1}                 // init to invalid
     , client_ip{}                           // empty string bc no client yet
@@ -20,7 +21,6 @@ TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bo
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
     , has_new_cam_data{true}                // will be set false immediately after sending first message
-    , close_conns{false}                    // set true if one socket gets closed, set back to false on restart
 {
     // first check if should not init
     if (!should_init) return;
@@ -35,7 +35,7 @@ TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bo
 }
 
 TcpServer::~TcpServer() {
-    quit();
+    // quit() called by TcpBase
 }
 
 
@@ -297,7 +297,7 @@ void TcpServer::quit() {
     ctrl_listen_sock_fd = CloseOpenSock(ctrl_listen_sock_fd);
     ctrl_data_sock_fd   = CloseOpenSock(ctrl_data_sock_fd);
 
-    cout << "Cleanup: closing camera  sockets" << endl;
+    cout << "Cleanup: closing camera sockets" << endl;
     cam_listen_sock_fd  = CloseOpenSock(cam_listen_sock_fd);
     cam_data_sock_fd    = CloseOpenSock(cam_data_sock_fd);
 }
