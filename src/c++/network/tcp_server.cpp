@@ -195,7 +195,7 @@ void TcpServer::VideoStreamHandler() {
 
                 const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
 
-                if(send_size == EPIPE || send_size == 0 || send_size < static_cast<int>(cam_frame.size())) {
+                if(send_size == EPIPE || send_size == 0) {
                     cout << "Terminate - the client's camera endpoint has closed the socket" << endl;
                     break; // try to wait for new connection
                 } else if(send_size < 0) {
