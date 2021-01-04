@@ -117,53 +117,56 @@ RecvRtn TcpBase::recvData(int socket_fd) {
 
     /*************************************** recv data pkt header *************************************/
     // first recv packet header to see how much data is expected (keep looping until it all arrives)
-    const int header_size {sizeof(HeaderPkt_t)};
-    char header_buf[header_size];
-    std::size_t header_rx_size {0};
-    while (header_rx_size < header_size) {
-        const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, header_size, 0);
+    const int max_header_size {sizeof(HeaderPkt_t)};
+    char header_buf[max_header_size];
+    int header_rx_size {0};
+    while (header_rx_size < max_header_size) {
+        const int max_stream_left { std::min(
+            max_header_size-header_rx_size, // amount of header pkt left to recv
+            static_cast<int>(Constants::Network::MAX_DATA_SIZE)
+        )};
+        const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, max_stream_left, 0);
         if (header_rx_partial < 0) {
             cerr << "Error: receiving header packet" << endl;
             return RecvRtn{{}, RecvRtnCodes::Error};
         } 
         else if (header_rx_partial == 0) {
+            // end of stream
             cerr << "Error: other host closed connection while sending header packet" << endl;
             return RecvRtn{{}, RecvRtnCodes::ClosedConn};
         }
-        header_rx_size =+ header_rx_partial;
-        cout << header_rx_size << "/" << header_size << endl;
+        header_rx_size += header_rx_partial;
     }
     
-    // reconstitute header packet into struct (in binary form)
-    std::istringstream header_pkt_stream{ std::string{header_buf, header_rx_size} };
+    // reconstitute header packet into struct (in binary stream form)
+    std::istringstream header_pkt_stream{ std::string{header_buf, static_cast<std::size_t>(header_rx_size)} };
     // convert into actual struct
     HeaderPkt_t header { header_pkt_stream };
-    cout << "header pkt (size: " << header_rx_size << "/" << header_size << ")" << endl;
-    cout << "should recv " << header.total_length << endl;
 
     /*********************************** recv actual data packets *************************************/
 
     // prepare bufs for receiving
     std::uint32_t total_recv_size {0};
     char recv_buf[header.total_length];
-    int count {0}; // REMOVE
     while (total_recv_size < header.total_length) {
         // append new data to top of buf (new start = start + curr size)
-        const int rcv_size = ::recv(socket_fd, recv_buf+total_recv_size, Constants::Network::MAX_DATA_SIZE, 0);
+        const std::uint32_t max_stream_size {std::min(
+            header.total_length-total_recv_size, // the amount of stream data left to receive
+            static_cast<std::uint32_t>(Constants::Network::MAX_DATA_SIZE)
+        )};
+        const int rcv_size = ::recv(socket_fd, recv_buf+total_recv_size, max_stream_size, 0);
         if(rcv_size < 0) {
-            std::cout << "ERROR: Receive" << std::endl;
+            cerr << "ERROR: RECV (" << total_recv_size << "/" << header.total_length << ")" << endl;
+            break;
+        } else if (rcv_size == 0) {
+            cerr << "ERROR: RECV - other host closed connection" << endl;
             break;
         }
         total_recv_size += rcv_size;
-        
-        // REMOVE
-        count++;
-        if (count % 20 == 0)
-            cout << total_recv_size << "/" << header.total_length << endl;
     }
 
     return RecvRtn{
-        std::vector<u_char>{recv_buf, recv_buf+header.total_length},
+        std::vector<u_char>{recv_buf, recv_buf+total_recv_size},
         total_recv_size > 0 ? 
             RecvRtnCodes::Sucess :
             total_recv_size == 0 ? RecvRtnCodes::ClosedConn : RecvRtnCodes::Error
@@ -188,31 +191,27 @@ int TcpBase::sendData(
     HeaderPkt_t header_pkt      {};
     header_pkt.total_length     = size_to_tx;
     header_pkt.checksum         = header_pkt.CalcChecksum(buf, size_to_tx);
-    cout << "Sending " << size_to_tx << endl;
 
     /*************************************** send data pkt header *************************************/
     // send the header for the packet so recv can know size (send with no special props)
     // const std::string str_pkt {header_pkt.toString()};
     std::string str_pkt {header_pkt.toString()};
 
-    // todo remove after testing!!!
-    auto test_stream {std::istringstream(str_pkt, std::ios_base::binary)};
-    HeaderPkt_t test_pkt { test_stream };
-
-    const int header_send_rtn = ::send(socket_fd, str_pkt.c_str(), str_pkt.size(), 0);
-    if(header_send_rtn < 0) {
-        cerr << "ERROR: Failed to send header packet!" << endl;
-        return header_send_rtn;
+    const int max_header_size {sizeof(HeaderPkt_t)};
+    const int header_sent_size = ::send(socket_fd, str_pkt.c_str(), max_header_size, 0);
+    if(header_sent_size < 0) {
+        cerr << "ERROR: Send header packet (" << header_sent_size << "/" << max_header_size << ")" << endl;
+        return header_sent_size;
     }
+
 
     /************************************** send actual data pkts *************************************/
     // send actual data now that other side knows size of this packet
-    const int sent_size = ::send(socket_fd, buf, size_to_tx, send_flags);
-
-    // error check (-1 in case of errors)
-    if(sent_size < 0) {
-        cout << "ERROR: Sending data packet" << std::endl;
+    const int sent_size = ::send(socket_fd, buf, size_to_tx, 0/*send_flags*/);
+    if (sent_size != static_cast<int>(size_to_tx)) {
+        cerr << "ERROR: Sending Data (" << sent_size << "/" << size_to_tx << ")" << endl;
     }
+
     return sent_size;
 }
 

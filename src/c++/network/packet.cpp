@@ -20,12 +20,12 @@ std::size_t HeaderPkt_t::size() const {
 
 std::string HeaderPkt_t::toString() {
     // convert from standard network format (pay attention to which ones are longs = uint32_t)
-    total_length    = htonl(total_length);
-    id              = htons(id);
-    flags_fo        = htons(flags_fo);
-    checksum        = htons(checksum);
-    src_addr        = htonl(src_addr);
-    dst_addr        = htonl(dst_addr);
+    // total_length    = htonl(total_length);
+    // id              = htons(id);
+    // flags_fo        = htons(flags_fo);
+    // checksum        = htons(checksum);
+    // src_addr        = htonl(src_addr);
+    // dst_addr        = htonl(dst_addr);
 
     std::ostringstream pkt_stream;
     pkt_stream.write((char*)&ver_ihl,      sizeof(ver_ihl));
@@ -58,12 +58,12 @@ HeaderPkt_t::HeaderPkt_t(std::istream& stream) {
     stream.read((char*)&dst_addr,     sizeof(dst_addr));
 
     // convert to standard network format (pay attention to which ones are longs = uint32_t)
-    total_length    = ntohl(total_length);
-    id              = ntohs(id);
-    flags_fo        = ntohs(flags_fo);
-    checksum        = ntohs(checksum);
-    src_addr        = ntohl(src_addr);
-    dst_addr        = ntohl(dst_addr);
+    // total_length    = ntohl(total_length);
+    // id              = ntohs(id);
+    // flags_fo        = ntohs(flags_fo);
+    // checksum        = ntohs(checksum);
+    // src_addr        = ntohl(src_addr);
+    // dst_addr        = ntohl(dst_addr);
 }
 
 // credit: https://stackoverflow.com/a/23726131/13933174
