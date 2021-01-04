@@ -197,7 +197,7 @@ void TcpServer::VideoStreamHandler() {
 
                 if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
                     cout << "Error: Send camera data to client (suggests closed endpoint)" << endl;
-                    break; // try to wait for new connection
+                    break; // try to wait for new connection (dont end program bc client may reconnect)
                 }
 
                 // inform updatePkt function that camera packet has been sent

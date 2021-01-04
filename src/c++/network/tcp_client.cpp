@@ -93,9 +93,9 @@ void TcpClient::netAgentFn(const bool print_data) {
 
         // send the stringified json to the server
         const SendRtn send_rtn {sendData(ctrl_data_sock_fd, send_pkt, pkt_size)};
-        if(send_rtn.RtnCode == RecvSendRtnCodes::Error) {
-            cout << "Error: - Failed to send control data to server" << endl;
-            setExitCode(true);
+        if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
+            cout << "Terminate - the server's control endpoint has closed the socket" << endl;
+            setExitCode(true); // end program
             break;
         }
 
@@ -130,6 +130,7 @@ void TcpClient::VideoStreamHandler() {
         // break, but dont exit so server can wait for new client to connect
         else if (img_recv.RtnCode == RecvSendRtnCodes::ClosedConn) {
             cout << "Terminate - the server's camera endpoint has closed the socket" << endl;
+            setExitCode(true); // end program (make sure control socket also ends)
             break;
         } 
 
