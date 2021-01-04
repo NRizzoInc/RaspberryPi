@@ -29,15 +29,21 @@ namespace RPI {
 namespace Network {
 
 // holds the return of recvData(), check the "RtnCode" attribute to see if any errors occured
-enum class RecvRtnCodes {
+enum class RecvSendRtnCodes {
     Error,
     ClosedConn,
     Sucess
 };
 struct RecvRtn {
     std::vector<u_char> buf;   // the data receivied via the socket (data.size() for size)
-    RecvRtnCodes        RtnCode;
+    RecvSendRtnCodes    RtnCode;
 };
+
+struct SendRtn {
+    std::uint32_t       size;   // the size of the  sent data -- pinned to uint32_t bc thats max send size currently
+    RecvSendRtnCodes    RtnCode;
+};
+
 
 /**
  * @brief Implements common features shared between server & client
@@ -122,9 +128,11 @@ class TcpBase : public Packet {
          * @param buf pointer to the buffer where the data to be sent is stored - can be (un)signed char
          * @param size_to_tx size to transmit
          * (other host closes conn) & instead returns EPIPE (negative)
-         * @return number of bytes sent (-1 if error occurred, 0 if closed connection)
+         * @return number of bytes sent (RtnCode == Success if no issues)
+         * - max size is std::uint32_t bc thats the max packet length
+         * @todo Handle packet sizes larger that automatically loop when sending packets
          */
-        virtual int sendData(
+        virtual SendRtn sendData(
             int& socket_fd,
             const void* buf,
             const std::uint32_t size_to_tx

@@ -112,7 +112,7 @@ std::string TcpBase::formatIpAddr(const std::string& ip, const int port) const {
 RecvRtn TcpBase::recvData(int socket_fd) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
-        return RecvRtn{{}, RecvRtnCodes::Error};
+        return RecvRtn{{}, RecvSendRtnCodes::Error};
     }
 
     /*************************************** recv data pkt header *************************************/
@@ -128,12 +128,12 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, max_stream_left, 0);
         if (header_rx_partial < 0) {
             cerr << "Error: receiving header packet" << endl;
-            return RecvRtn{{}, RecvRtnCodes::Error};
+            return RecvRtn{{}, RecvSendRtnCodes::Error};
         } 
         else if (header_rx_partial == 0) {
             // end of stream
             cerr << "Error: other host closed connection while sending header packet" << endl;
-            return RecvRtn{{}, RecvRtnCodes::ClosedConn};
+            return RecvRtn{{}, RecvSendRtnCodes::ClosedConn};
         }
         header_rx_size += header_rx_partial;
     }
@@ -148,6 +148,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
     // prepare bufs for receiving
     std::uint32_t total_recv_size {0};
     char recv_buf[header.total_length];
+    RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Sucess}; // default to success
     while (total_recv_size < header.total_length) {
         // append new data to top of buf (new start = start + curr size)
         const std::uint32_t max_stream_size {std::min(
@@ -157,9 +158,11 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         const int rcv_size = ::recv(socket_fd, recv_buf+total_recv_size, max_stream_size, 0);
         if(rcv_size < 0) {
             cerr << "ERROR: RECV (" << total_recv_size << "/" << header.total_length << ")" << endl;
+            rtn_code = RecvSendRtnCodes::Error;
             break;
         } else if (rcv_size == 0) {
             cerr << "ERROR: RECV - other host closed connection" << endl;
+            rtn_code = RecvSendRtnCodes::ClosedConn;
             break;
         }
         total_recv_size += rcv_size;
@@ -167,20 +170,18 @@ RecvRtn TcpBase::recvData(int socket_fd) {
 
     return RecvRtn{
         std::vector<u_char>{recv_buf, recv_buf+total_recv_size},
-        total_recv_size > 0 ? 
-            RecvRtnCodes::Sucess :
-            total_recv_size == 0 ? RecvRtnCodes::ClosedConn : RecvRtnCodes::Error
+        rtn_code
     };
 }
 
-int TcpBase::sendData(
+SendRtn TcpBase::sendData(
     int& socket_fd,
     const void* buf,
     const std::uint32_t size_to_tx
 ) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
-        return -1;
+        return SendRtn{0, RecvSendRtnCodes::Error};
     }
 
     // construct header packet to send pkt to send prior to data
@@ -197,18 +198,20 @@ int TcpBase::sendData(
     const int header_sent_size = ::send(socket_fd, str_pkt.c_str(), max_header_size, 0);
     if(header_sent_size < 0) {
         cerr << "ERROR: Send header packet (" << header_sent_size << "/" << max_header_size << ")" << endl;
-        return header_sent_size;
+        return SendRtn{0, RecvSendRtnCodes::Error};
     }
 
 
     /************************************** send actual data pkts *************************************/
     // send actual data now that other side knows size of this packet
     const int sent_size = ::send(socket_fd, buf, size_to_tx, 0);
-    if (sent_size != static_cast<int>(size_to_tx)) {
+    if (sent_size < 0 || sent_size != static_cast<int>(size_to_tx)) {
         cerr << "ERROR: Sending Data (" << sent_size << "/" << size_to_tx << ")" << endl;
+        return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Error};
     }
 
-    return sent_size;
+    // iff successful, sent_size >= 0 so can safely cast to uint
+    return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Sucess};
 }
 
 

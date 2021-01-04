@@ -123,13 +123,13 @@ void TcpServer::netAgentFn(const bool print_data) {
 
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
-                if (ctrl_recv.RtnCode == RecvRtnCodes::Error) {
+                if (ctrl_recv.RtnCode == RecvSendRtnCodes::Error) {
                     cout << "Terminate - client control socket recv error" << endl;
                 }
 
                 // check if the data_size is equal to 0 (time to exit bc client killed conn)
                 // break, but dont exit so server can wait for new client to connect
-                else if (ctrl_recv.RtnCode == RecvRtnCodes::ClosedConn) {
+                else if (ctrl_recv.RtnCode == RecvSendRtnCodes::ClosedConn) {
                     cout << "Terminate - the client's control endpoint has closed the socket" << endl;
                     break;
                 } 
@@ -193,13 +193,11 @@ void TcpServer::VideoStreamHandler() {
                 const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
                 data_lock.unlock();             // unlock after leaving critical region
 
-                const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
+                const SendRtn send_rtn {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
 
-                if(send_size == EPIPE || send_size == 0) {
-                    cout << "Terminate - the client's camera endpoint has closed the socket" << endl;
+                if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
+                    cout << "Error: Send camera data to client (suggests closed endpoint)" << endl;
                     break; // try to wait for new connection
-                } else if(send_size < 0) {
-                    cout << "Error: Failed to send camera data to client endpoint" << endl;
                 }
 
                 // inform updatePkt function that camera packet has been sent

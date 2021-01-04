@@ -92,22 +92,17 @@ void TcpClient::netAgentFn(const bool print_data) {
         }
 
         // send the stringified json to the server
-        const int send_size {sendData(ctrl_data_sock_fd, send_pkt, pkt_size)};
-        if(send_size < 0) {
+        const SendRtn send_rtn {sendData(ctrl_data_sock_fd, send_pkt, pkt_size)};
+        if(send_rtn.RtnCode == RecvSendRtnCodes::Error) {
             cout << "Error: - Failed to send control data to server" << endl;
             setExitCode(true);
             break;
-        } else if(send_size == 0) {
-            cout << "Terminate - the server's control endpoint has closed the socket" << endl;
         }
-
-        // client does not need to receive from server (YET)
-        // TODO: implement method to receive camera data from server
 
         // inform updatePkt function that packet has been sent
         has_new_msg.notify_one();
     }
-    cout << "Exiting client" << endl;
+    cout << "Exiting Client Control Sender" << endl;
 }
 
 void TcpClient::VideoStreamHandler() {
@@ -122,18 +117,18 @@ void TcpClient::VideoStreamHandler() {
     while(!getExitCode()) {
 
         // recv image/frame in the form of a string container (to also store size)
-        const RecvRtn       img_recv    { recvData(cam_data_sock_fd) };
+        const RecvRtn img_recv { recvData(cam_data_sock_fd) };
 
         // check if the data_size is smaller than 0
         // (if so, print message bc might have been fluke)
-        if (img_recv.RtnCode == RecvRtnCodes::Error) {
+        if (img_recv.RtnCode == RecvSendRtnCodes::Error) {
             cout << "Error: Failed to recv camera data" << endl;
             continue; // dont try to save a bad frame
         }
 
         // check if server killed conn
         // break, but dont exit so server can wait for new client to connect
-        else if (img_recv.RtnCode == RecvRtnCodes::ClosedConn) {
+        else if (img_recv.RtnCode == RecvSendRtnCodes::ClosedConn) {
             cout << "Terminate - the server's camera endpoint has closed the socket" << endl;
             break;
         } 
@@ -153,6 +148,7 @@ void TcpClient::VideoStreamHandler() {
     }
 
     // at end of while, reset data socket to attempt to make new connection with same listener
+    cout << "Exiting Client Camera Receiver" << endl;
     cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
 }
 
