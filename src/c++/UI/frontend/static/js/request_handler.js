@@ -3,7 +3,7 @@
  * @file Handles the POST/GET requests
  */
 
- /**
+/**
  * @brief Sends a post request to the current page with updated packet
  * @param {JSON} pkt_data The data to send to the web app
  * @returns {reqResponse} Contains the backend's json response to post request
