@@ -24,8 +24,8 @@ namespace Constants {
     namespace Network {
         constexpr std::size_t   MAX_DATA_SIZE   {4096};
         constexpr char          PKT_ACK[]       {"Packet ACK\n"};
-        constexpr int           RECV_TIMEOUT    {5}; // TODO: heartbeat keepalive (shorten)
-        constexpr int           ACPT_TIMEOUT    {5}; // ctrl+c takes 5 sec to work pre-connect
+        constexpr int           RX_TX_TIMEOUT   {1}; // heartbeat (ctrl+c takes this long during runtime)
+        constexpr int           ACPT_TIMEOUT    {2}; // ctrl+c takes this long to work pre-connect
     } // end of Network namespace
 
     namespace Camera {

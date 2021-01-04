@@ -68,10 +68,11 @@ void TcpClient::netAgentFn(const bool print_data) {
     while(!getExitCode()) {
         // wait until there is a new message (or first message)
         // or until server is about to timeout
+        const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
         std::unique_lock<std::mutex> data_lock(data_mutex);
         has_new_msg.wait_for(
             data_lock,
-            std::chrono::seconds(Constants::Network::RECV_TIMEOUT-1),
+            timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
             [&](){return pkt_ready.load();}
         );
         // prevent predicate from being triggered in future iterations w/o being set by another thread
