@@ -90,7 +90,7 @@ class TcpBase : public Packet {
 
         /**
          * @brief Starts up a non-blocking read for the server/client
-         * @note Calls netAgentFn() in a thread
+         * @note Starts up all network related threads
          * @param print_data Should received data be printed?
          */
         void runNetAgent(const bool print_data);
@@ -149,7 +149,7 @@ class TcpBase : public Packet {
          * (override so that it can be called by runNetAgent() in a thread)
          * @param print_data Should received data be printed?
          */
-        virtual void netAgentFn(const bool print_data) = 0;
+        virtual void ControlLoopFn(const bool print_data) = 0;
 
         /**
          * @brief The function to run regarding video frames when starting up the TCP server/client
@@ -178,7 +178,7 @@ class TcpBase : public Packet {
         /******************************************** Private Variables ********************************************/
 
         std::atomic_bool            should_exit;        // true if should exit/stop connection
-        std::thread                 net_agent_thread;   // holds the thread proc for netAgentFn()
+        std::thread                 control_thread;     // holds the thread proc for ControlLoopFn()
         std::thread                 cam_vid_thread;     // holds the thread proc for VideoStreamHandler()
         std::atomic_bool            started_threads;    // need to send an initization message for first packet
         std::mutex                  thread_mutex;       // mutex controlling access to the classes threads (start/join)

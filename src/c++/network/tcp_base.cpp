@@ -13,7 +13,7 @@ using std::endl;
 TcpBase::TcpBase()
     : Packet{}
     , should_exit{false}
-    , net_agent_thread{}
+    , control_thread{}
     , started_threads{false}
     , has_cleaned_up{false}
 {
@@ -39,8 +39,8 @@ ReturnCodes TcpBase::cleanup() {
     );
 
     // block until thread ends
-    if (net_agent_thread.joinable()) {
-        net_agent_thread.join();
+    if (control_thread.joinable()) {
+        control_thread.join();
     }
 
     if(cam_vid_thread.joinable()) {
@@ -88,9 +88,9 @@ void TcpBase::runNetAgent(const bool print_data) {
 
     // startup client/server agent in a thread
     // cannot capture by reference in locally existing lambda
-    net_agent_thread = std::thread{[this, print_data]() mutable {
+    control_thread = std::thread{[this, print_data]() mutable {
         // dont pin fn to TcpBase since it should be overridden by derived classes
-        netAgentFn(print_data);
+        ControlLoopFn(print_data);
     }};
 
     cam_vid_thread = std::thread{[this]() {

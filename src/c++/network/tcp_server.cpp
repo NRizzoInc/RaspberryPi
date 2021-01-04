@@ -108,7 +108,7 @@ const std::vector<unsigned char>& TcpServer::getLatestCamFrame() const {
     return Packet::getLatestCamFrame();
 }
 
-void TcpServer::netAgentFn(const bool print_data) {
+void TcpServer::ControlLoopFn(const bool print_data) {
     // create a char buffer that hold the max allowed size
     char buf[Constants::Network::MAX_DATA_SIZE];
 

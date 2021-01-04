@@ -56,7 +56,7 @@ ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
 
 /********************************************* Client Functions ********************************************/
 
-void TcpClient::netAgentFn(const bool print_data) {
+void TcpClient::ControlLoopFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
     if(connectToServer(ctrl_data_sock_fd, server_ip, ctrl_data_port, "control") != ReturnCodes::Success) {

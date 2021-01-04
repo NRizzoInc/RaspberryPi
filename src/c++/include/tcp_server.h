@@ -66,7 +66,7 @@ class TcpServer : public TcpBase {
          * @brief Starts up a non-blocking function to start the server listener
          * @param print_data Should received data be printed?
          */
-        virtual void netAgentFn(const bool print_data) override;
+        virtual void ControlLoopFn(const bool print_data) override;
 
         /**
          * @brief Starts up a non-blocking function to send video frames from camera to client
