@@ -176,16 +176,12 @@ RecvRtn TcpBase::recvData(int socket_fd) {
 int TcpBase::sendData(
     int& socket_fd,
     const void* buf,
-    const std::uint32_t size_to_tx,
-    const bool ignore_broken_pipe
+    const std::uint32_t size_to_tx
 ) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
         return -1;
     }
-
-    // setup some send flags
-    const int send_flags { ignore_broken_pipe ? MSG_NOSIGNAL : 0};
 
     // construct header packet to send pkt to send prior to data
     HeaderPkt_t header_pkt      {};
@@ -207,7 +203,7 @@ int TcpBase::sendData(
 
     /************************************** send actual data pkts *************************************/
     // send actual data now that other side knows size of this packet
-    const int sent_size = ::send(socket_fd, buf, size_to_tx, 0/*send_flags*/);
+    const int sent_size = ::send(socket_fd, buf, size_to_tx, 0);
     if (sent_size != static_cast<int>(size_to_tx)) {
         cerr << "ERROR: Sending Data (" << sent_size << "/" << size_to_tx << ")" << endl;
     }

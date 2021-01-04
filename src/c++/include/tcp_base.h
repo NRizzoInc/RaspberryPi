@@ -121,15 +121,13 @@ class TcpBase : public Packet {
          * @param socket_fd The receiving socket's file descriptor
          * @param buf pointer to the buffer where the data to be sent is stored - can be (un)signed char
          * @param size_to_tx size to transmit
-         * @param ignore_broken_pipe (default=false) true if should ignore broken pipes
          * (other host closes conn) & instead returns EPIPE (negative)
          * @return number of bytes sent (-1 if error occurred, 0 if closed connection)
          */
         virtual int sendData(
             int& socket_fd,
             const void* buf,
-            const std::uint32_t size_to_tx,
-            const bool ignore_broken_pipe=false
+            const std::uint32_t size_to_tx
         );
 
         /**
