@@ -20,6 +20,7 @@ TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bo
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
     , has_new_cam_data{true}                // will be set false immediately after sending first message
+    , close_conns{false}                    // set true if one socket gets closed, set back to false on restart
 {
     // first check if should not init
     if (!should_init) return;
@@ -89,6 +90,9 @@ ReturnCodes TcpServer::acceptClient(
 
     // save the client IP in the m_ip string
     client_ip = inet_ntoa(client_addr.sin_addr);
+
+    // tell sockets they can start
+    close_conns.store(false);
     return ReturnCodes::Success;
 }
 
@@ -114,7 +118,7 @@ void TcpServer::netAgentFn(const bool print_data) {
         if(acceptClient(ctrl_listen_sock_fd, ctrl_data_sock_fd, "control", ctrl_data_port) == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
-            while(!getExitCode()) {
+            while(!getExitCode() && !close_conns.load()) {
 
                 /********************************* Receiving From Server ********************************/
                 // call recvData and save result in str container to get size
@@ -124,13 +128,15 @@ void TcpServer::netAgentFn(const bool print_data) {
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
                 if (ctrl_recv.RtnCode == RecvSendRtnCodes::Error) {
-                    cout << "Terminate - client control socket recv error" << endl;
+                    // TODO: print only with --verbose
+                    cout << "Error - client control socket recv error" << endl;
                 }
 
                 // check if the data_size is equal to 0 (time to exit bc client killed conn)
                 // break, but dont exit so server can wait for new client to connect
                 else if (ctrl_recv.RtnCode == RecvSendRtnCodes::ClosedConn) {
                     cout << "Terminate - the client's control endpoint has closed the socket" << endl;
+                    close_conns.store(true); // signal to camera socket to stop
                     break;
                 } 
 
@@ -178,7 +184,7 @@ void TcpServer::VideoStreamHandler() {
         if(acceptClient(cam_listen_sock_fd, cam_data_sock_fd, "camera", cam_data_port) == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
-            while(!getExitCode()) {
+            while(!getExitCode() && !close_conns.load()) {
             
                 // wait until there is a new message (or first message)
                 // or until server is about to timeout
@@ -197,6 +203,7 @@ void TcpServer::VideoStreamHandler() {
 
                 if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
                     cout << "Error: Send camera data to client (suggests closed endpoint)" << endl;
+                    close_conns.store(true); // tell control socket to stop
                     break; // try to wait for new connection (dont end program bc client may reconnect)
                 }
 
