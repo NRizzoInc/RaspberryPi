@@ -99,6 +99,7 @@ ReturnCodes TcpServer::acceptClient(
 ReturnCodes TcpServer::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
     Packet::setLatestCamFrame(new_frame);
     has_new_cam_data.store(true);
+    cam_data_cv.notify_one();
     return ReturnCodes::Success;
 }
 
