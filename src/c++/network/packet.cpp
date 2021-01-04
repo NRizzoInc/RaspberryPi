@@ -8,6 +8,85 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+/************************************************ Common Packet Structs ******************************************/
+
+std::uint8_t HeaderPkt_t::ihl() const {
+    return (ver_ihl & 0x0F);
+}
+
+std::size_t HeaderPkt_t::size() const {
+    return ihl() * sizeof(std::uint32_t);
+}
+
+std::string HeaderPkt_t::toString() {
+    // convert from standard network format (pay attention to which ones are longs = uint32_t)
+    total_length    = htonl(total_length);
+    id              = htons(id);
+    flags_fo        = htons(flags_fo);
+    checksum        = htons(checksum);
+    src_addr        = htonl(src_addr);
+    dst_addr        = htonl(dst_addr);
+
+    std::ostringstream pkt_stream;
+    pkt_stream.write((char*)&ver_ihl,      sizeof(ver_ihl));
+    pkt_stream.write((char*)&tos,          sizeof(tos));
+    pkt_stream.write((char*)&total_length, sizeof(total_length));
+    pkt_stream.write((char*)&id,           sizeof(id));
+    pkt_stream.write((char*)&flags_fo,     sizeof(flags_fo));
+    pkt_stream.write((char*)&ttl,          sizeof(ttl));
+    pkt_stream.write((char*)&protocol,     sizeof(protocol));
+    pkt_stream.write((char*)&checksum,     sizeof(checksum));
+    pkt_stream.write((char*)&src_addr,     sizeof(src_addr));
+    pkt_stream.write((char*)&dst_addr,     sizeof(dst_addr));
+    return pkt_stream.str();
+}
+
+HeaderPkt_t::HeaderPkt_t() {
+    // stub to init everything to defaults (aka 0)
+}
+
+HeaderPkt_t::HeaderPkt_t(std::istream& stream) {
+    stream.read((char*)&ver_ihl,      sizeof(ver_ihl));
+    stream.read((char*)&tos,          sizeof(tos));
+    stream.read((char*)&total_length, sizeof(total_length));
+    stream.read((char*)&id,           sizeof(id));
+    stream.read((char*)&flags_fo,     sizeof(flags_fo));
+    stream.read((char*)&ttl,          sizeof(ttl));
+    stream.read((char*)&protocol,     sizeof(protocol));
+    stream.read((char*)&checksum,     sizeof(checksum));
+    stream.read((char*)&src_addr,     sizeof(src_addr));
+    stream.read((char*)&dst_addr,     sizeof(dst_addr));
+
+    // convert to standard network format (pay attention to which ones are longs = uint32_t)
+    total_length    = ntohl(total_length);
+    id              = ntohs(id);
+    flags_fo        = ntohs(flags_fo);
+    checksum        = ntohs(checksum);
+    src_addr        = ntohl(src_addr);
+    dst_addr        = ntohl(dst_addr);
+}
+
+// credit: https://stackoverflow.com/a/23726131/13933174
+std::uint16_t HeaderPkt_t::CalcChecksum(const void* data_buf, std::size_t size) {
+    unsigned char x;
+    unsigned short crc = 0xFFFF;
+
+    while (size--){
+        const unsigned char* ucharptr { static_cast<const unsigned char*>(data_buf) };
+        // have to remove constness to increment position
+        unsigned char* data_ptr { const_cast<unsigned char*>(ucharptr) };
+        x = crc >> 8 ^ *(data_ptr++);
+        x ^= x >> 4;
+        crc = ( crc << 8 )
+            ^ ( static_cast<unsigned short>(x << 12) )
+            ^ ( static_cast<unsigned short>(x << 5)  )
+            ^ ( static_cast<unsigned short>(x)       )
+            ;
+    }
+    return crc;
+}
+
+
 /********************************************** Constructors **********************************************/
 Packet::Packet()
     : latest_frame(Constants::Camera::FRAME_SIZE, '0') // init to black frame (0s) to make sure size != 0
@@ -34,14 +113,14 @@ ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     return ReturnCodes::Success;
 }
 
-const std::vector<char>& Packet::getLatestCamFrame() const {
+const std::vector<unsigned char>& Packet::getLatestCamFrame() const {
     // lock to make sure data can be gotten without new data being written
     std::unique_lock<std::mutex> lk{frame_mutex};
     return latest_frame;
 }
 
 
-ReturnCodes Packet::setLatestCamFrame(const std::vector<char>& new_frame) {
+ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
     // lock to make sure data can be written without it trying to be read simultaneously
     std::unique_lock<std::mutex> lk{frame_mutex};
     latest_frame = new_frame;

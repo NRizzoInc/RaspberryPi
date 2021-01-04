@@ -78,13 +78,13 @@ class TcpServer : public TcpBase {
          * @return Success if no issues
          * @note Bool is used to prevent over sending of the same traffic over and over again
          */
-        virtual ReturnCodes setLatestCamFrame(const std::vector<char>& new_frame) override;
+        virtual ReturnCodes setLatestCamFrame(const std::vector<unsigned char>& new_frame) override;
 
         /**
          * @brief Get the latest frame from the camera video stream (and set new atomic flag to false)
          * @return Reference to the char buffer in the form of a char vector
          */
-        virtual const std::vector<char>& getLatestCamFrame() const override;
+        virtual const std::vector<unsigned char>& getLatestCamFrame() const override;
 
 
     private:

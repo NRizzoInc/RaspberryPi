@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <functional>
 #include <mutex>
+#include <netinet/in.h> // for ntons
+#include <sstream> // for converting packets to strings
 
 // Our Includes
 #include "constants.h"
@@ -17,6 +19,9 @@
 
 namespace RPI {
 namespace Network {
+
+/************************************************ Common Packet Structs ******************************************/
+// credit: https://stackoverflow.com/a/16523804/13933174
 
 // for convenience inside Network namespace
 using json = nlohmann::json;
@@ -47,11 +52,42 @@ struct CommonPkt {
     bool ACK;
 }; // end of CommonPkt
 
+
+// struct to be sent prior to sending an actual data packet so its size & checksum can be known
+// https://en.wikipedia.org/wiki/IPv4#Header
+// mostly only checking/using total_length & checksum
+struct HeaderPkt_t {
+    std::uint8_t    ver_ihl;        // 4 bits version and 4 bits internet header length (ver=IPv<#>)
+    std::uint8_t    tos;            // type of service
+    std::uint32_t   total_length;   // typically uint16_t but camera frames are very large (>100,000)
+    std::uint16_t   id;             // 
+    std::uint16_t   flags_fo;       // 3 bits flags and 13 bits fragment-offset
+    std::uint8_t    ttl;            // time to live
+    std::uint8_t    protocol;       // 
+    std::uint16_t   checksum;       //
+    std::uint32_t   src_addr;       // 
+    std::uint32_t   dst_addr;       //
+
+    // constructor makes conversion to HeaderPkt_t easy
+    HeaderPkt_t     ();
+    HeaderPkt_t     (std::istream& stream);
+    // to string makes conversion from HeaderPkt_t easy
+    std::string     toString();
+    std::uint16_t   CalcChecksum(const void* data_buf, std::size_t size);
+    std::uint8_t    ihl() const;
+    std::size_t     size() const;
+};
+
+
+
 /**
  * @brief Type for a callback function that accepts a reference to the received pkt
  * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
  */
 using RecvPktCallback = std::function<ReturnCodes(const CommonPkt&)>;
+
+
+/*************************************************** Packet Class **************************************************/
 
 /**
  * @brief This class is responsible for writing and reading packets
@@ -74,14 +110,14 @@ class Packet {
          * @return Reference to the char buffer in the form of a char vector
          * @note Needs to use a mutex bc of read/write race condition with server
          */
-        virtual const std::vector<char>& getLatestCamFrame() const;
+        virtual const std::vector<unsigned char>& getLatestCamFrame() const;
 
         /**
          * @brief Set the latest frame from the camera video stream
          * @return Success if no issues
          * @note Needs to use a mutex bc of read/write race condition with server
          */
-        virtual ReturnCodes setLatestCamFrame(const std::vector<char>& new_frame);
+        virtual ReturnCodes setLatestCamFrame(const std::vector<unsigned char>& new_frame);
 
         /*************************************** Packet Read/Write Functions ***************************************/
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
@@ -113,12 +149,12 @@ class Packet {
         /******************************************** Private Variables ********************************************/
 
         // regular data packet variables
-        CommonPkt               msg_pkt;            // holds the most up to date information from client
-        mutable std::mutex      reg_pkt_mutex;      // controls access to the `msg_pkt` data
+        CommonPkt                       msg_pkt;            // holds the most up to date information from client
+        mutable std::mutex              reg_pkt_mutex;      // controls access to the `msg_pkt` data
 
         // camera pkt variables
-        std::vector<char>       latest_frame;       // contains the most up to date camera frame
-        mutable std::mutex      frame_mutex;        // controls access to the `latest_frame` data
+        std::vector<unsigned char>      latest_frame;       // contains the most up to date camera frame
+        mutable std::mutex              frame_mutex;        // controls access to the `latest_frame` data
 
 
         /********************************************* Helper Functions ********************************************/

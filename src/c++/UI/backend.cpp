@@ -210,9 +210,9 @@ void WebApp::handleVidReq(
 ) {
     try {
         // stores pixel data
-        const std::vector<char>& frame            { client_ptr->getLatestCamFrame() };
+        const std::vector<unsigned char>& frame   { client_ptr->getLatestCamFrame() };
         const std::size_t img_size                { frame.size() };
-        const char* frame_buf                     { img_size > 0 ? client_ptr->getLatestCamFrame().data() : "" };
+        const char* frame_buf                     { img_size > 0 ? (char*)frame.data() : "" };
 
         // actually send the pixel data back to GET request
         res.send(

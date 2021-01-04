@@ -25,7 +25,7 @@ namespace Camera {
 // for convenience within this namesapce bc super long
 using time_point = std::chrono::_V2::system_clock::time_point;
 
-using GrabFrameCb = std::function<void(const std::vector<char>& frame)>;
+using GrabFrameCb = std::function<void(const std::vector<unsigned char>& frame)>;
 
 /**
  * @brief Extends the raspicam opencv camera class
@@ -79,7 +79,7 @@ class CamHandler : public raspicam::RaspiCam_Cv {
          * @brief Sets the Grab Callback function to use when a camera frame is grabbed
          * @param grab_cb The callback to use
          * @param grab_cb Returns: callback should be void return
-         * @param grab_cb param: char vector containing the frames pixels (aka const std::vector<char>& frame)
+         * @param grab_cb param: char vector containing the frames pixels (aka const std::vector<unsigned char>& frame)
          * @return ReturnCodes Success if set correctly
          */
         ReturnCodes setGrabCallback(GrabFrameCb grab_cb);

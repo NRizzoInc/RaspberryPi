@@ -128,8 +128,10 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
 
         // use grab callback if provided
         if (grab_cb) {
-            // cv::Mat stored as std::vector<uchar (aka unsigned char)> but needed as std::vector<char>
-            grab_cb(std::vector<char>(image.begin<char>(), image.end<char>()));
+            // cv::Mat stored as std::vector<uchar (aka unsigned char)> but needed as std::vector<unsigned char>
+            std::vector<unsigned char> img_buf;
+            cv::imencode(".jpg", image, img_buf);
+            grab_cb(img_buf);
         }
     }
 

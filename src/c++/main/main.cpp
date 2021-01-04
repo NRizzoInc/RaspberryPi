@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
             return gpio_handler.gpioHandlePkt(pkt);
         });
 
-        if(Camera.setGrabCallback([&](const std::vector<char>& grabbed_frame) {
+        if(Camera.setGrabCallback([&](const std::vector<unsigned char>& grabbed_frame) {
                 net_agent->setLatestCamFrame(grabbed_frame);
             }
         ) != RPI::ReturnCodes::Success) {

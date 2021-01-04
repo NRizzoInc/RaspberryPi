@@ -92,13 +92,13 @@ ReturnCodes TcpServer::acceptClient(
     return ReturnCodes::Success;
 }
 
-ReturnCodes TcpServer::setLatestCamFrame(const std::vector<char>& new_frame) {
+ReturnCodes TcpServer::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
     Packet::setLatestCamFrame(new_frame);
     has_new_cam_data.store(true);
     return ReturnCodes::Success;
 }
 
-const std::vector<char>& TcpServer::getLatestCamFrame() const {
+const std::vector<unsigned char>& TcpServer::getLatestCamFrame() const {
     has_new_cam_data.store(false);
     return Packet::getLatestCamFrame();
 }
@@ -117,31 +117,31 @@ void TcpServer::netAgentFn(const bool print_data) {
             while(!getExitCode()) {
 
                 /********************************* Receiving From Server ********************************/
-                // call recvData, passing buf, to receive data
-                // save the return value of recvData in a data_size variable
-                const int data_size {recvData(ctrl_data_sock_fd, buf)};
+                // call recvData and save result in str container to get size
+                const RecvRtn      ctrl_recv    { recvData(ctrl_data_sock_fd) };
+                const std::string& data         { std::string{ctrl_recv.buf.begin(), ctrl_recv.buf.end()} };
 
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
-                if (data_size < 0) {
+                if (ctrl_recv.RtnCode == RecvRtnCodes::Error) {
                     cout << "Terminate - client control socket recv error" << endl;
                 }
 
                 // check if the data_size is equal to 0 (time to exit bc client killed conn)
                 // break, but dont exit so server can wait for new client to connect
-                else if (data_size == 0) {
+                else if (ctrl_recv.RtnCode == RecvRtnCodes::ClosedConn) {
                     cout << "Terminate - the client's control endpoint has closed the socket" << endl;
                     break;
                 } 
 
                 // print the buf to the terminal(if told to)
                 if (print_data) {
-                    cout << "Recv: " << buf << endl;
+                    cout << "Recv: " + data << endl;
                 }
 
                 // convert stringified json to json so it can be parsed into struct
                 try {
-                    const CommonPkt pkt {readPkt(buf)};
+                    const CommonPkt pkt {readPkt(data.c_str())};
                     if(updatePkt(pkt) != ReturnCodes::Success) {
                         cerr << "Failed to update from client info" << endl;
                     }
@@ -190,11 +190,12 @@ void TcpServer::VideoStreamHandler() {
                 );
 
                 /********************************* Sending Camera Data to Client ********************************/
-                const std::vector<char>& cam_frame {getLatestCamFrame()};
+                const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
                 data_lock.unlock();             // unlock after leaving critical region
 
-                const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size(), true)};
-                if(send_size == EPIPE || send_size == 0 || send_size != Constants::Camera::FRAME_SIZE) {
+                const int send_size {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
+
+                if(send_size == EPIPE || send_size == 0 || send_size < static_cast<int>(cam_frame.size())) {
                     cout << "Terminate - the client's camera endpoint has closed the socket" << endl;
                     break; // try to wait for new connection
                 } else if(send_size < 0) {

@@ -118,25 +118,24 @@ void TcpClient::VideoStreamHandler() {
         return;
     }
 
-    // create a char buffer that hold the max allowed size
-    char buf[Constants::Camera::FRAME_SIZE];
-
     /********************************* Receiving From Server ********************************/
     while(!getExitCode()) {
-        // call recvData, passing buf, to receive data
-        // save the return value of recvData in a data_size variable
-        const int data_size {recvData(cam_data_sock_fd, buf, Constants::Camera::FRAME_SIZE, true)};
+
+        // recv image/frame in the form of a string container (to also store size)
+        const RecvRtn       img_recv    { recvData(cam_data_sock_fd) };
+        const std::size_t   img_size    { img_recv.buf.size() };
+        cout << "recv size: " + std::to_string(img_size) + "\n";
 
         // check if the data_size is smaller than 0
         // (if so, print message bc might have been fluke)
-        if (data_size < 0) {
+        if (img_recv.RtnCode == RecvRtnCodes::Error) {
             cout << "Error: Failed to recv camera data" << endl;
             continue; // dont try to save a bad frame
         }
 
-        // check if the data_size is equal to 0 (time to exit bc server killed conn)
+        // check if server killed conn
         // break, but dont exit so server can wait for new client to connect
-        else if (data_size == 0) {
+        else if (img_recv.RtnCode == RecvRtnCodes::ClosedConn) {
             cout << "Terminate - the server's camera endpoint has closed the socket" << endl;
             break;
         } 
@@ -144,17 +143,15 @@ void TcpClient::VideoStreamHandler() {
         // if no issues, save the new video frame
         constexpr auto save_frame_err {"Failed to update camera data from server"};
         try {
-            // convert const char* buf -> std::vector<char> by providing the start ptr and size
-            if(setLatestCamFrame(std::vector<char>(buf, buf+data_size)) != ReturnCodes::Success) {
+            // convert string -> std::vector<unsigned char> by providing the start ptr and end
+            if(setLatestCamFrame(img_recv.buf) != ReturnCodes::Success) {
+            // if(setLatestCamFrame(std::vector<unsigned char>(img.begin(), img.end())) != ReturnCodes::Success) {
                 cerr << save_frame_err << endl;
             }
         } catch (std::exception& err) {
             cerr << save_frame_err << endl;
             cerr << err.what() << endl;
         }
-
-        // reset the buffer for a new read
-        memset(buf, 0, sizeof(buf));
     }
 
     // at end of while, reset data socket to attempt to make new connection with same listener

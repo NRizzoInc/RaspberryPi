@@ -17,6 +17,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <sstream> // for packet stream
 
 // Our Includes
 #include "constants.h"
@@ -26,6 +27,17 @@
 
 namespace RPI {
 namespace Network {
+
+// holds the return of recvData(), check the "RtnCode" attribute to see if any errors occured
+enum class RecvRtnCodes {
+    Error,
+    ClosedConn,
+    Sucess
+};
+struct RecvRtn {
+    std::vector<u_char> buf;   // the data receivied via the socket (data.size() for size)
+    RecvRtnCodes        RtnCode;
+};
 
 /**
  * @brief Implements common features shared between server & client
@@ -98,22 +110,16 @@ class TcpBase : public Packet {
         /**
          * @brief Receives data from remote host.
          * @param socket_fd The receiving socket's file descriptor
-         * @param buf buffer where the received data is stored
-         * @param max_buf_size The max size of the buffer to store the received data (defaults to network max)
-         * @param wait_for_all (default=false) set to true if should wait for the full "max_buf_size" to be received
-         * @return number of bytes received (-1 if error occurred)
+         * @return string containing the data - check its size/exists for number of bytes received:
+         * (std::nullopt if error occurred)
+         * (0  if closed connection)
          */
-        virtual int recvData(
-            int socket_fd,
-            char* buf,
-            const std::size_t max_buf_size=Constants::Network::MAX_DATA_SIZE,
-            const bool wait_for_all=false
-        );
+        virtual RecvRtn recvData(int socket_fd);
 
         /**
          * @brief Send data to remote host.
          * @param socket_fd The receiving socket's file descriptor
-         * @param buf pointer to the buffer where the data to be sent is stored
+         * @param buf pointer to the buffer where the data to be sent is stored - can be (un)signed char
          * @param size_to_tx size to transmit
          * @param ignore_broken_pipe (default=false) true if should ignore broken pipes
          * (other host closes conn) & instead returns EPIPE (negative)
@@ -121,8 +127,8 @@ class TcpBase : public Packet {
          */
         virtual int sendData(
             int& socket_fd,
-            const char* buf,
-            const size_t size_to_tx,
+            const void* buf,
+            const std::uint32_t size_to_tx,
             const bool ignore_broken_pipe=false
         );
 

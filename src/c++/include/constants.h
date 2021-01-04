@@ -22,7 +22,7 @@ namespace Constants {
     }; // end of Constants::GPIO namespace
 
     namespace Network {
-        constexpr std::size_t   MAX_DATA_SIZE   {512};
+        constexpr std::size_t   MAX_DATA_SIZE   {4096};
         constexpr char          PKT_ACK[]       {"Packet ACK\n"};
         constexpr int           RECV_TIMEOUT    {5}; // TODO: heartbeat keepalive (shorten)
         constexpr int           ACPT_TIMEOUT    {5}; // ctrl+c takes 5 sec to work pre-connect
