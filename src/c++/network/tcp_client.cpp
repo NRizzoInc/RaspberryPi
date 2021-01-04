@@ -123,7 +123,6 @@ void TcpClient::VideoStreamHandler() {
 
         // recv image/frame in the form of a string container (to also store size)
         const RecvRtn       img_recv    { recvData(cam_data_sock_fd) };
-        const std::size_t   img_size    { img_recv.buf.size() };
 
         // check if the data_size is smaller than 0
         // (if so, print message bc might have been fluke)
