@@ -22,6 +22,7 @@ const toBool = (val) => {
  * "green":     Boolean,
  * "blue":      Boolean,
  * } | {}} leds A json containing one of the color:bool pairs listed (defaults to empty json)
+ * @note see pkt_sample.json in network dir for what it should look like
  */
 export const sendPkt = async (
     leds={},
@@ -32,12 +33,9 @@ export const sendPkt = async (
         "right":    false,
         "left":     false
     },
-    camera={
-        "is_on":    true // have camera turn on when web app first connects
-    }
+    camera={}
 ) => {
     // handle sending data back to web app server
-    // see pkt_sample.json in network dir for what it should look like
     const pkt = {
         "control": {
             "led"       : leds,
