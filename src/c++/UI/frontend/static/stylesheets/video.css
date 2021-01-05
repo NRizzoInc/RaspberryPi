@@ -22,3 +22,21 @@
 .cam-overlay:hover {
     opacity: 0.8;
 }
+
+/****************** Media Icons (https://stackoverflow.com/a/27053825/13933174) ******************/
+
+.play-icon::before {
+    content: '\23F5';
+}
+
+.pause-icon::before {
+    content: '\23F8';
+}
+
+.play-pause-toggle-icon::before {
+    content: '\23EF';
+}
+
+.stop-icon::before {
+    content: '\23F9';
+}

@@ -51,6 +51,7 @@
 }
 
 .flex-no-grow {
+    display: flex;
     flex-grow: 0;
     width: fit-content;
     max-width: fit-content;
@@ -152,6 +153,18 @@
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
+}
+
+.width-1 {
+    width: 1%;
+}
+
+.width-10 {
+    width: 10%;
+}
+
+.width-20 {
+    width: 20%;
 }
 
 .width-40 {

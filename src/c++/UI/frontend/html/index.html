@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8"/>
     <link rel="icon" href="../static/images/rpi-logo.png">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/common.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/d-pad.css">
@@ -24,7 +25,11 @@
             <!---------------------------------- Camera Video (src is a route) ----------------------------------->
             <div class="width-50 vert-arrange">
                 <img id="Cam-Stream" class="cam-stream" src="/Camera">
-                <button id="Cam-PlayPause" class="width-25">Play/Pause</button>
+                <!-- choose either play or pause to enable (starts off playing)-->
+                <div class="flex-no-grow">
+                    <button id="play-cam-btn"  class="play-icon" hidden>
+                    <button id="pause-cam-btn" class="pause-icon">
+                </div>
             </div>
             <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
             <div class="width-50">
