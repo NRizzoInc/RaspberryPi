@@ -106,11 +106,14 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
             }
             continue;
         }
-        was_recording = true;
+        // just started recording (should record + was not previously)
+        else if(!was_recording) {
+            was_recording = true;
 
-        // update starting time
-        start_time = std::chrono::system_clock::now();
-        cout << "Starting Camera Capture: " + Helpers::Timing::GetTimecode(start_time) + '\n';
+            // update starting time
+            start_time = std::chrono::system_clock::now();
+            cout << "Starting Camera Capture: " + Helpers::Timing::GetTimecode(start_time) + '\n';
+        }
 
         RaspiCam_Cv::grab();
         RaspiCam_Cv::retrieve(image);
