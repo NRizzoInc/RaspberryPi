@@ -31,6 +31,8 @@ TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bo
         cout << "ERROR: Initializing Server Sockets" << endl;
         quit();
         return;
+    } else {
+        setIsInit(true);
     }
 }
 
@@ -291,6 +293,9 @@ ReturnCodes TcpServer::initSock() {
 void TcpServer::quit() {
     // set exit status to be true
     setExitCode(true);
+
+    // dont bother continuing if not initialized
+    if (!getIsInit()) return;
 
     // if sockets are still open, close them and set to -1
     cout << "Cleanup: closing control sockets" << endl;

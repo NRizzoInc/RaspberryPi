@@ -95,6 +95,10 @@ class TcpBase : public Packet {
          */
         void runNetAgent(const bool print_data);
 
+        
+        bool getIsInit() const;
+        void setIsInit(const bool new_status);
+
     protected:
         /****************************************** Shared Common Functions ****************************************/
 
@@ -184,6 +188,7 @@ class TcpBase : public Packet {
         std::atomic_bool            started_threads;    // need to send an initization message for first packet
         std::mutex                  thread_mutex;       // mutex controlling access to the classes threads (start/join)
         std::condition_variable     thread_cv;          // true if client needs to tell the server something
+        std::atomic_bool            is_init;            // helps determine if needs to cleanup in derived classes
         std::atomic_bool            has_cleaned_up;     // makes sure cleanup doesnt happen twice
 
 }; // end of TcpClient class

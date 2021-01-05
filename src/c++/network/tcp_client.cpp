@@ -32,6 +32,8 @@ TcpClient::TcpClient(
         cout << "ERROR: Initializing Client Sockets" << endl;
         quit();
         return;
+    } else {
+        setIsInit(true);
     }
 }
 
@@ -191,6 +193,9 @@ ReturnCodes TcpClient::initSock() {
 void TcpClient::quit() {
     // set exit status to be true
     setExitCode(true);
+
+    // dont bother continuing if not initialized
+    if (!getIsInit()) return;
 
     // if client socket is open, close it and set to -1
     cout << "Cleanup: closing control sockets" << endl;

@@ -15,6 +15,7 @@ TcpBase::TcpBase()
     , should_exit{false}
     , control_thread{}
     , started_threads{false}
+    , is_init{false}
     , has_cleaned_up{false}
 {
     // stub
@@ -68,6 +69,14 @@ bool TcpBase::getExitCode() const {
 
 void TcpBase::setRecvCallback(const RecvPktCallback& recv_callback) {
     recv_cb = recv_callback;
+}
+
+bool TcpBase::getIsInit() const {
+    return is_init.load();
+}
+
+void TcpBase::setIsInit(const bool new_status) {
+    is_init.store(new_status);
 }
 
 /****************************************** Shared Common Functions ****************************************/
