@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
             (RPI::Network::TcpBase*) new RPI::Network::TcpServer{
                 ctrl_port,
                 cam_port,
-                !is_client
+                is_server
             }
     };
 
