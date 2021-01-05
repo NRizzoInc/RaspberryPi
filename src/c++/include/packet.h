@@ -56,9 +56,19 @@ struct motor_pkt_t {
         {}
 }; // end of motor_pkt_t
 
+struct camera_pkt_t {
+    bool is_on;
+
+    camera_pkt_t()
+        : is_on{false}
+        {}
+
+}; // end of camera_pkt_t
+
 struct control_t {
     led_pkt_t led;
     motor_pkt_t motor;
+    camera_pkt_t camera;
 }; // end of control_t
 
 struct CommonPkt {

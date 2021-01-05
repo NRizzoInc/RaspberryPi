@@ -141,14 +141,15 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     const json& data = json::parse(pkt_buf);
     CommonPkt translated_pkt;
 
-    translated_pkt.cntrl.led.red        = findIfExists<bool>(data, {"control", "led",   "red"       });
-    translated_pkt.cntrl.led.yellow     = findIfExists<bool>(data, {"control", "led",   "yellow"    });
-    translated_pkt.cntrl.led.green      = findIfExists<bool>(data, {"control", "led",   "green"     });
-    translated_pkt.cntrl.led.blue       = findIfExists<bool>(data, {"control", "led",   "blue"      });
-    translated_pkt.cntrl.motor.forward  = findIfExists<bool>(data, {"control", "motor", "forward"   });
-    translated_pkt.cntrl.motor.backward = findIfExists<bool>(data, {"control", "motor", "backward"  });
-    translated_pkt.cntrl.motor.right    = findIfExists<bool>(data, {"control", "motor", "right"     });
-    translated_pkt.cntrl.motor.left     = findIfExists<bool>(data, {"control", "motor", "left"      });
+    translated_pkt.cntrl.led.red        = findIfExists<bool>(data, {"control",  "led",      "red"       });
+    translated_pkt.cntrl.led.yellow     = findIfExists<bool>(data, {"control",  "led",      "yellow"    });
+    translated_pkt.cntrl.led.green      = findIfExists<bool>(data, {"control",  "led",      "green"     });
+    translated_pkt.cntrl.led.blue       = findIfExists<bool>(data, {"control",  "led",      "blue"      });
+    translated_pkt.cntrl.motor.forward  = findIfExists<bool>(data, {"control",  "motor",    "forward"   });
+    translated_pkt.cntrl.motor.backward = findIfExists<bool>(data, {"control",  "motor",    "backward"  });
+    translated_pkt.cntrl.motor.right    = findIfExists<bool>(data, {"control",  "motor",    "right"     });
+    translated_pkt.cntrl.motor.left     = findIfExists<bool>(data, {"control",  "motor",    "left"      });
+    translated_pkt.cntrl.camera.is_on   = findIfExists<bool>(data, {"control",  "camera",   "is_on"     });
     translated_pkt.ACK                  = findIfExists<bool>(data, {"ACK"});
 
     return translated_pkt;
@@ -177,6 +178,9 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
                 {"backward",    pkt.cntrl.motor.backward},
                 {"right",       pkt.cntrl.motor.right},
                 {"left",        pkt.cntrl.motor.left}
+            }},
+            {"camera", {
+                {"is_on",       pkt.cntrl.camera.is_on}
             }}
         }},
         {"ACK", pkt.ACK}

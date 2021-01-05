@@ -126,7 +126,10 @@ int main(int argc, char* argv[]) {
 
         // set recv to handle when getting packets
         net_agent->setRecvCallback([&](const RPI::Network::CommonPkt& pkt)->RPI::ReturnCodes{
-            return gpio_handler.gpioHandlePkt(pkt);
+            bool rtn_code {true};
+            rtn_code &= gpio_handler.gpioHandlePkt(pkt) == RPI::ReturnCodes::Success;
+            rtn_code &= Camera.setShouldRecord(pkt.cntrl.camera.is_on) == RPI::ReturnCodes::Success;
+            return rtn_code ? RPI::ReturnCodes::Success : RPI::ReturnCodes::Error;
         });
 
         if(Camera.setGrabCallback([&](const std::vector<unsigned char>& grabbed_frame) {
@@ -150,8 +153,8 @@ int main(int argc, char* argv[]) {
         thread_list.push_back(std::thread{
             [&](){
                 // only save frames to disk if running camera test
-                // TODO: only start recording immediately if is camera test (or turned on by control pkt)
-                Camera.RunFrameGrabber(true, is_cam);
+                // only start recording immediately if is camera test (or turned on by control pkt)
+                Camera.RunFrameGrabber(is_cam, is_cam);
             }
         });
     }
