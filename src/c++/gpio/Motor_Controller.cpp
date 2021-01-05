@@ -261,8 +261,13 @@ ReturnCodes MotorController::SetPwmFreq(const float freq) const {
     prescaleval -= 1.0;
     const int scaled_freq = floor(prescaleval + .5); // round
 
-    // get old freq & pause pwm freq register to update it
+    // reset mode & get default settings
     const std::uint8_t mode_reg  { static_cast<std::uint8_t>(I2C_PWM_Addr::MODE_REG) };
+    if(WriteReg(mode_reg, 0) != ReturnCodes::Success) {
+        cerr << "Failed to reset mode register" << endl;
+    }
+    
+    // pause pwm freq register to update it
     const std::uint8_t oldmode   { ReadReg(mode_reg) };                                   // rewrite after update
     const std::uint8_t newmode   { static_cast<std::uint8_t>((oldmode & 0x7F) | 0x10) };  // sleep (bit4 & restart off)
     const ReturnCodes  sleep_rtn { WriteReg(mode_reg, newmode) };                         // go to sleep
