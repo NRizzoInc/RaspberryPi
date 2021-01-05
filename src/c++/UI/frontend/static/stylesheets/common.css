@@ -41,6 +41,7 @@
 }
 
 .flex-left-align {
+    display: flex;
     align-items: left;
     justify-content: flex-start;
 }
