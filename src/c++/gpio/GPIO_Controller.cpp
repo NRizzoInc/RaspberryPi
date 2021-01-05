@@ -63,7 +63,10 @@ std::vector<std::string> GPIOController::getModes() {
 
 
 bool GPIOController::getIsInit() const {
-    return LEDController::getIsInit() && ButtonController::getIsInit();
+    return LEDController::getIsInit() 
+        && ButtonController::getIsInit()
+        && MotorController::getIsInit()
+        ;
 }
 
 
