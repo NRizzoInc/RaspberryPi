@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/common.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/d-pad.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/button.css">
+    <link rel="stylesheet" type="text/css" href="../static/stylesheets/video.css">
     <script type="module" src="../static/js/jquery.js"></script>
     <script type="module" src="../static/js/pkt.js"></script>
     <script type="module" src="../static/js/buttons.js"></script>
@@ -16,24 +17,24 @@
 </head>
 
 <body>
-    <div class="page-content-container">
+    <div class="page-container">
         <a href="https://github.com/NRizzoInc/RaspberryPi/wiki/Web-App">Instructions Guide</a>
-        <div class="flex-inline">
+        <!-- control video size by changing width (split columns evenly via width as well) -->
+        <div class="set setbg white flex-inline flex-center-align space-evenly padding-sm height-25">
             <!---------------------------------- Camera Video (src is a route) ----------------------------------->
-            <div class="set setbg padding-sm img-holder">
-                <img id="Cam-Stream" class="cam-stream img-split" src="/Camera">
+            <div class="width-50">
+                <img id="Cam-Stream" class="padding-sm cam-stream" src="/Camera">
             </div>
-        
             <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
-            <div class="set setbg white img-split">
-                <nav class="d-pad vertical-center padding-sm">
+            <div class="width-50">
+                <nav class="d-pad">
                     <a class="forward"      name="d-pad-forward"    href="#"></a>
                     <a class="right"        name="d-pad-right"      href="#"></a>
                     <a class="backward"     name="d-pad-backward"   href="#"></a>
                     <a class="left"         name="d-pad-left"       href="#"></a>
                 </nav>
                 <!-- <nav class="o-pad vertical-center padding-sm">
-                    <a class="forward"      name="o-pad-forward"     href="#"></a>
+                    <a class="forward"      name="o-pad-forward"    href="#"></a>
                     <a class="right"        name="o-pad-right"      href="#"></a>
                     <a class="backward"     name="o-pad-backward"   href="#"></a>
                     <a class="left"         name="o-pad-left"       href="#"></a>
@@ -42,18 +43,19 @@
         </div>
 
         <!-------------------------------------------- LED Buttons ------------------------------------------->
-        <div class="row flex-inline height-25 vertical-margins">
+        <!-- control button size by changing width -->
+        <div class="row flex-inline width-50 vertical-margins">
             <button id="red-btn" class="img-holder btn-overlay">
-                <img class="img-split" src="../images/red-button.png"/>
+                <img class="img-fit" src="../images/red-button.png"/>
             </button>
             <button id="yellow-btn" class="img-holder btn-overlay">
-                <img class="img-split" src="../images/yellow-button.png"/>
+                <img class="img-fit" src="../images/yellow-button.png"/>
             </button>
             <button id="green-btn" class="img-holder btn-overlay">
-                <img class="img-split" src="../images/green-button.png"/>
+                <img class="img-fit" src="../images/green-button.png"/>
             </button>
             <button id="blue-btn" class="img-holder btn-overlay">
-                <img class="img-split" src="../images/blue-button.png"/>
+                <img class="img-fit" src="../images/blue-button.png"/>
             </button>
         </div>
     </div>
