@@ -8,6 +8,7 @@ namespace UI {
 using std::cout;
 using std::cerr;
 using std::endl;
+using nlohmann::json;
 
 // get paths (operator/ is used for joining)
 const fs::path      CURR_DIR             {fs::path{__FILE__}.parent_path()};
@@ -84,11 +85,16 @@ ReturnCodes WebApp::setupSites() {
         Pistache::Rest::Routes::bind(&WebApp::recvMainData, this)
     );
 
-    // video stream page
+    // video stream pages
     Pistache::Rest::Routes::Get(
         web_app_router,
         WebAppUrls.at(WebAppUrlsNames::CAM_PAGE),
         Pistache::Rest::Routes::bind(&WebApp::handleVidReq, this)
+    );
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::CAM_SETTINGS),
+        Pistache::Rest::Routes::bind(&WebApp::handleCamSettingReq, this)
     );
 
 
@@ -230,6 +236,38 @@ void WebApp::handleVidReq(
         res.send(Pistache::Http::Code::Bad_Request, err_str);
     }
 }
+
+void WebApp::handleCamSettingReq(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    try {
+        // https://github.com/nlohmann/json#json-as-first-class-data-type
+        // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
+        // key-values are seperated by commas not ':'
+        json cam_settings {
+            {"fps", Constants::Camera::VID_FRAMERATE},
+            {"height", Constants::Camera::FRAME_HEIGHT},
+            {"width", Constants::Camera::FRAME_WIDTH},
+        };
+
+        // actually send the pixel data back to GET request
+        res.send(
+            Pistache::Http::Code::Ok,
+            cam_settings.dump(),
+            Pistache::Http::Mime::MediaType(
+                Pistache::Http::Mime::Type::Application, // main type
+                Pistache::Http::Mime::Subtype::Json // sub type
+            )
+        );
+
+    } catch (std::exception& err) {
+        constexpr auto err_str {"ERROR: Sending camera settings"};
+        cout << err_str << ": " << err.what() << endl;
+        res.send(Pistache::Http::Code::Bad_Request, err_str);
+    }
+}
+
 
 /// redirect function (TODO)
 // void Redirect(
