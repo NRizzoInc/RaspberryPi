@@ -49,7 +49,13 @@ ReturnCodes MotorController::init() const {
     if(SetPwmFreq(50.0) != ReturnCodes::Success) {
         cerr << "Error: Failed to set I2C Motor Module's PWM Frequency" << endl;
         return ReturnCodes::Error;
-    } 
+    }
+
+    // once setup, make sure motors are stopped
+    if(ChangeMotorDir(false, false, false, false) != ReturnCodes::Success) {
+        cerr << "Failed to start motors at off position" << endl;
+        return ReturnCodes::Error;
+    }
 
     setIsInit(true);
     return ReturnCodes::Success;
