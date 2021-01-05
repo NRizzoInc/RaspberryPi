@@ -24,3 +24,24 @@ export async function postPktData(pkt_data) {
     }
     return reqResponse
 }
+
+/**
+ * @brief Perform a GET request on the desired page and return the result
+ * @param {String} url The url to GET the data at
+ * @returns {JSON} Contains the backend's json response to the GET request
+ */
+export async function getJsonData(url) {
+    let reqResponse = {}
+    try {
+        reqResponse = await $.ajax({
+            url: url,
+            type: 'GET',
+            // dataType: "json", // return from web app server might be text -- triggers error
+            contentType: "application/json",
+        })
+    } catch (err) {
+        console.log(`Failed to post to '${curr_page}': ${err.status} - ${err.statusText}`);
+    }
+    return reqResponse
+}
+
