@@ -127,13 +127,15 @@ void TcpClient::VideoStreamHandler() {
             continue; // dont try to save a bad frame
         }
 
+        /*
         // check if server killed conn
         // break, but dont exit so server can wait for new client to connect
         else if (img_recv.RtnCode == RecvSendRtnCodes::ClosedConn) {
             cout << "Terminate - the server's camera endpoint has closed the socket" << endl;
             setExitCode(true); // end program (make sure control socket also ends)
             break;
-        } 
+        }
+        */
 
         // if no issues, save the new video frame
         constexpr auto save_frame_err {"Failed to update camera data from server"};
