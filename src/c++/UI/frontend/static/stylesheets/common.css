@@ -13,7 +13,7 @@
     left: 50%;
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
-  }
+}
 
 .vertical-center-align-child {
     position: relative;
@@ -147,8 +147,26 @@
     /* width: fit-content; */
 }
 
+.vert-arrange {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.width-40 {
+    width: 40%;
+}
+
+.width-45 {
+    width: 45%;
+}
+
 .width-50 {
     width: 50%;
+}
+
+.width-60 {
+    width: 60%;
 }
 
 .width-75 {
