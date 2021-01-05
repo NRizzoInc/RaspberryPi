@@ -149,8 +149,8 @@ class Packet {
         /******************************************** Private Variables ********************************************/
 
         // regular data packet variables
-        CommonPkt                       msg_pkt;            // holds the most up to date information from client
-        mutable std::mutex              reg_pkt_mutex;      // controls access to the `msg_pkt` data
+        CommonPkt                       latest_ctrl_pkt;    // holds the most up to date information from client
+        mutable std::mutex              reg_pkt_mutex;      // controls access to the `latest_ctrl_pkt` data
 
         // camera pkt variables
         std::vector<unsigned char>      latest_frame;       // contains the most up to date camera frame

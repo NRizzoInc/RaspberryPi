@@ -103,13 +103,13 @@ Packet::~Packet() {
 const CommonPkt& Packet::getCurrentPkt() const {
     // lock to make sure data can be gotten without new data being written
     std::unique_lock<std::mutex> lk{reg_pkt_mutex};
-    return msg_pkt;
+    return latest_ctrl_pkt;
 }
 
 ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
     std::unique_lock<std::mutex> lk{reg_pkt_mutex};
-    msg_pkt = updated_pkt;
+    latest_ctrl_pkt = updated_pkt;
     return ReturnCodes::Success;
 }
 
