@@ -28,7 +28,10 @@ $("document").ready( async () => {
     // represents what the camera control packet looks like
     const camera_status = {
         "is_on": true // have camera turn on when web app connects
-    } 
+    }
+
+    // start off by initializing camera properly
+    sendPkt({}, {}, camera_status)
 
     /**************************************** Event Listeners ****************************************************/
 
