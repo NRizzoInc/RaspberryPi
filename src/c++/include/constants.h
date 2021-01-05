@@ -32,7 +32,7 @@ namespace Constants {
         constexpr int           FRAME_WIDTH     {640};
         constexpr int           FRAME_HEIGHT    {480};
         constexpr int           FRAME_SIZE      {FRAME_WIDTH*FRAME_HEIGHT};
-        constexpr int           VID_FRAMERATE   {10}; // TODO: upgrade to 25 if 10 is okay
+        constexpr int           VID_FRAMERATE   {25};
 
     }; //end of camera namespace
 
