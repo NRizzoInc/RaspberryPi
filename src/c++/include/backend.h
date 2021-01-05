@@ -39,7 +39,7 @@ enum class WebAppUrlsNames {
 const std::unordered_map<WebAppUrlsNames, std::string> WebAppUrls {
     // {WebAppUrlsNames::LANDING_PAGE, "/"}, //TODO: get redirect to work
     {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"},
-    {WebAppUrlsNames::CAM_PAGE, "/Camera"}, // from perspective of html file, static is one back
+    {WebAppUrlsNames::CAM_PAGE, "/Camera"},
     {WebAppUrlsNames::SHUTDOWN_PAGE, "/Shutdown"},
     {WebAppUrlsNames::STATIC, "../static"}, // from perspective of html file, static is one back
 };
