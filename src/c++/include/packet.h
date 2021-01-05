@@ -33,6 +33,13 @@ struct led_pkt_t {
     bool yellow;
     bool green;
     bool blue;
+
+    led_pkt_t()
+        : red{false}
+        , yellow{false}
+        , green{false}
+        , blue{false}
+        {}
 }; // end of led_pkt_t
 
 struct motor_pkt_t {
@@ -40,6 +47,13 @@ struct motor_pkt_t {
     bool backward;  // true if pressed backward key
     bool right;     // true if pressed right key 
     bool left;      // true if pressed left key
+
+    motor_pkt_t()
+        : forward{false}
+        , backward{false}
+        , right{false}
+        , left{false}
+        {}
 }; // end of motor_pkt_t
 
 struct control_t {
