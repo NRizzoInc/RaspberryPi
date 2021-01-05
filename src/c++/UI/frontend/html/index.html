@@ -17,38 +17,42 @@
 
 <body>
     <div class="page-content-container">
-        <!---------------------------------- Camera Video (src is a route) ----------------------------------->
-        <img id="Cam-Stream" class="cam-stream" src="/Camera">
+        <div class="flex-inline">
+            <!---------------------------------- Camera Video (src is a route) ----------------------------------->
+            <div class="img-holder">
+                <img id="Cam-Stream" class="cam-stream img-split" src="/Camera">
+            </div>
         
-        <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
-        <div class="set setbg white padding-sm">
-            <nav class="d-pad">
-                <a class="forward"      name="d-pad-forward"    href="#"></a>
-                <a class="right"        name="d-pad-right"      href="#"></a>
-                <a class="backward"     name="d-pad-backward"   href="#"></a>
-                <a class="left"         name="d-pad-left"       href="#"></a>
-            </nav>
-            <nav class="o-pad ">
-                <a class="forward"      name="o-pad-forward"     href="#"></a>
-                <a class="right"        name="o-pad-right"      href="#"></a>
-                <a class="backward"     name="o-pad-backward"   href="#"></a>
-                <a class="left"         name="o-pad-left"       href="#"></a>
-            </nav>
+            <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
+            <div class="set setbg white padding-sm">
+                <nav class="d-pad">
+                    <a class="forward"      name="d-pad-forward"    href="#"></a>
+                    <a class="right"        name="d-pad-right"      href="#"></a>
+                    <a class="backward"     name="d-pad-backward"   href="#"></a>
+                    <a class="left"         name="d-pad-left"       href="#"></a>
+                </nav>
+                <nav class="o-pad ">
+                    <a class="forward"      name="o-pad-forward"     href="#"></a>
+                    <a class="right"        name="o-pad-right"      href="#"></a>
+                    <a class="backward"     name="o-pad-backward"   href="#"></a>
+                    <a class="left"         name="o-pad-left"       href="#"></a>
+                </nav>
+            </div>
         </div>
 
         <!-------------------------------------------- LED Buttons ------------------------------------------->
         <div class="row flex-inline button-wrapper height-25 vertical-margins-med">
-            <button id="red-btn" class="btn-img-holder btn-overlay">
-                <img class="btn-img" src="../images/red-button.png"/>
+            <button id="red-btn" class="img-holder btn-overlay">
+                <img class="img-split" src="../images/red-button.png"/>
             </button>
-            <button id="yellow-btn" class="btn-img-holder btn-overlay">
-                <img class="btn-img" src="../images/yellow-button.png"/>
+            <button id="yellow-btn" class="img-holder btn-overlay">
+                <img class="img-split" src="../images/yellow-button.png"/>
             </button>
-            <button id="green-btn" class="btn-img-holder btn-overlay">
-                <img class="btn-img" src="../images/green-button.png"/>
+            <button id="green-btn" class="img-holder btn-overlay">
+                <img class="img-split" src="../images/green-button.png"/>
             </button>
-            <button id="blue-btn" class="btn-img-holder btn-overlay">
-                <img class="btn-img" src="../images/blue-button.png"/>
+            <button id="blue-btn" class="img-holder btn-overlay">
+                <img class="img-split" src="../images/blue-button.png"/>
             </button>
         </div>
         <a href="https://github.com/NRizzoInc/RaspberryPi/wiki/Web-App">Instructions Guide</a>
