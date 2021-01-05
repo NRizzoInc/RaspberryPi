@@ -31,6 +31,9 @@ export const sendPkt = async (
         "backward": false,
         "right":    false,
         "left":     false
+    },
+    camera={
+        "is_on":    true // have camera turn on when web app first connects
     }
 ) => {
     // handle sending data back to web app server
@@ -38,7 +41,8 @@ export const sendPkt = async (
     const pkt = {
         "control": {
             "led"       : leds,
-            "motor"     : motors
+            "motor"     : motors,
+            "camera"    : camera
         },
     }
     await postPktData(pkt)
