@@ -10,12 +10,16 @@
     <script type="module" src="../static/js/pkt.js"></script>
     <script type="module" src="../static/js/buttons.js"></script>
     <script type="module" src="../static/js/d-pad.js"></script>
+    <script type="module" src="../static/js/vid-player.js"></script>
     <script type="module" src="../static/js/request_handler.js"></script>
     <title>RaspberryPi Client</title>
 </head>
 
 <body>
     <div class="page-content-container">
+        <!---------------------------------- Camera Video (src is a route) ----------------------------------->
+        <img id="Cam-Stream" class="cam-stream" src="Camera">
+        
         <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
         <div class="set setbg white padding-sm">
             <nav class="d-pad">
