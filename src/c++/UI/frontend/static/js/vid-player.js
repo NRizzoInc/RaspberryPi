@@ -22,10 +22,9 @@ $("document").ready( async () => {
     const fps = cam_settings.fps // TODO: get this from get request
 
     // track/manage camera's recording status
-    const play_btn = document.getElementById("play-cam-btn")
-    const pause_btn = document.getElementById("pause-cam-btn")
     // contains all elements which when clicked toggle recording
-    const play_pause_els = [cam_vid, play_btn, pause_btn]
+    const play_pause_btn = document.getElementById("play-pause-cam-btn")
+    const play_pause_els = [cam_vid, play_pause_btn]
 
     // represents what the camera control packet looks like
     const camera_status = {
@@ -50,11 +49,8 @@ $("document").ready( async () => {
     play_pause_els.forEach( (el) => {
         el.addEventListener("click", (el) => {
             // toggle play/pause buttons
-            play_pause_els.forEach( (poss_btn_el) => {
-                if (poss_btn_el.id.endsWith("-btn")) {
-                    $(`#${poss_btn_el.id}`).toggle()
-                }
-            })
+            play_pause_btn.classList.toggle("play-icon")
+            play_pause_btn.classList.toggle("pause-icon")
 
             camera_status.is_on = !camera_status.is_on
             sendPkt({}, {}, camera_status)
