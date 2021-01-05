@@ -91,21 +91,32 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
 
     // start capture
     // loop until max frame count or told to stop
-    start_time      = std::chrono::system_clock::now();
-    auto curr_time  = start_time;
+    start_time      = std::chrono::system_clock::now(); // updates in loop
 
-    cout << "Starting Camera Capture: " + Helpers::Timing::GetCurrTimecode(start_time) + '\n';
+    cout << "Camera Ready: " + Helpers::Timing::GetTimecode(start_time) + '\n';
+    bool was_recording {false};
     while (!getShouldStop() && (max_frames == -1 || frame_count < max_frames)) {
 
         // do not capture frames unless set to
-        if(!getShouldRecord()) continue;
+        if(!getShouldRecord()) {
+            // if was recording then need to say we stopped & set new status
+            if (was_recording) {
+                was_recording = false;
+                cout << "Stopping Camera: " + Helpers::Timing::GetTimecode() << endl;
+            }
+            continue;
+        }
+        was_recording = true;
+
+        // update starting time
+        start_time = std::chrono::system_clock::now();
+        cout << "Starting Camera Capture: " + Helpers::Timing::GetTimecode(start_time) + '\n';
 
         RaspiCam_Cv::grab();
         RaspiCam_Cv::retrieve(image);
 
         // add timestamp to frame
-        curr_time               = std::chrono::system_clock::now();
-        std::string timecode    { Helpers::Timing::GetCurrTimecode(curr_time) };
+        std::string timecode    { Helpers::Timing::GetTimecode() };
         const int fontFace      { cv::FONT_HERSHEY_SIMPLEX };
         const double fontScale  { 1.0 };
         const int thickness     { 2 };
@@ -136,7 +147,6 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
     }
 
     // stop
-    cout << "Stopping Camera: " + Helpers::Timing::GetCurrTimecode(curr_time) << endl;
     RaspiCam_Cv::release();
 
 

@@ -35,8 +35,15 @@ bool hasTimeElapsed(
 }
 
 
-inline std::string GetCurrTimecode(const std::chrono::_V2::system_clock::time_point curr_time) {
-    auto in_time_t {std::chrono::system_clock::to_time_t(curr_time)};
+/**
+ * @brief Converts the time to ISO 8601 standard
+ * @param time (defaults to current time) The time to convert
+ * @return stringified version of the ISO 8601 timecode
+ */
+inline std::string GetTimecode(
+    const std::chrono::_V2::system_clock::time_point time=std::chrono::system_clock::now()
+) {
+    auto in_time_t {std::chrono::system_clock::to_time_t(time)};
     std::stringstream time_str;
     time_str << std::put_time(
         std::localtime(&in_time_t),
