@@ -40,8 +40,27 @@ export async function getJsonData(url) {
             contentType: "application/json",
         })
     } catch (err) {
-        console.log(`Failed to post to '${curr_page}': ${err.status} - ${err.statusText}`);
+        console.log(`Failed to GET data from '${curr_page}': ${err.status} - ${err.statusText}`);
     }
     return reqResponse
 }
 
+/**
+ * @brief Perform a GET/POST request on the desired page and check if it exists
+ * @param {String} url The url to GET/POST
+ * @param {"POST", "GET"} method The type of request to perform 
+ * @returns {Boolean} True if page exists and is requestable. False if error/dne 
+ */
+export async function doesPageExist(url, method) {
+    let reqResponse = {}
+    try {
+        reqResponse = await $.ajax({
+            url: url,
+            type: method,
+            timeout: 3000 // set timeout to 3 sec
+        })
+        return true
+    } catch (err) {
+        return false
+    }
+}

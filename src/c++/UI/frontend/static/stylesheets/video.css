@@ -25,18 +25,15 @@
 
 /****************** Media Icons (https://stackoverflow.com/a/27053825/13933174) ******************/
 
-.play-icon::before {
-    content: '\23F5';
+.unicode-fix {
+    color:transparent;
+    text-shadow: 0 0 0 black;
 }
-
-.pause-icon::before {
-    content: '\23F8';
+.unicode-font {
+    font-size: 24px;
+    vertical-align: middle;
 }
-
-.play-pause-toggle-icon::before {
-    content: '\23EF';
-}
-
-.stop-icon::before {
-    content: '\23F9';
-}
+.play-icon:before                   {  content: "\23F5"; }
+.pause-icon:before                  {  content: "\23F8"; }
+.play-pause-toggle-icon:before      {  content: "\23EF"; }
+.stop-icon:before                   {  content: "\23F9"; }
