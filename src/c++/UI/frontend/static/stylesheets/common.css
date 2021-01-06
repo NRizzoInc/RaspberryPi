@@ -114,8 +114,8 @@
 
 .page-container {
     /* make slightly less than 100 to prevent scrolling */
-    width: 97%;
-    max-height: 98vh;
+    width: 95%;
+    max-height: 95vh;
     height: 100%;
     justify-content: space-evenly;
 }
