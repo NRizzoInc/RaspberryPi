@@ -10,6 +10,7 @@ target_link_libraries(rpi_driver
     GPIO_CLI_Parser
     RPI_Network
     RPI_UI
+    RPI_Camera # evenutally include as part of client in RPI_Network
 )
 
 target_compile_options(rpi_driver

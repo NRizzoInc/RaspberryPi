@@ -30,14 +30,18 @@ const std::string   URL_BASE_IP          {"http://127.0.0.1"};
 enum class WebAppUrlsNames {
     // LANDING_PAGE, //TODO: get redirect to work
     MAIN_PAGE,
+    CAM_PAGE,
     SHUTDOWN_PAGE,
     STATIC,
+    CAM_SETTINGS,
 };
 
 // contains actual urls as values
 const std::unordered_map<WebAppUrlsNames, std::string> WebAppUrls {
     // {WebAppUrlsNames::LANDING_PAGE, "/"}, //TODO: get redirect to work
     {WebAppUrlsNames::MAIN_PAGE, "/RPI-Client"},
+    {WebAppUrlsNames::CAM_PAGE, "/Camera"},
+    {WebAppUrlsNames::CAM_SETTINGS, "/Camera/settings.json"}, // see camera_settings.json for what it looks like
     {WebAppUrlsNames::SHUTDOWN_PAGE, "/Shutdown"},
     {WebAppUrlsNames::STATIC, "../static"}, // from perspective of html file, static is one back
 };
@@ -72,7 +76,7 @@ class WebApp {
         /**
          * @brief Responsible for stopping the web app (if started it will run forever)
          */
-        void stopWebApp();
+        ReturnCodes stopWebApp();
 
     private:
         /******************************************** Private Variables ********************************************/
@@ -110,6 +114,16 @@ class WebApp {
          * (updates packet for client to be sent to server)
          */
         void recvMainData(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
+
+        /**
+         * @brief Responsible for sending the latest camera video frame to web app
+         */
+        void handleVidReq(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
+
+        /**
+         * @brief Responsible for sending the camera settings
+         */
+        void handleCamSettingReq(const Pistache::Rest::Request& req, Pistache::Http::ResponseWriter res);
 
         // TODO: Get redirect to work (hard to do function generator/flexible with this bind)
         ///**

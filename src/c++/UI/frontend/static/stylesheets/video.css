@@ -1,0 +1,28 @@
+.cam-stream {
+    object-fit: cover;
+    max-width: 100%;
+    height: auto;
+    width: 80%;
+}
+
+.cam-overlay {
+    transition: opacity 0.5s ease;
+    -webkit-transition: opacity 0.5s ease;
+    -moz-transition: opacity 0.5s ease;
+}
+
+/* have video be regular brightness without hover */
+.cam-overlay {
+    opacity: 1;
+}
+
+/* lighten and grab when hovering over it */
+/* use "cam-lighten" to dynamically set dark state in js */
+.cam-lighten,
+.cam-overlay:hover {
+    opacity: 0.8;
+}
+
+.cam-btns {
+    font-size:24px;
+}

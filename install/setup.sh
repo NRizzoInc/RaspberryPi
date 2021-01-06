@@ -31,6 +31,7 @@ print_flags () {
     echo "    -s | --submodules: Fetch & Update all the git submodules in this repo"
     echo "    -g | --gpio: Build and Install the c++ gpio library from source"
     echo "    -w | --web: Build and Install the c++ web-app library \"pistache\" to capture keyboard input for client"
+    echo "    -c | --camera: Build and Install the c++ camera library to stream video to the client"
     echo "    -h | --help: This message"
     echo "========================================================================================================================="
 }
@@ -38,6 +39,7 @@ print_flags () {
 # parse command line args
 installGPIO=false
 installPistache=false
+installCamera=false
 updateSubmodules=false
 linuxPkgs=false
 installAll=true # default to installing everything
@@ -59,6 +61,11 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -w | --web )
             installPistache=true
+            installAll=false
+            break
+            ;;
+        -c | --camera )
+            installCamera=true
             installAll=false
             break
             ;;
@@ -89,6 +96,7 @@ helpersDir="${INSTALL_DIR}/helpers"
 wiringPiScript="${helpersDir}/WiringPi.sh"
 submoduleScript="${helpersDir}/submodules.sh"
 pistacheScript="${helpersDir}/pistache.sh"
+cameraScript="${helpersDir}/camera.sh"
 linuxPkgsScript="${helpersDir}/linux_pkgs.sh"
 
 # call helpers as needed
@@ -116,6 +124,10 @@ if [[ ${installPistache} == true || ${installAll} == true ]]; then
         --extern-dir "${externDir}"
 fi
 
+if [[ ${installCamera} == true || ${installAll} == true ]]; then
+    bash "${cameraScript}" \
+        --extern-dir "${externDir}"
+fi
 
 echo "========= Completed Helper Scripts ========="
 

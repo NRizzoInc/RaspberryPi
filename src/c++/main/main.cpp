@@ -11,10 +11,11 @@
 #include "string_helpers.hpp"
 #include "GPIO_Controller.h"
 #include "CLI_Parser.h"
-#include "server.h"
-#include "client.h"
+#include "tcp_server.h"
+#include "tcp_client.h"
 #include "tcp_base.h"
 #include "backend.h"
+#include "rpi_camera.h"
 
 using std::cout;
 using std::cerr;
@@ -41,8 +42,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     // determine if dealing with server or client
-    const bool is_client {parse_res[RPI::CLI::Results::MODE] == "client"};
-    const bool is_server {parse_res[RPI::CLI::Results::MODE] == "server"};
+    const bool is_client { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "client" };
+    const bool is_server { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "server" };
+    const bool is_cam    { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "camera" };
     const bool is_net    { is_client || is_server }; // true if client or server
 
     /* ============================================ Create GPIO Obj =========================================== */
@@ -50,27 +52,46 @@ int main(int argc, char* argv[]) {
     // static needed so it can be accessed in ctrl+c lambda
     static RPI::gpio::GPIOController gpio_handler{
         // motor i2c addr (convert hex string to int using base 16)
-        static_cast<std::uint8_t>(std::stoi(parse_res[RPI::CLI::Results::MOTOR_ADDR], 0, 16))
+        static_cast<std::uint8_t>(
+            std::stoi(parse_res[RPI::CLI::Results::ParseKeys::MOTOR_ADDR], 0, 16)
+        )
     };
 
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
-    // if is_client, do not init the server (and vice-versa)
-    const int net_port {std::stoi(parse_res[RPI::CLI::Results::NET_PORT])}; // dont convert this twice
+    // don't convert string port numbers to ints twice
+    const int ctrl_port {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CTRL_PORT])};
+    const int cam_port  {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CAM_PORT])};
     static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
-          (RPI::Network::TcpBase*) new RPI::Network::TcpClient{parse_res[RPI::CLI::Results::IP], net_port, is_client} :
-          (RPI::Network::TcpBase*) new RPI::Network::TcpServer{net_port, !is_client}
+            (RPI::Network::TcpBase*) new RPI::Network::TcpClient{
+                parse_res[RPI::CLI::Results::ParseKeys::IP],
+                ctrl_port,
+                cam_port,
+                is_client
+            } 
+            :
+            (RPI::Network::TcpBase*) new RPI::Network::TcpServer{
+                ctrl_port,
+                cam_port,
+                is_server
+            }
     };
 
     // Create UI Event Listener to interact with client
-    static RPI::UI::WebApp net_ui{net_agent, std::stoi(parse_res[RPI::CLI::Results::WEB_PORT])};
+    static RPI::UI::WebApp net_ui{net_agent, std::stoi(parse_res[RPI::CLI::Results::ParseKeys::WEB_PORT])};
+
+    /* ======================================== Create Server OR Client ======================================= */
+
+    // TODO: remove & add to server
+    const int max_frames {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::VID_FRAMES])};
+    // only setup camera if available from server or camera test code
+    const bool should_init_cam { is_cam || is_server };
+    static RPI::Camera::CamHandler Camera{max_frames, should_init_cam};
+
 
     /* ========================================= Create Ctrl+C Handler ======================================== */
     // setup ctrl+c handler w/ callback to stop threads
-    // store handler to chain with other potential handlers due to other libraries (ahem... crow)
-    // using their own signal handler that would overwrite mine
-    // reference: https://stackoverflow.com/a/10701909/13933174
     std::signal(SIGINT, [](int signum) {
         cout << "Caught ctrl+c: " << signum << endl;
         if(gpio_handler.setShouldThreadExit(true) != RPI::ReturnCodes::Success) {
@@ -81,7 +102,13 @@ int main(int argc, char* argv[]) {
             cerr << "Error: Failed to stop network thread" << endl;
         }
 
-        net_ui.stopWebApp();
+        if(Camera.setShouldStop(true) != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to stop camera thread" << endl;
+        }
+
+        if(net_ui.stopWebApp() != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to stop web app" << endl;
+        }
     });
 
     /* ========================================== Initialize & Start ========================================= */
@@ -99,8 +126,18 @@ int main(int argc, char* argv[]) {
 
         // set recv to handle when getting packets
         net_agent->setRecvCallback([&](const RPI::Network::CommonPkt& pkt)->RPI::ReturnCodes{
-            return gpio_handler.gpioHandlePkt(pkt);
+            bool rtn_code {true};
+            rtn_code &= gpio_handler.gpioHandlePkt(pkt) == RPI::ReturnCodes::Success;
+            rtn_code &= Camera.setShouldRecord(pkt.cntrl.camera.is_on) == RPI::ReturnCodes::Success;
+            return rtn_code ? RPI::ReturnCodes::Success : RPI::ReturnCodes::Error;
         });
+
+        if(Camera.setGrabCallback([&](const std::vector<unsigned char>& grabbed_frame) {
+                net_agent->setLatestCamFrame(grabbed_frame);
+            }
+        ) != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to set camera grab callback" << endl;
+        }
 
     } else {
         // is client (startup web app interface for receiving commands)
@@ -111,9 +148,18 @@ int main(int argc, char* argv[]) {
         });
     }
 
+    // need to start camera if testing camera or running server
+    if (is_cam || is_server) {
+        thread_list.push_back(std::thread{
+            [&](){
+                // only save frames to disk if running camera test
+                Camera.RunFrameGrabber(true, is_cam);
+            }
+        });
+    }
+
     // startup client or server in a thread
     if (is_net) {
-        cout << "Started net agent" << endl;
         net_agent->runNetAgent(false);
     }
 

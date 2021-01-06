@@ -8,6 +8,7 @@ namespace UI {
 using std::cout;
 using std::cerr;
 using std::endl;
+using nlohmann::json;
 
 // get paths (operator/ is used for joining)
 const fs::path      CURR_DIR             {fs::path{__FILE__}.parent_path()};
@@ -51,13 +52,13 @@ void WebApp::startWebApp(const bool print_urls) {
     web_app.serveThreaded();
 }
 
-void WebApp::stopWebApp() {
+ReturnCodes WebApp::stopWebApp() {
     // causes issues trying to close web app if it is not open
     if (is_running) {
         is_running = false;
-        return;
+        web_app.shutdown();
     }
-    web_app.shutdown();
+    return ReturnCodes::Success;
 }
 
 /******************************************** Web/Route Functions *******************************************/
@@ -83,6 +84,19 @@ ReturnCodes WebApp::setupSites() {
         WebAppUrls.at(WebAppUrlsNames::MAIN_PAGE),
         Pistache::Rest::Routes::bind(&WebApp::recvMainData, this)
     );
+
+    // video stream pages
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::CAM_PAGE),
+        Pistache::Rest::Routes::bind(&WebApp::handleVidReq, this)
+    );
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::CAM_SETTINGS),
+        Pistache::Rest::Routes::bind(&WebApp::handleCamSettingReq, this)
+    );
+
 
     // shutdown/close page
     Pistache::Rest::Routes::Get(
@@ -116,6 +130,7 @@ void WebApp::serveStaticResources(
     Pistache::Http::ResponseWriter res
 ) {
     const fs::path  js_path     {STATIC_DIR / "js"};
+    const fs::path  ext_path    {STATIC_DIR / "extern"};
     const fs::path  css_path    {STATIC_DIR / "stylesheets"};
     const fs::path  images_path {STATIC_DIR / "images"};
 
@@ -127,7 +142,7 @@ void WebApp::serveStaticResources(
     // not have to specific MIME type as defined by extern/pistache/include/pistache/mime.h
     // or see: http://pistache.io/guide/#response-streaming (ctrl+f "MIME types")
     if (Helpers::contains(req_page, "../..")) {
-        // bad/invalid path (continue to end of fn for appropriate settings)
+        res.send(Pistache::Http::Code::Moved_Permanently, "Invalid Path!\n");
     } 
     // serve the requested stylesheet
     // only serve file if valid => if not reach end of fn
@@ -142,8 +157,8 @@ void WebApp::serveStaticResources(
                     Pistache::Http::Mime::Subtype::Css // sub type
                 )
             );
+            return;
         }
-        return;
     } 
     // serve the requested images
     // only serve file if valid => if not reach end of fn
@@ -158,8 +173,8 @@ void WebApp::serveStaticResources(
                     Pistache::Http::Mime::Subtype::Png // sub type
                 )
             );
+            return;
         }
-        return;
     } else if (Helpers::contains(req_page, "js")) {
         // serve the requested js file
         // only serve file if valid => if not reach end of fn
@@ -173,9 +188,38 @@ void WebApp::serveStaticResources(
                     Pistache::Http::Mime::Subtype::Javascript // sub type
                 )
             );
+            return;
         }
-        return;
-    } 
+    } else if (Helpers::contains(req_page, "extern")) {
+        const fs::path full_rel_path = Helpers::findPathAfter(req_page, "/static/extern/");
+        const fs::path serve_file {ext_path / full_rel_path};
+        if (fs::exists(serve_file)) {
+            Pistache::Http::serveFile(
+                res,
+                serve_file.string(),
+                Pistache::Http::Mime::MediaType(
+                    Pistache::Http::Mime::Type::Text, // main type
+                    Pistache::Http::Mime::Subtype::Css // sub type
+                )
+            );
+            return;
+        }
+    } else if (Helpers::contains(req_page,  "../fonts/fontawesome")) {
+        // special path for fontawesome external library
+        // -- should not be security risk since requested file MUST be below and not up
+        const fs::path serve_file {ext_path / "font-awesome-4.7.0" / "fonts" / res_page_name};
+        if (fs::exists(serve_file)) {
+            Pistache::Http::serveFile(
+                res,
+                serve_file.string(),
+                Pistache::Http::Mime::MediaType(
+                    Pistache::Http::Mime::Type::Application, // main type
+                    Pistache::Http::Mime::Subtype::Bmp // sub type
+                )
+            );
+            return;
+        }
+    }
 
     // bad/invalid path to reach this point
     res.headers().add<Pistache::Http::Header::Location>(req_page);
@@ -195,6 +239,65 @@ void WebApp::recvMainData(
         res.send(Pistache::Http::Code::Bad_Request, "Bad Data Sent!\n");
     }
 }
+
+void WebApp::handleVidReq(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    try {
+        // stores pixel data
+        const std::vector<unsigned char>& frame   { client_ptr->getLatestCamFrame() };
+        const std::size_t img_size                { frame.size() };
+        const char* frame_buf                     { img_size > 0 ? (char*)frame.data() : "" };
+
+        // actually send the pixel data back to GET request
+        res.send(
+            Pistache::Http::Code::Ok,
+            frame_buf, img_size,
+            Pistache::Http::Mime::MediaType(
+                Pistache::Http::Mime::Type::Image, // main type
+                Pistache::Http::Mime::Subtype::Jpeg // sub type
+            )
+        );
+
+    } catch (std::exception& err) {
+        constexpr auto err_str {"ERROR: Handling web app video data"};
+        cout << err_str << ": " << err.what() << endl;
+        res.send(Pistache::Http::Code::Bad_Request, err_str);
+    }
+}
+
+void WebApp::handleCamSettingReq(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    try {
+        // https://github.com/nlohmann/json#json-as-first-class-data-type
+        // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
+        // key-values are seperated by commas not ':'
+        json cam_settings {
+            {"fps", Constants::Camera::VID_FRAMERATE},
+            {"height", Constants::Camera::FRAME_HEIGHT},
+            {"width", Constants::Camera::FRAME_WIDTH},
+        };
+
+        // actually send the pixel data back to GET request
+        res.send(
+            Pistache::Http::Code::Ok,
+            cam_settings.dump(),
+            Pistache::Http::Mime::MediaType(
+                Pistache::Http::Mime::Type::Application, // main type
+                Pistache::Http::Mime::Subtype::Json // sub type
+            )
+        );
+
+    } catch (std::exception& err) {
+        constexpr auto err_str {"ERROR: Sending camera settings"};
+        cout << err_str << ": " << err.what() << endl;
+        res.send(Pistache::Http::Code::Bad_Request, err_str);
+    }
+}
+
 
 /// redirect function (TODO)
 // void Redirect(

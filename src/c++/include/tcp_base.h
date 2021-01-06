@@ -17,6 +17,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <sstream> // for packet stream
 
 // Our Includes
 #include "constants.h"
@@ -26,6 +27,23 @@
 
 namespace RPI {
 namespace Network {
+
+// holds the return of recvData(), check the "RtnCode" attribute to see if any errors occured
+enum class RecvSendRtnCodes {
+    Error,
+    ClosedConn,
+    Sucess
+};
+struct RecvRtn {
+    std::vector<u_char> buf;   // the data receivied via the socket (data.size() for size)
+    RecvSendRtnCodes    RtnCode;
+};
+
+struct SendRtn {
+    std::uint32_t       size;   // the size of the  sent data -- pinned to uint32_t bc thats max send size currently
+    RecvSendRtnCodes    RtnCode;
+};
+
 
 /**
  * @brief Implements common features shared between server & client
@@ -72,11 +90,14 @@ class TcpBase : public Packet {
 
         /**
          * @brief Starts up a non-blocking read for the server/client
-         * @note Calls netAgentFn() in a thread
+         * @note Starts up all network related threads
          * @param print_data Should received data be printed?
          */
         void runNetAgent(const bool print_data);
 
+        
+        bool getIsInit() const;
+        void setIsInit(const bool new_status);
 
     protected:
         /****************************************** Shared Common Functions ****************************************/
@@ -99,19 +120,28 @@ class TcpBase : public Packet {
         /**
          * @brief Receives data from remote host.
          * @param socket_fd The receiving socket's file descriptor
-         * @param buf buffer where the received data is stored
-         * @return number of bytes received (-1 if error occurred)
+         * @return string containing the data - check its size/exists for number of bytes received:
+         * (std::nullopt if error occurred)
+         * (0  if closed connection)
          */
-        virtual int recvData(int socket_fd, char* buf);
+        virtual RecvRtn recvData(int socket_fd);
 
         /**
          * @brief Send data to remote host.
          * @param socket_fd The receiving socket's file descriptor
-         * @param buf pointer to the buffer where the data to be sent is stored
+         * @param buf pointer to the buffer where the data to be sent is stored - can be (un)signed char
          * @param size_to_tx size to transmit
-         * @return number of bytes sent (-1 if error occurred)
+         * (other host closes conn) & instead returns EPIPE (negative)
+         * @return number of bytes sent (RtnCode == Success if no issues)
+         * - max size is std::uint32_t bc thats the max packet length
+         * @todo Handle packet sizes larger that automatically loop when sending packets
+         * @note sends will not result in a broken SIGPIPE signal to prevent program from being killed
          */
-        virtual int sendData(int socket_fd, const char* buf, const size_t size_to_tx);
+        virtual SendRtn sendData(
+            int& socket_fd,
+            const void* buf,
+            const std::uint32_t size_to_tx
+        );
 
         /**
          * @brief Creates the socket, bind it & sets options. Override to be called in constructor
@@ -124,7 +154,13 @@ class TcpBase : public Packet {
          * (override so that it can be called by runNetAgent() in a thread)
          * @param print_data Should received data be printed?
          */
-        virtual void netAgentFn(const bool print_data) = 0;
+        virtual void ControlLoopFn(const bool print_data) = 0;
+
+        /**
+         * @brief The function to run regarding video frames when starting up the TCP server/client
+         * (override so that it can be called by runNetAgent() in a thread)
+         */
+        virtual void VideoStreamHandler() = 0;
 
         /**
          * @brief Function called by the destructor to close the sockets
@@ -136,15 +172,24 @@ class TcpBase : public Packet {
     protected:
         RecvPktCallback             recv_cb;            // callback for when a packet is received
 
+        /**
+         * @brief Helper function that closes and sets a socket file descriptor to -1 if it is open
+         * @param sock_fd The socket file descriptor to close if open
+         * @return The socket file descriptors new value (-1)
+         */
+        virtual int CloseOpenSock(int sock_fd);
+
     private:
         /******************************************** Private Variables ********************************************/
 
         std::atomic_bool            should_exit;        // true if should exit/stop connection
-        std::thread                 net_agent_thread;   // holds the thread proc for runNetAgent()
-        std::atomic_bool            started_thread;     // need to send an initization message for first packet
-        std::mutex                  thread_mutex;
+        std::thread                 control_thread;     // holds the thread proc for ControlLoopFn()
+        std::thread                 cam_vid_thread;     // holds the thread proc for VideoStreamHandler()
+        std::atomic_bool            started_threads;    // need to send an initization message for first packet
+        std::mutex                  thread_mutex;       // mutex controlling access to the classes threads (start/join)
         std::condition_variable     thread_cv;          // true if client needs to tell the server something
-        bool                        has_cleaned_up;     // makes sure cleanup doesnt happen twice
+        std::atomic_bool            is_init;            // helps determine if needs to cleanup in derived classes
+        std::atomic_bool            has_cleaned_up;     // makes sure cleanup doesnt happen twice
 
 }; // end of TcpClient class
 

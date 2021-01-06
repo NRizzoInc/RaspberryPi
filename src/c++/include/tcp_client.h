@@ -31,10 +31,16 @@ class TcpClient : public TcpBase {
         /**
          * @brief Construct a new Tcp Client object
          * @param ip_addr The ip address of the server
-         * @param port_num The port number of the server
+         * @param ctrl_port_num The port number the server is waiting to accept control packet connections on
+         * @param cam_port_num The port for the camera data connection
          * @param should_init False: do not init (most likely bc should run server)
          */
-        TcpClient(const std::string& ip_addr, const int port_num, const bool should_init);
+        TcpClient(
+            const std::string& ip_addr,
+            const int ctrl_port_num,
+            const int cam_port_num,
+            const bool should_init
+        );
         virtual ~TcpClient();
 
         /********************************************* Getters/Setters *********************************************/
@@ -56,17 +62,26 @@ class TcpClient : public TcpBase {
          * @brief Starts up a non-blocking function to start sending messages to server
          * @param print_data Should received data be printed?
          */
-        virtual void netAgentFn(const bool print_data) override;
+        virtual void ControlLoopFn(const bool print_data) override;
+
+        /**
+         * @brief Starts up a non-blocking function to recv video frames from server camera 
+         */
+        virtual void VideoStreamHandler() override;
 
     private:
         /******************************************** Private Variables ********************************************/
 
-        int                         client_sock_fd;     // tcp socket file descriptor to wait to accept connections with client
+        int                         ctrl_data_sock_fd;  // tcp socket file descriptor that sends control data to server
         std::string                 server_ip;          // ip address of the server
-        int                         server_port;        // port number of the server
+        int                         ctrl_data_port;     // port number to send control data to the server
         std::atomic_bool            pkt_ready;          // alert send cv to unlock
         std::mutex                  data_mutex;
         std::condition_variable     has_new_msg;        // true if client needs to tell the server something
+
+        // camera vars
+        int                         cam_data_sock_fd;   // tcp file descriptor for camera data from server
+        int                         cam_data_port;      // port number for getting camera from server
 
         /********************************************* Helper Functions ********************************************/
 
@@ -78,10 +93,13 @@ class TcpClient : public TcpBase {
 
         /**
          * @brief Responsible for connecting to server prior to communicating with server
-         * 
+         * @param sock_fd The socket file descriptor to open the connection from (reference so can close on fail)
+         * @param ip The ip to connect to
+         * @param port The port to connect to
+         * @param conn_desc Description of the connection (i.e. "camera" or "control")
          * @return ReturnCodes 
          */
-        ReturnCodes connectToServer();
+        ReturnCodes connectToServer(int& sock_fd, const std::string& ip, const int port, const std::string& conn_desc);
 
         /**
          * @brief Function called at the end of running client to close the sockets

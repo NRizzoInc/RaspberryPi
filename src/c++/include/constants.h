@@ -13,34 +13,50 @@ enum class ReturnCodes {
 };
 
 namespace Constants {
-    // http://wiringpi.com/reference/software-pwm-library/
-    constexpr int LED_SOFT_PWM_MIN      {0};
-    constexpr int LED_SOFT_PWM_MAX      {100};
-    constexpr int LED_SOFT_PWM_RANGE    {LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN};
+
+    namespace GPIO {
+        // http://wiringpi.com/reference/software-pwm-library/
+        constexpr int LED_SOFT_PWM_MIN      {0};
+        constexpr int LED_SOFT_PWM_MAX      {100};
+        constexpr int LED_SOFT_PWM_RANGE    {LED_SOFT_PWM_MAX - LED_SOFT_PWM_MIN};
+    }; // end of Constants::GPIO namespace
 
     namespace Network {
-        constexpr std::size_t   MAX_DATA_SIZE   {512};
+        constexpr std::size_t   MAX_DATA_SIZE   {4096};
         constexpr char          PKT_ACK[]       {"Packet ACK\n"};
-        constexpr int           RECV_TIMEOUT    {5}; // TODO: heartbeat keepalive (shorten)
-        constexpr int           ACPT_TIMEOUT    {5}; // ctrl+c takes 5 sec to work pre-connect
+        constexpr int           RX_TX_TIMEOUT   {1}; // heartbeat (ctrl+c takes this long during runtime)
+        constexpr int           ACPT_TIMEOUT    {2}; // ctrl+c takes this long to work pre-connect
     } // end of Network namespace
+
+    namespace Camera {
+        constexpr int           FRAME_WIDTH     {640};
+        constexpr int           FRAME_HEIGHT    {480};
+        constexpr int           FRAME_SIZE      {FRAME_WIDTH*FRAME_HEIGHT};
+        constexpr int           VID_FRAMERATE   {25};
+
+    }; //end of camera namespace
 
 }; // end of constants namespace
 
 namespace CLI::Results {
-    // shortening of parse results mapping
-    using ParseResults = std::unordered_map<std::string, std::string>;
 
-    // cannot use std::string in constexpr (auto == char[])
-    constexpr auto MODE             = "mode"       ;
-    constexpr auto COLORS           = "names"      ;
-    constexpr auto INTERVAL         = "interval"   ;
-    constexpr auto RATE             = "rate"       ;
-    constexpr auto DURATION         = "duration"   ;
-    constexpr auto IP               = "ip"         ;
-    constexpr auto NET_PORT         = "net-port"   ;
-    constexpr auto WEB_PORT         = "web-port"   ;
-    constexpr auto MOTOR_ADDR       = "motor-addr" ;
+    // keys for the mapping of the CLI results (stored in ParseResults)
+    enum class ParseKeys {
+        MODE,
+        COLORS,
+        INTERVAL,
+        RATE,
+        DURATION,
+        IP,
+        CTRL_PORT,
+        CAM_PORT,
+        WEB_PORT,
+        MOTOR_ADDR,
+        VID_FRAMES
+    }; // end of ParseResults's keys
+
+    // maps CLI's results (stored in string form) as {ParseKeys::<key> : value}
+    using ParseResults = std::unordered_map<ParseKeys, std::string>;
 }; // end of CLI::Results namespace
 
 }; // end of RPI namespace

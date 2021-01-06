@@ -11,6 +11,9 @@
             "backward": false,
             "right":    false,
             "left":     false
+        },
+        "camera": {
+            "is_on":    false
         }
     },
     "ACK": true

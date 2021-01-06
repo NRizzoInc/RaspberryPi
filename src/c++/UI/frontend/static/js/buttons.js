@@ -5,13 +5,15 @@
 
 import { sendPkt } from "./pkt.js"
 
+const ColorList = ["red", "yellow", "green", "blue"]
+
 /**
  * @brief helper function to convert a button's id to its actual color
- * @note Button's id's are of format: <color>-btn (cut off last 4 chars on id ("-btn")
+ * @note Button's id's are of format: <color>-led-btn (cut off last chars on id ("-led-btn")
  * @param {String} btnId The id of the button element
  * @returns {"red" | "yellow" | "green" | "blue"}
  */
-const btnIdToColor = (btnId) => btnId.slice(0, -4)
+const btnIdToColor = (btnId) => btnId.slice(0, -8)
 
 
 /**
@@ -20,11 +22,13 @@ const btnIdToColor = (btnId) => btnId.slice(0, -4)
  * @param {"red" | "yellow" | "green" | "blue"} btn_color The color of the button
  * @returns {String} The id of the button element
  */
-const btnColorToId = (btn_color) => btn_color + "-btn"
+const btnColorToId = (btn_color) => `${btn_color}-led-btn`
 
 
 // get all the buttons to keep track of their states
 const led_btns = Array.from(document.getElementsByTagName("button"))
+                    .filter((el) => el.id.endsWith("-led-btn")) // only add led buttons to list
+
 const leds_state = led_btns.reduce((led_dict, el) => {
     // map each led to start off as off
     led_dict[btnIdToColor(el.id)] = false

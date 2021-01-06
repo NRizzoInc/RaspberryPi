@@ -5,10 +5,6 @@
     text-align: center;
 }
 
-.set .d-pad {
-    margin-right: 40px;
-}
-
 .set .d-pad,
 .set .o-pad {
     display: inline-block;

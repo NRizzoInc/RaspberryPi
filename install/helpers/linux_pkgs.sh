@@ -16,6 +16,8 @@ apt install -y \
     gcc-7 g++-7 \
     mesa-common-dev \
     build-essential \
+    libx264-dev \
+    libopencv-dev \
 
 apt upgrade -y
 
@@ -23,7 +25,6 @@ apt upgrade -y
 
 # bug with mesa-common-dev not installing libGL.so correctly (need to manually create symlink)
 # https://github.com/RobotLocomotion/drake/issues/2087#issue-148166827
-sudo ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/x86_64-linux-gnu/libGL.so
-
+ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/x86_64-linux-gnu/libGL.so
 
 echo "=============== Compelted Linux Package Manager Script ==============="

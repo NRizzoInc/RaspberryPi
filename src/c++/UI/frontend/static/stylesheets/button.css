@@ -22,22 +22,6 @@
     cursor: grabbing;
 }
 
-/* the class used on the img tag whose src="/path/to/.png */
-.btn-img-holder {
-    outline: none;
-    border: none;
-    background-color: white;
-    width: 100%;
-    width: fit-content;
-}
-
-.btn-img {
-    /* alert user they can click */
-    object-fit: cover;
-    /* 100% makes all buttons on same line grow to max possible size */
-    width:  100%;
-}
-
 .all-btn-container {
     display: inline-block;
 }

@@ -7,3 +7,7 @@
 [submodule "extern/pistache"]
 	path = extern/pistache
 	url = https://github.com/oktal/pistache.git
+[submodule "extern/camera/raspicam"]
+	path = extern/camera/raspicam
+	url = git@github.com:cedricve/raspicam.git
+	ignore = untracked # submodule does not ignore build/ dir

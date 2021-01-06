@@ -35,7 +35,7 @@ LEDController::~LEDController() {
         cout << "Resetting LED Pins" << endl;
         for (auto& color_pin : color_to_leds) {
             // set off and stop gpio pin
-            softPwmWrite(color_pin.second, Constants::LED_SOFT_PWM_MIN);
+            softPwmWrite(color_pin.second, Constants::GPIO::LED_SOFT_PWM_MIN);
             softPwmStop(color_pin.second);
         }
         setIsInit(false);
@@ -53,7 +53,11 @@ ReturnCodes LEDController::init() const {
 
     for (auto& led_entry : color_to_leds) {
         // setup each led as a software PWM LED (RPI only has 2 actual pwm pins)
-        softPwmCreate(led_entry.second, Constants::LED_SOFT_PWM_MIN, Constants::LED_SOFT_PWM_RANGE);
+        softPwmCreate(
+            led_entry.second,
+            Constants::GPIO::LED_SOFT_PWM_MIN,
+            Constants::GPIO::LED_SOFT_PWM_RANGE
+        );
     }
 
     setIsInit(true);
@@ -78,7 +82,7 @@ ReturnCodes LEDController::setLED(const std::string& led_color, const bool new_s
 
 ReturnCodes LEDController::setLED(const int pin_num, const bool new_state) const {
     // true = on, false = off
-    const int on_off_val {new_state ? Constants::LED_SOFT_PWM_MAX : Constants::LED_SOFT_PWM_MIN};
+    const int on_off_val {new_state ? Constants::GPIO::LED_SOFT_PWM_MAX : Constants::GPIO::LED_SOFT_PWM_MIN};
     softPwmWrite(pin_num, on_off_val);
     return ReturnCodes::Success;
 }
@@ -132,15 +136,15 @@ void LEDController::LEDIntensity(
 
     // how much time to sleep for before changing the brightness (in ms)
     // i.e.: if range of brightnesses = 100, interval = 1000ms & rate = 10x, should cycle every 1ms
-    const unsigned int cycles_per_change = {static_cast<unsigned int>(Constants::LED_SOFT_PWM_RANGE) * rate};
+    const unsigned int cycles_per_change = {static_cast<unsigned int>(Constants::GPIO::LED_SOFT_PWM_RANGE) * rate};
     const unsigned int time_between_change {interval / cycles_per_change};
-    unsigned int curr_brightness {Constants::LED_SOFT_PWM_MIN};
+    unsigned int curr_brightness {Constants::GPIO::LED_SOFT_PWM_MIN};
     while (
         !LEDController::getShouldThreadExit() &&
         // if duration == -1 : run forever
         (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
-        curr_brightness = (curr_brightness+1) % (Constants::LED_SOFT_PWM_MAX+1); // +1 to reach max
+        curr_brightness = (curr_brightness+1) % (Constants::GPIO::LED_SOFT_PWM_MAX+1); // +1 to reach max
 
         // change LEDs brightness
         for (auto& to_change : colors) {
