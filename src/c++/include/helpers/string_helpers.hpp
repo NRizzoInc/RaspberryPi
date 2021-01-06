@@ -112,6 +112,18 @@ inline std::string findFilename(const std::string& str) {
     return str.substr(str.find_last_of("/"));
 }
 
+/**
+ * @brief Determines the string that comes after the last '<prefix>'
+ * @param str The string to parse
+ * @param prefix The substr afterwhich is the return (goes by last occurance)
+ * @return The substring after the prefix
+ */
+inline std::string findPathAfter(const std::string& str, const std::string& prefix) {
+    const auto pref_start_idx    { str.find_first_of(prefix) };
+    const auto suf_start_idx     { pref_start_idx + prefix.size() };
+    return str.substr(suf_start_idx);
+}
+
 }; // end of Helpers namespace
 
 #endif

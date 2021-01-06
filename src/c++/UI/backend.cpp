@@ -130,6 +130,7 @@ void WebApp::serveStaticResources(
     Pistache::Http::ResponseWriter res
 ) {
     const fs::path  js_path     {STATIC_DIR / "js"};
+    const fs::path  ext_path    {STATIC_DIR / "extern"};
     const fs::path  css_path    {STATIC_DIR / "stylesheets"};
     const fs::path  images_path {STATIC_DIR / "images"};
 
@@ -156,8 +157,8 @@ void WebApp::serveStaticResources(
                     Pistache::Http::Mime::Subtype::Css // sub type
                 )
             );
+            return;
         }
-        return;
     } 
     // serve the requested images
     // only serve file if valid => if not reach end of fn
@@ -172,8 +173,8 @@ void WebApp::serveStaticResources(
                     Pistache::Http::Mime::Subtype::Png // sub type
                 )
             );
+            return;
         }
-        return;
     } else if (Helpers::contains(req_page, "js")) {
         // serve the requested js file
         // only serve file if valid => if not reach end of fn
@@ -187,9 +188,38 @@ void WebApp::serveStaticResources(
                     Pistache::Http::Mime::Subtype::Javascript // sub type
                 )
             );
+            return;
         }
-        return;
-    } 
+    } else if (Helpers::contains(req_page, "extern")) {
+        const fs::path full_rel_path = Helpers::findPathAfter(req_page, "/static/extern/");
+        const fs::path serve_file {ext_path / full_rel_path};
+        if (fs::exists(serve_file)) {
+            Pistache::Http::serveFile(
+                res,
+                serve_file.string(),
+                Pistache::Http::Mime::MediaType(
+                    Pistache::Http::Mime::Type::Text, // main type
+                    Pistache::Http::Mime::Subtype::Css // sub type
+                )
+            );
+            return;
+        }
+    } else if (Helpers::contains(req_page,  "../fonts/fontawesome")) {
+        // special path for fontawesome external library
+        // -- should not be security risk since requested file MUST be below and not up
+        const fs::path serve_file {ext_path / "font-awesome-4.7.0" / "fonts" / res_page_name};
+        if (fs::exists(serve_file)) {
+            Pistache::Http::serveFile(
+                res,
+                serve_file.string(),
+                Pistache::Http::Mime::MediaType(
+                    Pistache::Http::Mime::Type::Application, // main type
+                    Pistache::Http::Mime::Subtype::Bmp // sub type
+                )
+            );
+            return;
+        }
+    }
 
     // bad/invalid path to reach this point
     res.headers().add<Pistache::Http::Header::Location>(req_page);
