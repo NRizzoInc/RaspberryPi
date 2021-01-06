@@ -142,7 +142,7 @@ void WebApp::serveStaticResources(
     // not have to specific MIME type as defined by extern/pistache/include/pistache/mime.h
     // or see: http://pistache.io/guide/#response-streaming (ctrl+f "MIME types")
     if (Helpers::contains(req_page, "../..")) {
-        // bad/invalid path (continue to end of fn for appropriate settings)
+        res.send(Pistache::Http::Code::Moved_Permanently, "Invalid Path!\n");
     } 
     // serve the requested stylesheet
     // only serve file if valid => if not reach end of fn
