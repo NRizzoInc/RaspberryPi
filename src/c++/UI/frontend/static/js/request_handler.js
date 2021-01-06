@@ -57,7 +57,7 @@ export async function doesPageExist(url, method) {
         reqResponse = await $.ajax({
             url: url,
             type: method,
-            timeout: 3000 // set timeout to 3 sec
+            timeout: 1000 // set timeout to 1 sec
         })
         return true
     } catch (err) {
