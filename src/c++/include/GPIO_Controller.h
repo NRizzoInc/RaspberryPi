@@ -23,7 +23,6 @@
 #include "packet.h"
 
 // 3rd Party Includes
-#include <wiringPi.h>
 
 namespace RPI {
 namespace gpio {
