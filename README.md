@@ -4,15 +4,39 @@ This repo contains both C++ and Python code for interfacing with a Raspberry Pi 
 In the future however, I plan on stop supporting the Python code base in favor of C++.
 _Note:_ I may rever to the raspberry pi as RPI for short.
 
-## Current Features
+## Current Features 
 
-Currently both C++ & Python codes allow for three main features:
+### Main Features
 
-1. Blink the LEDs at a given interval
-2. Gradually increase the brightness of the LEDs until they reach the maximum and restart
-3. Controll the LEDs using their corresponding buttons.
+To fully run the robot's systems, both the client and server need to be used.
+
+1. First start up the server: `./bin/rpi_driver --mode server`
+2. Then start up the client: `./bin/rpi_driver --mode client --ip <RPI's ip address>`
+
+## Usage
+
+Check out [this guide](https://github.com/NRizzoInc/RaspberryPi/wiki) for how to use the server & client to control the RPI.
+
+### Running Client on Another Device (not recommended)
+
+You can run the client on another device, but you would need to build & install from source again and then determine the rpi's ip to connect to which is annoying (only Ubuntu is known to be supported, but I have no reason to believe it will not work on other Linux Distributions). Doing it this way make it slightly easier to access the web app since its address will be `http://127.0.0.1:<client port (default 5001)>/RPI-Client`, but is arguably more annoying because you would have to manage starting & stoppping the client.
+
+### Running Client on RaspberryPi (recommended)
+
+It is much simpler to actually run the **both** the client & server on the RPI without specifying an ip (defaults to **localhost**). This in turn starts up a web app client which can be accessed by any device on the same network as the RPI. If you follow [this guide for setting up a hostname](https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/), then accessing the web app from another computer is as easy as opening a browser and going to `http://<hostname>:<client port (default 5001)>/RPI-Client`.
+
+
+### Features that can be run locally without the client
+
+1. Blink the LEDs at a given interval: `--mode blink`
+2. Gradually increase the brightness of the LEDs until they reach the maximum and restart: `--mode intensity`
+3. Control the LEDs using their corresponding buttons: `--mode btns`
+4. Test the robots capability to move in each direction: `--mode motors`
+5. test the camera and save the latest frame to disk: `--mode camera`
 
 Use `./main.py --help` or `./bin/rpi_driver --help` to learn how to use it.
+
+(_Note:_ Most features are now only supported by the c++ produced binary)
 
 ## Installing
 
@@ -33,10 +57,6 @@ Follow [this guide](https://pimylifeup.com/raspberry-pi-swap-file/) for how to d
 sudo dphys-swapfile swapoff # turn swap off
 sudo dphys-swapfile swapon  # turn swap back on
 ```
-
-## Usage
-
-Check out [this guide](https://github.com/NRizzoInc/RaspberryPi/wiki) for how to use the server & client to control the RPI.
 
 ## Setup
 
