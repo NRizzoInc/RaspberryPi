@@ -78,3 +78,8 @@ _Note: the C++ code utilizes the `wPi` column in the `./PinDiagrams/README.md` f
 Make sure all RPI interfaces are enabled (except "1-wire").
 Click on raspberry pi symbol on top left -> "Preferences" -> "Raspberry Pi Configuration"
 
+### Final Appearance
+
+![image.png](https://images.zenhubusercontent.com/5f0e67368238228fc09554ca/393abaf8-8595-44c4-8e1d-608d4d057b1f)
+
+
