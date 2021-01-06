@@ -24,6 +24,7 @@ $("document").ready( async () => {
     // track/manage camera's recording status
     // contains all elements which when clicked toggle recording
     const play_pause_btn = document.getElementById("play-pause-cam-btn")
+    const play_pause_icon = document.getElementById("play-pause-cam-icon")
     const play_pause_els = [cam_vid, play_pause_btn]
 
     // represents what the camera control packet looks like
@@ -54,12 +55,12 @@ $("document").ready( async () => {
 
         if (camera_status.is_on) {
             // set to play, show the pause button
-            play_pause_btn.classList.add("pause-icon")
-            play_pause_btn.classList.remove("play-icon")
+            play_pause_icon.classList.add("fa-pause")
+            play_pause_icon.classList.remove("fa-play")
         } else {
             // set to pause, show the play button
-            play_pause_btn.classList.add("play-icon")
-            play_pause_btn.classList.remove("pause-icon")
+            play_pause_icon.classList.add("fa-play")
+            play_pause_icon.classList.remove("fa-pause")
         }
 
         // update backend with camera status

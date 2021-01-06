@@ -23,17 +23,6 @@
     opacity: 0.8;
 }
 
-/****************** Media Icons (https://stackoverflow.com/a/27053825/13933174) ******************/
-
-.unicode-fix {
-    color:transparent;
-    text-shadow: 0 0 0 black;
+.cam-btns {
+    font-size:24px;
 }
-.unicode-font {
-    font-size: 24px;
-    vertical-align: middle;
-}
-.play-icon:before                   {  content: "\23F5"; }
-.pause-icon:before                  {  content: "\23F8"; }
-.play-pause-toggle-icon:before      {  content: "\23EF"; }
-.stop-icon:before                   {  content: "\23F9"; }

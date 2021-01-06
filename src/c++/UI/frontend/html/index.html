@@ -2,12 +2,14 @@
 <html>
 
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="../static/images/rpi-logo.png">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/common.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/d-pad.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/button.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/video.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script type="module" src="../static/js/jquery.js"></script>
     <script type="module" src="../static/js/pkt.js"></script>
     <script type="module" src="../static/js/buttons.js"></script>
@@ -25,11 +27,10 @@
             <!---------------------------------- Camera Video (src is a route) ----------------------------------->
             <div class="width-50 vert-arrange">
                 <img id="Cam-Stream" class="cam-stream" src="/Camera">
-                <!-- choose either play or pause to enable (starts off playing)-->
-                <div class="flex-left-align">
-                    <!--toggle with play-icon (start off showing pause bc starts on)-->
-                    <button id="play-pause-cam-btn" class="width-10 unicode-fix unicode-font"></button>
-                </div>
+                <!--toggle with playpause-icon (start off showing pause bc starts on)-->
+                <button id="play-pause-cam-btn" class="cam-btns width-10">
+                    <i id="play-pause-cam-icon" class="fa"></i>
+                </button>
             </div>
             <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
             <div class="width-50">
