@@ -15,6 +15,7 @@
 // Our Includes
 #include "constants.h"
 #include "GPIO_Base.h"
+#include "PCA9685_Interface.h"
 #include "timing.hpp"
 
 // 3rd Party Includes
@@ -25,27 +26,6 @@
 namespace RPI {
 namespace gpio {
 namespace Motor {
-
-// Maps each tire/motor to its i2c address
-/// note: each motor has 2 channels (i.e. 0-1, 2-3, 4-5, 6-7)
-enum class I2C_Addr : int {
-    FL          = 0,         // Front Left
-    BL          = 2,         // Back  Left
-    BR          = 4,         // Back  Right
-    FR          = 6,         // Front Right
-}; // end of motor wheel addresses
-
-// register addresses for the I2C Chip for motors (PCA9685)
-// https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 10
-// ON/OFF_LOW/HIGH address = Base registers + 4 * motor#(0-3)
-enum class I2C_PWM_Addr : std::uint8_t {
-    MODE_REG        = 0x00,    // Root Register containing mode
-    ON_LOW_BASE     = 0x06,    // Register for setting on duty cycle LOW pwm
-    ON_HIGH_BASE    = 0x07,    // Register for setting on duty cycle HIGH pwm
-    OFF_LOW_BASE    = 0x08,    // Register for setting off duty cycle LOW pwm
-    OFF_HIGH_BASE   = 0x09,    // Register for setting off duty cycle HIGH pwm
-    FREQ_REG        = 0xFE,    // Register for controlling the pwm frequency
-}; // end of pwm addresses
 
 /**
  * @brief Enum which defines possible vertical directions the robot can move
@@ -69,7 +49,7 @@ constexpr int DUTY_MED         { 2000 };        // duty value for medium forward
 constexpr int DUTY_MED_BACK    { -DUTY_MED };   // duty value for medium backward speed
 
 // handle cout with enum (cannot print uint8_t bc alias for char* so prints ascii)
-std::ostream& operator<<(std::ostream& out, const I2C_PWM_Addr& addr);
+std::ostream& operator<<(std::ostream& out, const gpio::Interface::I2C_PWM_Addr& addr);
 std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
 
 /**
@@ -104,7 +84,7 @@ class MotorController : public GPIOBase {
          * @param duty Higher Positives mean forward, Lower negatives mean backward
          * @return ReturnCodes Success if no issues
          */
-        ReturnCodes SetSingleMotorPWM(const I2C_Addr motor_dir, const int duty) const;
+        ReturnCodes SetSingleMotorPWM(const Interface::I2C_Addr motor_dir, const int duty) const;
 
         /**
          * @brief Easily facilitates changing direction by handling the changing of motor pwm signals

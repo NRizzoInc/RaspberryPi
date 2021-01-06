@@ -64,7 +64,7 @@ ReturnCodes MotorController::init() const {
 
 /********************************************* Getters/Setters *********************************************/
 
-std::ostream& operator<<(std::ostream& out, const I2C_PWM_Addr& addr) {
+std::ostream& operator<<(std::ostream& out, const gpio::Interface::I2C_PWM_Addr& addr) {
     return out << static_cast<int>(addr);
 }
 
@@ -75,7 +75,7 @@ std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8) {
 
 /********************************************* Motor Functions *********************************************/
 
-ReturnCodes MotorController::SetSingleMotorPWM(const I2C_Addr motor_dir, const int duty) const {
+ReturnCodes MotorController::SetSingleMotorPWM(const gpio::Interface::I2C_Addr motor_dir, const int duty) const {
     // see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 10
     // each motor has to set the pwm in two place
     // based on input, the determine actual duty for the 2 pwm channels in reg that need to be set for the motor
@@ -87,7 +87,7 @@ ReturnCodes MotorController::SetSingleMotorPWM(const I2C_Addr motor_dir, const i
 
     // strange case for back left wheel being opposite all other wheels
     // const bool is_opposite { false };
-    const bool is_opposite { motor_dir == I2C_Addr::BL };
+    const bool is_opposite { motor_dir == gpio::Interface::I2C_Addr::BL_Motor };
     if (duty > 0) {
         duty0 = is_opposite ? 0         : duty;
         duty1 = is_opposite ? duty      : 0;
@@ -162,10 +162,10 @@ ReturnCodes MotorController::SetMotorsPWM(
     const int duty_br
 ) const {
     if (
-        SetSingleMotorPWM(I2C_Addr::FL, CheckDutyRange(duty_fl)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(I2C_Addr::FR, CheckDutyRange(duty_fr)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(I2C_Addr::BL, CheckDutyRange(duty_bl)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(I2C_Addr::BR, CheckDutyRange(duty_br)) == ReturnCodes::Success
+        SetSingleMotorPWM(gpio::Interface::I2C_Addr::FL_Motor, CheckDutyRange(duty_fl)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(gpio::Interface::I2C_Addr::FR_Motor, CheckDutyRange(duty_fr)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(gpio::Interface::I2C_Addr::BL_Motor, CheckDutyRange(duty_bl)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(gpio::Interface::I2C_Addr::BR_Motor, CheckDutyRange(duty_br)) == ReturnCodes::Success
     ) {
         return ReturnCodes::Success;
     } else {
@@ -268,7 +268,7 @@ ReturnCodes MotorController::SetPwmFreq(const float freq) const {
     const int scaled_freq = floor(prescaleval + .5); // round
 
     // reset mode & get default settings
-    const std::uint8_t mode_reg  { static_cast<std::uint8_t>(I2C_PWM_Addr::MODE_REG) };
+    const std::uint8_t mode_reg  { static_cast<std::uint8_t>(gpio::Interface::I2C_PWM_Addr::MODE_REG) };
     if(WriteReg(mode_reg, 0) != ReturnCodes::Success) {
         cerr << "Failed to reset mode register" << endl;
     }
@@ -283,7 +283,7 @@ ReturnCodes MotorController::SetPwmFreq(const float freq) const {
     }
 
     // update pwm freq
-    if(WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::FREQ_REG), scaled_freq) != ReturnCodes::Success) {
+    if(WriteReg(static_cast<std::uint8_t>(gpio::Interface::I2C_PWM_Addr::FREQ_REG), scaled_freq) != ReturnCodes::Success) {
         cerr << "Failed to update pwm freq" << endl;
         return ReturnCodes::Error;
     }
@@ -312,29 +312,29 @@ ReturnCodes MotorController::SetPwm(const int channel, const int on, const int o
     // each motor channel has 1 of each pwm registers (hence the 4*channel to get the correct address)
 
     // helper function to get the address based on base address
-    auto calc_addr = [&](const I2C_PWM_Addr base_addr){
+    auto calc_addr = [&](const gpio::Interface::I2C_PWM_Addr base_addr){
         return static_cast<std::uint8_t>(
             static_cast<std::uint8_t>(base_addr) +
             static_cast<std::uint8_t>(4*channel) // 4 pwm regs per channel
         );
     };
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::ON_LOW_BASE),  on & 0xFF) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(gpio::Interface::I2C_PWM_Addr::ON_LOW_BASE),  on & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update ON LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::ON_HIGH_BASE), on >> 8) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(gpio::Interface::I2C_PWM_Addr::ON_HIGH_BASE), on >> 8) != ReturnCodes::Success) {
         cerr << "Failed to update ON HIGH PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::OFF_LOW_BASE), off & 0xFF) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(gpio::Interface::I2C_PWM_Addr::OFF_LOW_BASE), off & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update OFF LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::OFF_HIGH_BASE), off >> 8) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(gpio::Interface::I2C_PWM_Addr::OFF_HIGH_BASE), off >> 8) != ReturnCodes::Success) {
         cerr << "Failed to update OFF HIGH PWM" << endl;
         return ReturnCodes::Error;
     }

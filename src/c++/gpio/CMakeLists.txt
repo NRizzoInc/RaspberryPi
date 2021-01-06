@@ -20,6 +20,7 @@ add_library(MotorServo_Controller
     GPIO_Base.cpp
     Motor_Controller.cpp
     Servo_Controller.cpp
+    PCA9685_Interface.cpp
 )
 
 target_link_libraries(MotorServo_Controller
