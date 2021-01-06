@@ -50,6 +50,9 @@ enum class I2C_PWM_Addr : std::uint8_t {
     FREQ_REG        = 0xFE,    // Register for controlling the pwm frequency
 }; // end of pwm addresses
 
+// handle cout with enum (cannot print uint8_t bc alias for char* so prints ascii)
+std::ostream& operator<<(std::ostream& out, const gpio::Interface::I2C_PWM_Addr& addr);
+std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
 
 
 }; // end of Interface namespace

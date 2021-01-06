@@ -64,14 +64,6 @@ ReturnCodes MotorController::init() const {
 
 /********************************************* Getters/Setters *********************************************/
 
-std::ostream& operator<<(std::ostream& out, const gpio::Interface::I2C_PWM_Addr& addr) {
-    return out << static_cast<int>(addr);
-}
-
-std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8) {
-    return out << static_cast<int>(addr_8);
-}
-
 
 /********************************************* Motor Functions *********************************************/
 

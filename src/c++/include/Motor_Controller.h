@@ -48,10 +48,6 @@ enum class HorizDir : int {
 constexpr int DUTY_MED         { 2000 };        // duty value for medium forward speed 
 constexpr int DUTY_MED_BACK    { -DUTY_MED };   // duty value for medium backward speed
 
-// handle cout with enum (cannot print uint8_t bc alias for char* so prints ascii)
-std::ostream& operator<<(std::ostream& out, const gpio::Interface::I2C_PWM_Addr& addr);
-std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
-
 /**
  * @brief Handle class for I2C Chip for motors (PCA9685)
  * @note see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf
