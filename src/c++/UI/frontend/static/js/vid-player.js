@@ -46,8 +46,9 @@ $("document").ready( async () => {
     )
 
     // play/pause on clicking image or play/pause btn
-    play_pause_els.forEach( (el) => {
-        el.addEventListener("click", (el) => {
+    play_pause_els.forEach( (btn_el) => {
+        btn_el.addEventListener("click", (el) => {
+
             // toggle play/pause buttons
             play_pause_btn.classList.toggle("play-icon")
             play_pause_btn.classList.toggle("pause-icon")
