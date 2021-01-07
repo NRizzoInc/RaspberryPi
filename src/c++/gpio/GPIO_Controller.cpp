@@ -14,11 +14,12 @@ namespace gpio {
 const ModeMap GPIOController::mode_to_action {GPIOController::createFnMap()};
 
 /********************************************** Constructors **********************************************/
-GPIOController::GPIOController(const std::uint8_t motor_i2c_addr)
+GPIOController::GPIOController(const std::uint8_t i2c_addr)
     // call constructors for parents
     : LED::LEDController()
     , Button::ButtonController()
-    , Motor::MotorController(motor_i2c_addr)
+    , Motor::MotorController(i2c_addr)
+    , Servo::ServoController(i2c_addr)
 
     // init vars
     , run_thread{}
@@ -66,6 +67,7 @@ bool GPIOController::getIsInit() const {
     return LEDController::getIsInit() 
         && ButtonController::getIsInit()
         && MotorController::getIsInit()
+        && ServoController::getIsInit()
         ;
 }
 
@@ -89,6 +91,10 @@ ReturnCodes GPIOController::init() const {
         cerr << "Failed to properly init motors" << endl;
         return ReturnCodes::Error;
     }
+    if (ServoController::init() != ReturnCodes::Success) {
+        cerr << "Failed to properly init servos" << endl;
+        return ReturnCodes::Error;
+    }
 
     // set callback so that when the button is pressed, the LED's state changes
     ButtonController::setBtnCallback([&](const std::string& color, const bool btn_state){
@@ -106,6 +112,7 @@ ReturnCodes GPIOController::setShouldThreadExit(const bool new_status) const {
     rtn &= LEDController::setShouldThreadExit(new_status)       == ReturnCodes::Success;
     rtn &= ButtonController::setShouldThreadExit(new_status)    == ReturnCodes::Success;
     rtn &= MotorController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
+    rtn &= ServoController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
     return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 
 }
