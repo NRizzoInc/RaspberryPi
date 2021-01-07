@@ -30,7 +30,7 @@ ServoController::~ServoController() {
         // make motors stop
         cout << "Resetting Servo Pins" << endl;
         // todo: convert this to single function
-        if (SetServoPWM({{I2C_ServoAddr::PITCH, 90}, {I2C_ServoAddr::YAW, 90}}) != ReturnCodes::Success) {
+        if (SetServoPWM({{I2C_ServoAddr::YAW, 90}, {I2C_ServoAddr::PITCH, 90}}) != ReturnCodes::Success) {
             cerr << "Error: Failed to stop servos" << endl;
         }
     }
@@ -108,10 +108,10 @@ std::optional<int> ServoController::AngleToPwm(const I2C_ServoAddr sel_servo, co
     // account for PWM frequency -- 1/prescale = 4096*Freq / MHz
     // note: 4096 = 2^12 from 12 bit reg
     // note: freq is in MHz (divide by Mega to get freq = # ticks)
-    const auto  pwm_freq    { PCA9685::GetPwmFreq() };
-    int pwm_ticks           {};
+    const auto  pwm_freq { PCA9685::GetPwmFreq() };
+    float pwm_tick_mult {};
     if (pwm_freq.has_value()) {
-        pwm_ticks = 4096 * (*pwm_freq) / 1000000;
+        pwm_tick_mult = 4096 * (*pwm_freq) / 1000000;
     } else {
         cerr << "Error: pwm frequency not set" << endl;
         return std::nullopt;
@@ -129,7 +129,7 @@ std::optional<int> ServoController::AngleToPwm(const I2C_ServoAddr sel_servo, co
     };
 
     // finally return the angle multiplied by ticks to get duty cycle/pwm
-    return pwm_ticks * valid_angle;
+    return pwm_tick_mult * valid_angle;
 }
 
 
