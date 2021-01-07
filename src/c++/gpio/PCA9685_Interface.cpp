@@ -44,16 +44,12 @@ PCA9685::PCA9685(const std::optional<std::uint8_t> PCA9685_i2c_addr)
 }
 
 PCA9685::~PCA9685() {
-    // only cleanup if is init in first place
-    // prevents client from trying to write to registers that do not exist
-    if (PCA9685::getIsInit()) {
-        // if PCA9685 device fd is open, close it and set to -1
+    // since this is base class, it will be the last to destruct
+    // hence, it is safe to close the fd if open
+    if (PCA9685_init_count == 0 && PCA9685_i2c_fd > 0) {
         cout << "Resetting PCA9685 Device" << endl;
-        if (PCA9685_i2c_fd > 0) {
-            close(PCA9685_i2c_fd);
-            PCA9685_i2c_fd = -1;
-        }
-        setIsInit(false);
+        close(PCA9685_i2c_fd);
+        PCA9685_i2c_fd = -1;
     }
 }
 
@@ -74,7 +70,6 @@ ReturnCodes PCA9685::init() const {
         return ReturnCodes::Error;
     }
 
-    setIsInit(true);
     return ReturnCodes::Success;
 }
 
