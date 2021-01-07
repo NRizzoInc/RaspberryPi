@@ -24,6 +24,7 @@ std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8) {
 bool                            PCA9685::is_PCA9685_init{false};            // start off uninit
 std::optional<std::uint8_t>     PCA9685::PCA9685_i2c_addr{std::nullopt};    // default to 0x40 (most likely is this)
 int                             PCA9685::PCA9685_i2c_fd{-1};                // invalid
+std::optional<float>            PCA9685::pwm_freq{std::nullopt};            // unset/invalid
 
 PCA9685::PCA9685(const std::optional<std::uint8_t> PCA9685_i2c_addr)
     : GPIOBase{}
@@ -105,7 +106,9 @@ std::uint8_t PCA9685::ReadReg(const std::uint8_t reg_addr) const {
 }
 
 ReturnCodes PCA9685::SetPwmFreq(const float freq) const {
-    // instr: https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 15
+    // instr: https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf
+    // -- page 15: how to set
+    // -- page 25: how to calc scaled freq
 
     // scale frequency
     float prescaleval {25000000.0};     // 25MHz
@@ -149,7 +152,12 @@ ReturnCodes PCA9685::SetPwmFreq(const float freq) const {
     }
 
     // success
+    pwm_freq = freq;
     return ReturnCodes::Success;
+}
+
+std::optional<float> PCA9685::GetPwmFreq() const {
+    return pwm_freq;
 }
 
 

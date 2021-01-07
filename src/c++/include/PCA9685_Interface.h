@@ -116,6 +116,12 @@ class PCA9685 : public GPIOBase {
         ReturnCodes SetPwmFreq(const float freq=50.0) const;
 
         /**
+         * @brief Get the pwm frequency
+         * @return The pwm frequency currently being used
+         */
+        std::optional<float> GetPwmFreq() const;
+
+        /**
          * @brief Sets the pwm duty cycle for a motor (changes the speed/direction of the motor)
          * @param channel The motor's channel
          * @param on On time
@@ -128,9 +134,10 @@ class PCA9685 : public GPIOBase {
         /******************************************** Private Variables ********************************************/
 
         // static vars because should only be initialized once for all derived classes
-        static std::optional<std::uint8_t>  PCA9685_i2c_addr;    // the address of robot's i2c PCA9685 module
-        static int                          PCA9685_i2c_fd;      // file descriptor created by setup
-        static bool                         is_PCA9685_init;     // true if PCA9685 device has been init properly
+        static std::optional<std::uint8_t>  PCA9685_i2c_addr;   // the address of robot's i2c PCA9685 module
+        static int                          PCA9685_i2c_fd;     // file descriptor created by setup
+        static bool                         is_PCA9685_init;    // true if PCA9685 device has been init properly
+        static std::optional<float>         pwm_freq;           // the pwm frequency the device is set to (in MHz)
 
         /********************************************* Helper Functions ********************************************/
 
