@@ -18,6 +18,7 @@
 #include "constants.h"
 #include "GPIO_Base.h"
 #include "timing.hpp"
+#include "enum_helpers.hpp"
 
 // 3rd Party Includes
 #include <wiringPi.h>
@@ -99,6 +100,7 @@ class PCA9685 : public GPIOBase {
          * @return ReturnCodes 
          */
         ReturnCodes WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const;
+        ReturnCodes WriteReg(const PCA9685_Reg_Addr reg_addr, const std::uint8_t data) const;
 
         /**
          * @brief Read data from a register in the Motor's i2c device
@@ -129,6 +131,24 @@ class PCA9685 : public GPIOBase {
          */
         ReturnCodes SetPwm(const int channel, const int on, const int off) const;
 
+        /**
+         * @brief Enables or deactivates full-on
+         * @param channel The channel/pin to enable/disable full turn on for
+         * @param enable true: full-on
+         * @param enable false: disable and proceed according to PWM signals
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes TurnFullOn(const int channel, const bool enable) const;
+
+        /**
+         * @brief Enables or deactivates full-of
+         * @param channel The channel/pin to enable/disable full turn off for
+         * @param enable true: full-off
+         * @param enable false: disable and proceed according to PWM signals (or full on if set)
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes TurnFullOff(const int channel, const bool enable) const;
+
     private:
         /******************************************** Private Variables ********************************************/
 
@@ -139,6 +159,15 @@ class PCA9685 : public GPIOBase {
         static std::optional<float>         pwm_freq;           // the pwm frequency the device is set to (in MHz)
 
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Helper function that calculates the base address for a channel's specific register 
+         * @param base_addr The register that whose address is needed relative to the channel
+         * @param channel The channel whose register address is needed
+         * @return The address
+         */
+        std::uint8_t CalcChBaseAddr(const PCA9685_Reg_Addr base_addr, const int channel) const;
+
 
 }; // end of PCA9685 class
 

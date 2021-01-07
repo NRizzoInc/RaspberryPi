@@ -94,6 +94,9 @@ ReturnCodes PCA9685::setIsInit(const bool new_state) const {
 
 /**************** PCA9685 Specific Functions (only utilized by those with direct need) *********************/
 
+ReturnCodes PCA9685::WriteReg(const PCA9685_Reg_Addr reg_addr, const std::uint8_t data) const {
+    return WriteReg(static_cast<std::uint8_t>(reg_addr), data);
+}
 
 ReturnCodes PCA9685::WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const {
     ReturnCodes rtn {wiringPiI2CWriteReg8(
@@ -141,7 +144,7 @@ ReturnCodes PCA9685::SetPwmFreq(const float freq) const {
     }
 
     // update pwm freq
-    if(WriteReg(static_cast<std::uint8_t>(PCA9685_Reg_Addr::FREQ_REG), scaled_freq) != ReturnCodes::Success) {
+    if(WriteReg(PCA9685_Reg_Addr::FREQ_REG, scaled_freq) != ReturnCodes::Success) {
         cerr << "Failed to update pwm freq" << endl;
         return ReturnCodes::Error;
     }
@@ -173,32 +176,23 @@ ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) cons
     // arduino, but same idea: https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all#using-as-gpio-2980401-5
     // see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 16
     // have to update all pwm registers
-    // each motor channel has 1 of each pwm registers (hence the 4*channel to get the correct address)
 
-    // helper function to get the address based on base address
-    auto calc_addr = [&](const PCA9685_Reg_Addr base_addr){
-        return static_cast<std::uint8_t>(
-            static_cast<std::uint8_t>(base_addr) +
-            static_cast<std::uint8_t>(4*channel) // 4 pwm regs per channel
-        );
-    };
-
-    if (WriteReg(calc_addr(PCA9685_Reg_Addr::ON_LOW_BASE),  on & 0xFF) != ReturnCodes::Success) {
+    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel),  on & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update ON LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(PCA9685_Reg_Addr::ON_HIGH_BASE), on >> 8) != ReturnCodes::Success) {
+    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel), on >> 8) != ReturnCodes::Success) {
         cerr << "Failed to update ON HIGH PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(PCA9685_Reg_Addr::OFF_LOW_BASE), off & 0xFF) != ReturnCodes::Success) {
+    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel), off & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update OFF LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(PCA9685_Reg_Addr::OFF_HIGH_BASE), off >> 8) != ReturnCodes::Success) {
+    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::OFF_HIGH_BASE, channel), off >> 8) != ReturnCodes::Success) {
         cerr << "Failed to update OFF HIGH PWM" << endl;
         return ReturnCodes::Error;
     }
@@ -206,7 +200,45 @@ ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) cons
     return ReturnCodes::Success;
 }
 
+ReturnCodes PCA9685::TurnFullOn(const int channel, const bool enable) const {
+    // get current on state to modify specific bits
+    const int on_reg_addr   { CalcChBaseAddr(PCA9685_Reg_Addr::ON_HIGH_BASE, channel) };
+    const int curr_on_state { ReadReg(on_reg_addr) };
+
+    // set bit 4 to 0/1 (disabled/enabled)
+    const std::uint8_t new_on_state = enable ? (curr_on_state | 0x10) : (curr_on_state & 0xEF);
+
+    // write new settings (if enabling, than have to disable full off as well)
+    WriteReg(PCA9685_Reg_Addr::ON_HIGH_BASE, new_on_state);
+    if (enable) TurnFullOff(channel, false);
+
+    return ReturnCodes::Success;
+}
+
+ReturnCodes PCA9685::TurnFullOff(const int channel, const bool enable) const {
+    // get current off state to modify specific bits
+    const int off_reg_addr      { CalcChBaseAddr(PCA9685_Reg_Addr::OFF_HIGH_BASE, channel) };
+    const int curr_off_state    { ReadReg(off_reg_addr) };
+
+    // set bit 4 to 0/1 (disabled/enabled)
+    const std::uint8_t new_off_state = enable ? (curr_off_state | 0x10) : (curr_off_state & 0xEF);
+
+    // write new settings
+    WriteReg(off_reg_addr, new_off_state);
+
+    return ReturnCodes::Success;
+}
+
 /********************************************* Helper Functions ********************************************/
+
+std::uint8_t PCA9685::CalcChBaseAddr(const PCA9685_Reg_Addr base_addr, const int channel) const {
+    // each servo/motor channel has 1 of each pwm registers (hence the 4*channel to get the correct address)
+    return static_cast<std::uint8_t>(
+        static_cast<std::uint8_t>(base_addr) +
+        static_cast<std::uint8_t>(4*channel) // 4 pwm regs per channel
+    );
+}
+
 
 
 }; // end of Interface namespace

@@ -121,6 +121,12 @@ class ServoController : public gpio::Interface::PCA9685 {
         ReturnCodes SetServoPWM(const std::vector<ServoAnglePair> servo_angle_pairs) const;
 
         /**
+         * @brief Responsible for turning off the servos so they do not stay primed past the duration of the program
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes TurnServosOff() const;
+
+        /**
          * @brief Run the servos through a set pattern or have them move to a specific location and stop
          * @note Have to pass everything by reference do to function mapping requirements
          */

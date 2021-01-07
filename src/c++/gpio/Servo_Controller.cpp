@@ -30,8 +30,8 @@ ServoController::~ServoController() {
         // make motors stop
         cout << "Resetting Servo Pins" << endl;
         // todo: convert this to single function
-        if (SetServoPWM({{I2C_ServoAddr::YAW, 90}, {I2C_ServoAddr::PITCH, 90}}) != ReturnCodes::Success) {
-            cerr << "Error: Failed to stop servos" << endl;
+        if (TurnServosOff() != ReturnCodes::Success) {
+            cerr << "Error: Failed to turn off servos" << endl;
         }
     }
     setIsInit(false);
@@ -62,10 +62,10 @@ ReturnCodes ServoController::init() const {
 ReturnCodes ServoController::SetServoPWM(const I2C_ServoAddr sel_servo, const int angle) const {
     // try to convert angle to pwm signal
     // if fail/invalid dont try to use it
-    std::optional<int> pwm_val {AngleToPwm(sel_servo, angle)};
-    if (!pwm_val.has_value()) return ReturnCodes::Error;
+    std::optional<int> pwm_off_period {AngleToPwm(sel_servo, angle)};
+    if (!pwm_off_period.has_value()) return ReturnCodes::Error;
 
-    return PCA9685::SetPwm(static_cast<int>(sel_servo), 0, *pwm_val);
+    return PCA9685::SetPwm(static_cast<int>(sel_servo), 0, *pwm_off_period);
 }
 
 ReturnCodes ServoController::SetServoPWM(const ServoAnglePair pair) const {
@@ -80,6 +80,17 @@ ReturnCodes ServoController::SetServoPWM(const std::vector<ServoAnglePair> servo
     }
     return ReturnCodes::Success;
 }
+
+ReturnCodes ServoController::TurnServosOff() const {
+    // have to make sure to turn ON mode off, and OFF mode on
+    bool rtn_succ {true};
+    rtn_succ &= TurnFullOff(static_cast<int>(I2C_ServoAddr::PITCH), true) == ReturnCodes::Success;
+    rtn_succ &= TurnFullOn(static_cast<int>(I2C_ServoAddr::PITCH), false) == ReturnCodes::Success;
+    rtn_succ &= TurnFullOff(static_cast<int>(I2C_ServoAddr::YAW), true) == ReturnCodes::Success;
+    rtn_succ &= TurnFullOn(static_cast<int>(I2C_ServoAddr::YAW), false) == ReturnCodes::Success;
+    return rtn_succ ? ReturnCodes::Success : ReturnCodes::Error;
+}
+
 
 /********************************************* Helper Functions ********************************************/
 
