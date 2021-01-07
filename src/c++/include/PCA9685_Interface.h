@@ -135,7 +135,7 @@ class PCA9685 : public GPIOBase {
         // static vars because should only be initialized once for all derived classes
         static std::optional<std::uint8_t>  PCA9685_i2c_addr;   // the address of robot's i2c PCA9685 module
         static int                          PCA9685_i2c_fd;     // file descriptor created by setup
-        static bool                         is_PCA9685_init;    // true if PCA9685 device has been init properly
+        static unsigned int                 PCA9685_init_count; // keep track so can be "deinit" that many times
         static std::optional<float>         pwm_freq;           // the pwm frequency the device is set to (in MHz)
 
         /********************************************* Helper Functions ********************************************/

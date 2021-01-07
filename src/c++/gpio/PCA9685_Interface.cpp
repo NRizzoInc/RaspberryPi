@@ -21,7 +21,7 @@ std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8) {
 /********************************************** Constructors **********************************************/
 
 // init static vars
-bool                            PCA9685::is_PCA9685_init{false};            // start off uninit
+unsigned int                    PCA9685::PCA9685_init_count{0};             // start from 0
 std::optional<std::uint8_t>     PCA9685::PCA9685_i2c_addr{std::nullopt};    // default to 0x40 (most likely is this)
 int                             PCA9685::PCA9685_i2c_fd{-1};                // invalid
 std::optional<float>            PCA9685::pwm_freq{std::nullopt};            // unset/invalid
@@ -82,11 +82,12 @@ ReturnCodes PCA9685::init() const {
 /********************************************* Getters/Setters *********************************************/
 
 bool PCA9685::getIsInit() const {
-    return PCA9685::is_PCA9685_init || GPIOBase::getIsInit();
+    // both have to be init for PCA9685 to be ready
+    return PCA9685::PCA9685_init_count > 0 && GPIOBase::getIsInit();
 }
 
 ReturnCodes PCA9685::setIsInit(const bool new_state) const {
-    PCA9685::is_PCA9685_init = new_state;
+    PCA9685::PCA9685_init_count += new_state ? 1 : -1; // if setting to false, decrement
     return GPIOBase::setIsInit(new_state);
 }
 
@@ -169,6 +170,7 @@ std::optional<float> PCA9685::GetPwmFreq() const {
 
 
 ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) const {
+    // arduino, but same idea: https://learn.adafruit.com/16-channel-pwm-servo-driver?view=all#using-as-gpio-2980401-5
     // see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 16
     // have to update all pwm registers
     // each motor channel has 1 of each pwm registers (hence the 4*channel to get the correct address)
