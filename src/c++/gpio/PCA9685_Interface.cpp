@@ -53,7 +53,7 @@ PCA9685::~PCA9685() {
             close(PCA9685_i2c_fd);
             PCA9685_i2c_fd = -1;
         }
-        PCA9685::is_PCA9685_init = false;
+        setIsInit(false);
     }
 }
 
@@ -73,6 +73,8 @@ ReturnCodes PCA9685::init() const {
         cerr << "Error: Failed to set I2C PCA9685 Module's PWM Frequency" << endl;
         return ReturnCodes::Error;
     }
+
+    setIsInit(true);
     return ReturnCodes::Success;
 }
 
@@ -80,7 +82,12 @@ ReturnCodes PCA9685::init() const {
 /********************************************* Getters/Setters *********************************************/
 
 bool PCA9685::getIsInit() const {
-    return PCA9685::is_PCA9685_init && GPIOBase::getIsInit();
+    return PCA9685::is_PCA9685_init || GPIOBase::getIsInit();
+}
+
+ReturnCodes PCA9685::setIsInit(const bool new_state) const {
+    PCA9685::is_PCA9685_init = new_state;
+    return GPIOBase::setIsInit(new_state);
 }
 
 

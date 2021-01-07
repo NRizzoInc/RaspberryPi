@@ -87,6 +87,7 @@ class PCA9685 : public GPIOBase {
         /********************************************* Getters/Setters *********************************************/
 
         virtual bool getIsInit() const override;
+        virtual ReturnCodes setIsInit(const bool new_state) const override;
 
     protected:
         /**************** PCA9685 Specific Functions (only utilized by those with direct need) *********************/
