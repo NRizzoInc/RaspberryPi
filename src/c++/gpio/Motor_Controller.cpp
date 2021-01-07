@@ -89,39 +89,39 @@ ReturnCodes MotorController::ChangeMotorDir(
     const bool right
 ) const {
     // default to none so dont have to waste extra if check for none
-    Motor::VertDir vert     {VertDir::NONE};
-    Motor::HorizDir horiz   {HorizDir::NONE};
+    Motor::YDirection vert     {YDirection::NONE};
+    Motor::XDirection horiz   {XDirection::NONE};
 
     if (forward) {
-        vert = VertDir::FORWARD;
+        vert = YDirection::FORWARD;
     } else if (backward) {
-        vert = VertDir::REVERSE;
+        vert = YDirection::REVERSE;
     }
 
     if (left) {
-        horiz = HorizDir::LEFT;
+        horiz = XDirection::LEFT;
     } else if (right) {
-        horiz = HorizDir::RIGHT;
+        horiz = XDirection::RIGHT;
     }
 
     return ChangeMotorDir(vert, horiz);
 }
 
 
-ReturnCodes MotorController::ChangeMotorDir(const VertDir vertical, const HorizDir horizontal) const {
+ReturnCodes MotorController::ChangeMotorDir(const YDirection vertical, const XDirection horizontal) const {
     // start off with medium duty (TODO: eventually add this as argument via another enum for slow, med, fast)
     
     // if backward, negate all
     // if not moving, set to 0
-    const bool  is_forward      { vertical == VertDir::FORWARD };
-    const bool  stopping        { vertical == VertDir::NONE };
+    const bool  is_forward      { vertical == YDirection::FORWARD };
+    const bool  stopping        { vertical == YDirection::NONE };
     // vertical penalty (-1,0,1)
     const int   vert_pen        { stopping ? 0 : ( is_forward ? 1 : -1 ) };
 
     // if no horizontal component, multiply by 1
     // steer towards a side by having motors on that side negate
-    const bool is_straight  { horizontal == HorizDir::NONE };
-    const bool is_right     { horizontal == HorizDir::RIGHT };
+    const bool is_straight  { horizontal == XDirection::NONE };
+    const bool is_right     { horizontal == XDirection::RIGHT };
     const int  duty_fl      { static_cast<int>(DUTY_MED * vert_pen * (is_straight ? 1 : (is_right ?  1 : -1) )) };
     const int  duty_fr      { static_cast<int>(DUTY_MED * vert_pen * (is_straight ? 1 : (is_right ? -1 :  1) )) };
     const int  duty_bl      { static_cast<int>(DUTY_MED * vert_pen * (is_straight ? 1 : (is_right ?  1 : -1) )) };
@@ -167,7 +167,7 @@ void MotorController::testMotorsLoop(
         (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
     ) {
         // forward
-        if (ChangeMotorDir(VertDir::FORWARD, HorizDir::NONE) != ReturnCodes::Success) {
+        if (ChangeMotorDir(YDirection::FORWARD, XDirection::NONE) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors forward" << endl;
         } else {
             cout << "Moving forward" << endl;
@@ -176,7 +176,7 @@ void MotorController::testMotorsLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // back
-        if (ChangeMotorDir(VertDir::REVERSE, HorizDir::NONE) != ReturnCodes::Success) {
+        if (ChangeMotorDir(YDirection::REVERSE, XDirection::NONE) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors backward" << endl;
         }  else {
             cout << "Moving backward" << endl;
@@ -185,7 +185,7 @@ void MotorController::testMotorsLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // left
-        if (ChangeMotorDir(VertDir::FORWARD, HorizDir::LEFT) != ReturnCodes::Success) {
+        if (ChangeMotorDir(YDirection::FORWARD, XDirection::LEFT) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors left" << endl;
         }  else {
             cout << "Moving left" << endl;
@@ -194,7 +194,7 @@ void MotorController::testMotorsLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // right
-        if (ChangeMotorDir(VertDir::FORWARD, HorizDir::RIGHT) != ReturnCodes::Success) {
+        if (ChangeMotorDir(YDirection::FORWARD, XDirection::RIGHT) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors right" << endl;
         }  else {
             cout << "Moving right" << endl;
@@ -203,7 +203,7 @@ void MotorController::testMotorsLoop(
         if (MotorController::getShouldThreadExit()) break;
 
         // stop
-        if (ChangeMotorDir(VertDir::NONE, HorizDir::NONE) != ReturnCodes::Success) {
+        if (ChangeMotorDir(YDirection::NONE, XDirection::NONE) != ReturnCodes::Success) {
             cerr << "Error: Failed to stop motors" << endl;
         }  else {
             cout << "Stopping" << endl;

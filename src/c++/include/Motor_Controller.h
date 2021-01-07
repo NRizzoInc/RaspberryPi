@@ -21,6 +21,10 @@ namespace RPI {
 namespace gpio {
 namespace Motor {
 
+// commonly used in this namespace
+using Interface::XDirection;
+using Interface::YDirection;
+
 // Maps each tire/motor/servo to its i2c address
 // note: each device has 2 channels (i.e. 0-1, 2-3, 4-5, 6-7)
 enum class I2C_MotorAddr : int {
@@ -29,24 +33,6 @@ enum class I2C_MotorAddr : int {
     BR_Motor          = 4,         // Back  Right
     FR_Motor          = 6,         // Front Right   
 }; // end of motor wheel addresses
-
-/**
- * @brief Enum which defines possible vertical directions the robot can move
- */
-enum class VertDir : int {
-    REVERSE         = -1,    // moving towards backward
-    FORWARD         =  1,    // moving towards forward
-    NONE            =  0     // if not moving 
-}; // end of HorizDir
-
-/**
- * @brief Enum which defines possible horizontal directions the robot can move
- */
-enum class HorizDir : int {
-    LEFT            = -1,    // moving towards left
-    RIGHT           =  1,    // moving towards right
-    NONE            =  0     // if moving straight forward/back
-}; // end of HorizDir
 
 constexpr int DUTY_MED         { 2000 };        // duty value for medium forward speed 
 constexpr int DUTY_MED_BACK    { -DUTY_MED };   // duty value for medium backward speed
@@ -92,7 +78,7 @@ class MotorController : public gpio::Interface::PCA9685 {
          * @note Treat car movement where +y = forward & +x = right (both NONE == stop)
          * @return ReturnCodes Success if no issues
          */
-        ReturnCodes ChangeMotorDir(const VertDir vertical, const HorizDir horizontal) const;
+        ReturnCodes ChangeMotorDir(const YDirection vertical, const XDirection horizontal) const;
         /**
          * @brief Overload to simplifies conversion of cardinal directions into enum
          * @param forward True if has a positive forward vector 

@@ -42,6 +42,24 @@ enum class PCA9685_Reg_Addr : std::uint8_t {
     FREQ_REG        = 0xFE,    // Register for controlling the pwm frequency
 }; // end of pwm addresses
 
+/**
+ * @brief Enum which defines possible Y directions the robot can move
+ */
+enum class YDirection : int {
+    REVERSE         = -1,    // moving towards backward
+    FORWARD         =  1,    // moving towards forward
+    NONE            =  0     // if not moving 
+}; // end of XDirection
+
+/**
+ * @brief Enum which defines possible X directions the robot can move
+ */
+enum class XDirection : int {
+    LEFT            = -1,    // moving towards left
+    RIGHT           =  1,    // moving towards right
+    NONE            =  0     // if moving straight forward/back
+}; // end of XDirection
+
 // handle cout with enum (cannot print uint8_t bc alias for char* so prints ascii)
 std::ostream& operator<<(std::ostream& out, const gpio::Interface::PCA9685_Reg_Addr& addr);
 std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
