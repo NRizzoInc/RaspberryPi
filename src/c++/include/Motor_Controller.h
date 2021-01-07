@@ -5,23 +5,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <unistd.h>     // for close fd
-#include <cstdint>      // for std::uint8_t
 #include <cmath>        // for abs
 #include <algorithm>    // for max/min
-#include <chrono>
-#include <thread>
+#include <chrono>       // for setting sleep durations
+#include <thread>       // for std::this_thread
 
 // Our Includes
 #include "constants.h"
-#include "GPIO_Base.h"
 #include "PCA9685_Interface.h"
 #include "timing.hpp"
 
 // 3rd Party Includes
-#include <wiringPi.h>
-#include <softPwm.h>
-#include <wiringPiI2C.h>
 
 namespace RPI {
 namespace gpio {

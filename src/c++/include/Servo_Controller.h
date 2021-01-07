@@ -4,9 +4,16 @@
 // Standard Includes
 #include <iostream>
 #include <string>
+#include <vector>
+#include <cmath>        // for abs
+#include <algorithm>    // for max/min
+#include <chrono>       // for setting sleep durations
+#include <thread>       // for std::this_thread
 
 // Our Includes
 #include "constants.h"
+#include "PCA9685_Interface.h"
+#include "timing.hpp"
 
 // 3rd Party Includes
 
