@@ -10,7 +10,7 @@ using std::endl;
 
 /********************************************** Constructors **********************************************/
 MotorController::MotorController(const std::uint8_t motor_i2c_addr)
-    : GPIOBase{}
+    : PCA9685{}
     , motor_i2c_addr{motor_i2c_addr}    // should be 0x40
     , motor_i2c_fd{-1}                  // invalid
 {

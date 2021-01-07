@@ -52,7 +52,7 @@ constexpr int DUTY_MED_BACK    { -DUTY_MED };   // duty value for medium backwar
  * @brief Handle class for I2C Chip for motors (PCA9685)
  * @note see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf
  */
-class MotorController : public GPIOBase {
+class MotorController : public gpio::Interface::PCA9685 {
 
     public:
         /********************************************** Constructors **********************************************/

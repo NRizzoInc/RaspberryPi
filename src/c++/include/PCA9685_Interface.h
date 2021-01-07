@@ -55,6 +55,26 @@ std::ostream& operator<<(std::ostream& out, const gpio::Interface::I2C_PWM_Addr&
 std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
 
 
+class PCA9685 : public GPIOBase {
+
+    public:
+        /********************************************** Constructors ***********************************************/
+
+        PCA9685();
+        virtual ~PCA9685();
+
+        /********************************************* Getters/Setters *********************************************/
+
+    protected:
+        /**************** PCA9685 Specific Functions (only utilized by those with direct need) *********************/
+
+    private:
+        /******************************************** Private Variables ********************************************/
+
+        /********************************************* Helper Functions ********************************************/
+
+}; // end of PCA9685 class
+
 }; // end of Interface namespace
 }; // end of gpio namespace
 }; // end of RPI namespace
