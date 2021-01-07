@@ -24,8 +24,6 @@
 #include <softPwm.h>
 #include <wiringPiI2C.h>
 
-#include "Servo_Controller.h"
-
 namespace RPI {
 namespace gpio {
 namespace Interface {
