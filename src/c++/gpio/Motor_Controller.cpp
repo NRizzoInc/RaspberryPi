@@ -62,7 +62,7 @@ ReturnCodes MotorController::SetSingleMotorPWM(const I2C_MotorAddr motor_dir, co
     int duty1{};
 
     // strange case for back left wheel being opposite all other wheels
-    const bool is_opposite { motor_dir == I2C_MotorAddr::BL_Motor };
+    const bool is_opposite { motor_dir == I2C_MotorAddr::BL };
     if (duty > 0) {
         duty0 = is_opposite ? 0         : duty;
         duty1 = is_opposite ? duty      : 0;
@@ -137,10 +137,10 @@ ReturnCodes MotorController::SetMotorsPWM(
     const int duty_br
 ) const {
     if (
-        SetSingleMotorPWM(I2C_MotorAddr::FL_Motor, CheckDutyRange(duty_fl)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(I2C_MotorAddr::FR_Motor, CheckDutyRange(duty_fr)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(I2C_MotorAddr::BL_Motor, CheckDutyRange(duty_bl)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(I2C_MotorAddr::BR_Motor, CheckDutyRange(duty_br)) == ReturnCodes::Success
+        SetSingleMotorPWM(I2C_MotorAddr::FL, CheckDutyRange(duty_fl)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(I2C_MotorAddr::FR, CheckDutyRange(duty_fr)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(I2C_MotorAddr::BL, CheckDutyRange(duty_bl)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(I2C_MotorAddr::BR, CheckDutyRange(duty_br)) == ReturnCodes::Success
     ) {
         return ReturnCodes::Success;
     } else {

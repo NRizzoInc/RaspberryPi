@@ -28,10 +28,10 @@ using Interface::YDirection;
 // Maps each tire/motor/servo to its i2c address
 // note: each device has 2 channels (i.e. 0-1, 2-3, 4-5, 6-7)
 enum class I2C_MotorAddr : int {
-    FL_Motor          = 0,         // Front Left
-    BL_Motor          = 2,         // Back  Left
-    BR_Motor          = 4,         // Back  Right
-    FR_Motor          = 6,         // Front Right   
+    FL          = 0,         // Front Left
+    BL          = 2,         // Back  Left
+    BR          = 4,         // Back  Right
+    FR          = 6,         // Front Right   
 }; // end of motor wheel addresses
 
 constexpr int DUTY_MED         { 2000 };        // duty value for medium forward speed 
