@@ -65,7 +65,7 @@ class MotorController : public gpio::Interface::PCA9685 {
         virtual ~MotorController();
 
         /**
-         * @brief Helps intialize the leds
+         * @brief Helps intialize the motors
          * @return ReturnCodes
          */
         virtual ReturnCodes init() const;
@@ -131,41 +131,7 @@ class MotorController : public gpio::Interface::PCA9685 {
     private:
         /******************************************** Private Variables ********************************************/
 
-        const   std::uint8_t    motor_i2c_addr;     // the address for the robot's i2c motor module
-        mutable int             motor_i2c_fd;       // file descriptor created by setup (mutable for const init)
-
         /********************************************* Helper Functions ********************************************/
-
-        /**
-         * @brief Write data to a register in the Motor's i2c device
-         * @param reg_addr The specific motor to write to (based on I2C_PWM_Addr enum mapping to addresses)
-         * @param data The data to write
-         * @return ReturnCodes 
-         */
-        ReturnCodes WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const;
-
-        /**
-         * @brief Read data from a register in the Motor's i2c device
-         * @param reg_addr The specific motor to read from (based on I2C_PWM_Addr enum mapping to addresses)
-         * @return The found data
-         */
-        std::uint8_t ReadReg(const std::uint8_t reg_addr) const;
-
-        /**
-         * @brief Sets the pwm signal's frequency
-         * @param freq (defaults to 50MHz) The frequnecy of the pwm signal in MHz
-         * @return ReturnCodes Success if no issues
-         */
-        ReturnCodes SetPwmFreq(const float freq=50.0) const;
-
-        /**
-         * @brief Sets the pwm duty cycle for a motor (changes the speed/direction of the motor)
-         * @param channel The motor's channel
-         * @param on On time
-         * @param off Off time
-         * @return ReturnCodes Success if no issues 
-         */
-        ReturnCodes SetPwm(const int channel, const int on, const int off) const;
 
         /**
          * @brief Converts the passed duty to a valid duty in the range (i.e. caps max/min)
