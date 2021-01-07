@@ -149,7 +149,7 @@ ReturnCodes MotorController::SetMotorsPWM(
     }
 }
 
-void MotorController::testLoop(
+void MotorController::testMotorsLoop(
     // not needed, but need to follow call guidlines for fn-mapping to work
     __attribute__((unused)) const std::vector<std::string>& colors,
     const unsigned int& interval,

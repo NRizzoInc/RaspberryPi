@@ -196,7 +196,7 @@ ModeMap GPIOController::createFnMap() {
     to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
     to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
     to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
-    to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testLoop);
+    to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testMotorsLoop);
     to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["client"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["camera"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);

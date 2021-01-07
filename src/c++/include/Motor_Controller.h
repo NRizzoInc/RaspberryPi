@@ -114,7 +114,7 @@ class MotorController : public gpio::Interface::PCA9685 {
          * @brief Run the motors through a set pattern
          * @note Have to pass everything by reference do to function mapping requirements
          */
-        void testLoop(
+        void testMotorsLoop(
             // not needed, but need to follow call guidlines for fn-mapping to work
             __attribute__((unused)) const std::vector<std::string>& colors={},
             const unsigned int& interval=1000,
