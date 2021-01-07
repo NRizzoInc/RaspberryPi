@@ -30,19 +30,10 @@ namespace RPI {
 namespace gpio {
 namespace Interface {
 
-// Maps each tire/motor to its i2c address
-/// note: each motor has 2 channels (i.e. 0-1, 2-3, 4-5, 6-7)
-enum class I2C_Addr : int {
-    FL_Motor          = 0,         // Front Left
-    BL_Motor          = 2,         // Back  Left
-    BR_Motor          = 4,         // Back  Right
-    FR_Motor          = 6,         // Front Right
-}; // end of motor wheel addresses
-
 // register addresses for the I2C Chip for motors (PCA9685)
 // https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 10
 // ON/OFF_LOW/HIGH address = Base registers + 4 * motor#(0-3)
-enum class I2C_PWM_Addr : std::uint8_t {
+enum class PCA9685_Reg_Addr : std::uint8_t {
     MODE_REG        = 0x00,    // Root Register containing mode
     ON_LOW_BASE     = 0x06,    // Register for setting on duty cycle LOW pwm
     ON_HIGH_BASE    = 0x07,    // Register for setting on duty cycle HIGH pwm
@@ -52,7 +43,7 @@ enum class I2C_PWM_Addr : std::uint8_t {
 }; // end of pwm addresses
 
 // handle cout with enum (cannot print uint8_t bc alias for char* so prints ascii)
-std::ostream& operator<<(std::ostream& out, const gpio::Interface::I2C_PWM_Addr& addr);
+std::ostream& operator<<(std::ostream& out, const gpio::Interface::PCA9685_Reg_Addr& addr);
 std::ostream& operator<<(std::ostream& out, const std::uint8_t& addr_8);
 
 
@@ -86,7 +77,7 @@ class PCA9685 : public GPIOBase {
 
         /**
          * @brief Write data to a register in the Motor's i2c device
-         * @param reg_addr The specific motor to write to (based on I2C_PWM_Addr enum mapping to addresses)
+         * @param reg_addr The specific motor to write to (based on PCA9685_Reg_Addr enum mapping to addresses)
          * @param data The data to write
          * @return ReturnCodes 
          */
@@ -94,7 +85,7 @@ class PCA9685 : public GPIOBase {
 
         /**
          * @brief Read data from a register in the Motor's i2c device
-         * @param reg_addr The specific motor to read from (based on I2C_PWM_Addr enum mapping to addresses)
+         * @param reg_addr The specific motor to read from (based on PCA9685_Reg_Addr enum mapping to addresses)
          * @return The found data
          */
         std::uint8_t ReadReg(const std::uint8_t reg_addr) const;

@@ -10,7 +10,7 @@ using std::endl;
 
 /***************************************** Miscellaneous Helpers ******************************************/
 
-std::ostream& operator<<(std::ostream& out, const I2C_PWM_Addr& addr) {
+std::ostream& operator<<(std::ostream& out, const PCA9685_Reg_Addr& addr) {
     return out << static_cast<int>(addr);
 }
 
@@ -115,7 +115,7 @@ ReturnCodes PCA9685::SetPwmFreq(const float freq) const {
     const int scaled_freq = floor(prescaleval + .5); // round
 
     // reset mode & get default settings
-    const std::uint8_t mode_reg  { static_cast<std::uint8_t>(I2C_PWM_Addr::MODE_REG) };
+    const std::uint8_t mode_reg  { static_cast<std::uint8_t>(PCA9685_Reg_Addr::MODE_REG) };
     if(WriteReg(mode_reg, 0) != ReturnCodes::Success) {
         cerr << "Failed to reset mode register" << endl;
     }
@@ -130,7 +130,7 @@ ReturnCodes PCA9685::SetPwmFreq(const float freq) const {
     }
 
     // update pwm freq
-    if(WriteReg(static_cast<std::uint8_t>(I2C_PWM_Addr::FREQ_REG), scaled_freq) != ReturnCodes::Success) {
+    if(WriteReg(static_cast<std::uint8_t>(PCA9685_Reg_Addr::FREQ_REG), scaled_freq) != ReturnCodes::Success) {
         cerr << "Failed to update pwm freq" << endl;
         return ReturnCodes::Error;
     }
@@ -159,29 +159,29 @@ ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) cons
     // each motor channel has 1 of each pwm registers (hence the 4*channel to get the correct address)
 
     // helper function to get the address based on base address
-    auto calc_addr = [&](const I2C_PWM_Addr base_addr){
+    auto calc_addr = [&](const PCA9685_Reg_Addr base_addr){
         return static_cast<std::uint8_t>(
             static_cast<std::uint8_t>(base_addr) +
             static_cast<std::uint8_t>(4*channel) // 4 pwm regs per channel
         );
     };
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::ON_LOW_BASE),  on & 0xFF) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(PCA9685_Reg_Addr::ON_LOW_BASE),  on & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update ON LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::ON_HIGH_BASE), on >> 8) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(PCA9685_Reg_Addr::ON_HIGH_BASE), on >> 8) != ReturnCodes::Success) {
         cerr << "Failed to update ON HIGH PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::OFF_LOW_BASE), off & 0xFF) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(PCA9685_Reg_Addr::OFF_LOW_BASE), off & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update OFF LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(calc_addr(I2C_PWM_Addr::OFF_HIGH_BASE), off >> 8) != ReturnCodes::Success) {
+    if (WriteReg(calc_addr(PCA9685_Reg_Addr::OFF_HIGH_BASE), off >> 8) != ReturnCodes::Success) {
         cerr << "Failed to update OFF HIGH PWM" << endl;
         return ReturnCodes::Error;
     }

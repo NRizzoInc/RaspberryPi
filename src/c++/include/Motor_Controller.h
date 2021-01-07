@@ -21,6 +21,15 @@ namespace RPI {
 namespace gpio {
 namespace Motor {
 
+// Maps each tire/motor/servo to its i2c address
+// note: each device has 2 channels (i.e. 0-1, 2-3, 4-5, 6-7)
+enum class I2C_MotorAddr : int {
+    FL_Motor          = 0,         // Front Left
+    BL_Motor          = 2,         // Back  Left
+    BR_Motor          = 4,         // Back  Right
+    FR_Motor          = 6,         // Front Right   
+}; // end of motor wheel addresses
+
 /**
  * @brief Enum which defines possible vertical directions the robot can move
  */
@@ -74,7 +83,7 @@ class MotorController : public gpio::Interface::PCA9685 {
          * @param duty Higher Positives mean forward, Lower negatives mean backward
          * @return ReturnCodes Success if no issues
          */
-        ReturnCodes SetSingleMotorPWM(const Interface::I2C_Addr motor_dir, const int duty) const;
+        ReturnCodes SetSingleMotorPWM(const I2C_MotorAddr motor_dir, const int duty) const;
 
         /**
          * @brief Easily facilitates changing direction by handling the changing of motor pwm signals

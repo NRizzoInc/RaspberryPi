@@ -51,7 +51,7 @@ ReturnCodes MotorController::init() const {
 
 /********************************************* Motor Functions *********************************************/
 
-ReturnCodes MotorController::SetSingleMotorPWM(const gpio::Interface::I2C_Addr motor_dir, const int duty) const {
+ReturnCodes MotorController::SetSingleMotorPWM(const I2C_MotorAddr motor_dir, const int duty) const {
     // see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- page 10
     // each motor has to set the pwm in two place
     // based on input, the determine actual duty for the 2 pwm channels in reg that need to be set for the motor
@@ -62,8 +62,7 @@ ReturnCodes MotorController::SetSingleMotorPWM(const gpio::Interface::I2C_Addr m
     int duty1{};
 
     // strange case for back left wheel being opposite all other wheels
-    // const bool is_opposite { false };
-    const bool is_opposite { motor_dir == gpio::Interface::I2C_Addr::BL_Motor };
+    const bool is_opposite { motor_dir == I2C_MotorAddr::BL_Motor };
     if (duty > 0) {
         duty0 = is_opposite ? 0         : duty;
         duty1 = is_opposite ? duty      : 0;
@@ -138,10 +137,10 @@ ReturnCodes MotorController::SetMotorsPWM(
     const int duty_br
 ) const {
     if (
-        SetSingleMotorPWM(gpio::Interface::I2C_Addr::FL_Motor, CheckDutyRange(duty_fl)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(gpio::Interface::I2C_Addr::FR_Motor, CheckDutyRange(duty_fr)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(gpio::Interface::I2C_Addr::BL_Motor, CheckDutyRange(duty_bl)) == ReturnCodes::Success &&
-        SetSingleMotorPWM(gpio::Interface::I2C_Addr::BR_Motor, CheckDutyRange(duty_br)) == ReturnCodes::Success
+        SetSingleMotorPWM(I2C_MotorAddr::FL_Motor, CheckDutyRange(duty_fl)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(I2C_MotorAddr::FR_Motor, CheckDutyRange(duty_fr)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(I2C_MotorAddr::BL_Motor, CheckDutyRange(duty_bl)) == ReturnCodes::Success &&
+        SetSingleMotorPWM(I2C_MotorAddr::BR_Motor, CheckDutyRange(duty_br)) == ReturnCodes::Success
     ) {
         return ReturnCodes::Success;
     } else {
