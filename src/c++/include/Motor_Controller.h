@@ -31,18 +31,18 @@ namespace Motor {
  * @brief Enum which defines possible vertical directions the robot can move
  */
 enum class VertDir : int {
-    REVERSE         =-1,    // moving towards backward
-    FORWARD         = 1,    // moving towards forward
-    NONE            = 0     // if not moving 
+    REVERSE         = -1,    // moving towards backward
+    FORWARD         =  1,    // moving towards forward
+    NONE            =  0     // if not moving 
 }; // end of HorizDir
 
 /**
  * @brief Enum which defines possible horizontal directions the robot can move
  */
 enum class HorizDir : int {
-    LEFT            =-1,    // moving towards left
-    RIGHT           = 1,    // moving towards right
-    NONE            = 0     // if moving straight forward/back
+    LEFT            = -1,    // moving towards left
+    RIGHT           =  1,    // moving towards right
+    NONE            =  0     // if moving straight forward/back
 }; // end of HorizDir
 
 constexpr int DUTY_MED         { 2000 };        // duty value for medium forward speed 
