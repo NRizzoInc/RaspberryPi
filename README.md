@@ -23,7 +23,7 @@ You can run the client on another device, but you would need to build & install 
 
 ### Running Client on RaspberryPi (recommended)
 
-It is much simpler to actually run the **both** the client & server on the RPI without specifying an ip (defaults to **localhost**). This in turn starts up a web app client which can be accessed by any device on the same network as the RPI. If you follow [this guide for setting up a hostname](https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/), then accessing the web app from another computer is as easy as opening a browser and going to `http://<hostname>:<client port (default 5001)>/RPI-Client`.
+It is much simpler to actually run **both** the client & server on the RPI without specifying an ip (defaults to **localhost**). This in turn starts up a web app client which can be accessed by any device on the same network as the RPI. If you follow [this guide for setting up a hostname](https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/), then accessing the web app from another computer is as easy as opening a browser and going to `http://<hostname>:<client port (default 5001)>/RPI-Client`.
 
 
 ### Features that can be run locally without the client
