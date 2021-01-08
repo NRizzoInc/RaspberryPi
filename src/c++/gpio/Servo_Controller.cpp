@@ -48,7 +48,7 @@ ReturnCodes ServoController::init() const {
     }
 
     // starts servos at 90 degrees (neutral)
-    if (SetServoPWM({{I2C_ServoAddr::PITCH, 90}, {I2C_ServoAddr::YAW, 90}}) != ReturnCodes::Success) {
+    if (SetServoPos({{I2C_ServoAddr::PITCH, 90}, {I2C_ServoAddr::YAW, 90}}) != ReturnCodes::Success) {
         cerr << "Error: Failed to init servos to neutral position" << endl;
     }
 
@@ -69,7 +69,7 @@ int ServoController::GetServoPos(const I2C_ServoAddr sel_servo) const {
 ReturnCodes ServoController::IncrementServoPos(const I2C_ServoAddr sel_servo, const int change_amt) const {
     const int updated_angle       {GetServoPos(sel_servo) + change_amt};
     const int valid_updated_angle {ValidateAngle(updated_angle)};
-    return SetServoPWM(sel_servo, valid_updated_angle);
+    return SetServoPos(sel_servo, valid_updated_angle);
 }
 
 ReturnCodes ServoController::IncrementServoPos(const ServoAnglePair pair) const {
@@ -85,7 +85,7 @@ ReturnCodes ServoController::IncrementServoPos(const std::vector<ServoAnglePair>
     return ReturnCodes::Success;
 }
 
-ReturnCodes ServoController::SetServoPWM(const I2C_ServoAddr sel_servo, const int angle) const {
+ReturnCodes ServoController::SetServoPos(const I2C_ServoAddr sel_servo, const int angle) const {
     // try to convert angle to pwm signal (if success, udpate current state)
     ReturnCodes rtn = SetPwm(static_cast<int>(sel_servo), 0, AngleToPwmDuty(angle));
     if (rtn == ReturnCodes::Success) {
@@ -94,13 +94,13 @@ ReturnCodes ServoController::SetServoPWM(const I2C_ServoAddr sel_servo, const in
     return rtn;
 }
 
-ReturnCodes ServoController::SetServoPWM(const ServoAnglePair pair) const {
-    return SetServoPWM(pair.sel_servo, pair.angle);
+ReturnCodes ServoController::SetServoPos(const ServoAnglePair pair) const {
+    return SetServoPos(pair.sel_servo, pair.angle);
 }
 
-ReturnCodes ServoController::SetServoPWM(const std::vector<ServoAnglePair> servo_angle_pairs) const {
+ReturnCodes ServoController::SetServoPos(const std::vector<ServoAnglePair> servo_angle_pairs) const {
     for (const auto& pair : servo_angle_pairs) {
-        if (SetServoPWM(pair) != ReturnCodes::Success) {
+        if (SetServoPos(pair) != ReturnCodes::Success) {
             return ReturnCodes::Error;
         }
     }

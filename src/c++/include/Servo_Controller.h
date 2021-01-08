@@ -114,15 +114,15 @@ class ServoController : public gpio::Interface::PCA9685 {
          * @param angle The position to move the servo to
          * @return ReturnCodes Success if no issues
          */
-        ReturnCodes SetServoPWM(const I2C_ServoAddr sel_servo, const int angle) const;
-        ReturnCodes SetServoPWM(const ServoAnglePair) const;
+        ReturnCodes SetServoPos(const I2C_ServoAddr sel_servo, const int angle) const;
+        ReturnCodes SetServoPos(const ServoAnglePair) const;
     
         /**
          * @brief Sets all servos' pwm with a desired duty cycle
          * @param servo_angle_pairs vector pairs of servos & where to move them to
          * @return ReturnCodes Success if no issues
          */
-        ReturnCodes SetServoPWM(const std::vector<ServoAnglePair> servo_angle_pairs) const;
+        ReturnCodes SetServoPos(const std::vector<ServoAnglePair> servo_angle_pairs) const;
 
         /**
          * @brief Responsible for turning off the servos so they do not stay primed past the duration of the program
