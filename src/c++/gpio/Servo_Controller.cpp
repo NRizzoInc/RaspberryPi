@@ -11,7 +11,7 @@ using std::endl;
 /********************************************* Static Defines *********************************************/
 
 /// Maps a specific servo to its current (angle) position
-/// init servos to center position (aka 90 degrees)
+/// init servos to center position (aka 90°)
 /// Yaw (sideways) servo - Normal
 /// Pitch (vertical) servo is reversed (placed at center is actually 270) & cannot go lower than 90 bc hardware
 std::unordered_map<I2C_ServoAddr, ServoData> ServoController::servos{
@@ -57,7 +57,7 @@ ReturnCodes ServoController::init() const {
         return ReturnCodes::Error;
     }
 
-    // starts servos at 90 degrees (center)
+    // starts servos at 90° (center)
     if (SetServoPos({{I2C_ServoAddr::PITCH}, {I2C_ServoAddr::YAW}}) != ReturnCodes::Success) {
         cerr << "Error: Failed to init servos to center position" << endl;
     }
@@ -271,9 +271,9 @@ int ServoController::AngleToPwmPulse(const I2C_ServoAddr sel_servo, const int an
     // scale [0-180] -> [1.0-2.0]
     // make angle stay between 0-180
     // ex: assume freq = 50Hz (aka period = 20ms)
-    // 0   degrees: 0.5 ms duty period ( 2.5%  duty)
-    // 90  degrees: 1.5 ms duty period ( 7.5%  duty)
-    // 180 degrees: 2.5 ms duty period (12.5%  duty)
+    // 0°   : 0.5 ms duty period ( 2.5%  duty)
+    // 90°  : 1.5 ms duty period ( 7.5%  duty)
+    // 180° : 2.5 ms duty period (12.5%  duty)
     // hence, scale between min-max duties based on angle
     constexpr float DUTY_MIN_PERC   {.025}; // 2.5%
     constexpr float DUTY_MAX_PERC   {.125}; // 12.5%

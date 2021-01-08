@@ -102,9 +102,9 @@ struct ServoAnglePair {
  * see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf
  * (slightly different bc using "off" period and not "on" period -- +/-2.5% to extremes)
  * Servo pwm math based on duty cycle percentages:
- * 0   degrees:  2.5% (normally 5%)
- * 90  degrees:  7.5%
- * 180 degrees: 12.5% (normally 10%)
+ * 0°   :  2.5% (normally 5%)
+ * 90°  :  7.5%
+ * 180° : 12.5% (normally 10%)
  * 360 continous spinning: >= ~13%
  */
 class ServoController : public gpio::Interface::PCA9685 {
