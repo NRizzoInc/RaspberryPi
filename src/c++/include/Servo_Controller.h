@@ -31,6 +31,16 @@ using Interface::YDirection;
 constexpr int MAX_ANGLE_ABS {180};
 constexpr int MIN_ANGLE_ABS {0};
 
+// servo movements are all based on the duty cycle (percentage of time pulse is on/off)
+// ex: assume freq = 50Hz (aka period = 20ms)
+// 0°   : 0.5 ms duty period ( 2.5%  duty)
+// 90°  : 1.5 ms duty period ( 7.5%  duty)
+// 180° : 2.5 ms duty period (12.5%  duty)
+// hence, scale between min-max duties based on angle
+constexpr float DUTY_PERC_MIN   {.025}; // 2.5%
+constexpr float DUTY_PERC_MAX   {.125}; // 12.5%
+constexpr float DUTY_PERC_RANGE {DUTY_PERC_MAX-DUTY_PERC_MIN};
+
 /**
  * Servos might be limited by physical/hardware such that the normal 0-180 rotation is actually askew.
  * This struct is used to define the max/min angle a servo can take so user does not have to worry about these details

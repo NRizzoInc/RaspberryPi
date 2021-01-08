@@ -268,22 +268,11 @@ int ServoController::AngleToPwmPulse(const I2C_ServoAddr sel_servo, const int an
     // https://learn.adafruit.com/adafruits-raspberry-pi-lesson-8-using-a-servo-motor/servo-motors
     // https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- [age 25]
 
-    // scale [0-180] -> [1.0-2.0]
-    // make angle stay between 0-180
-    // ex: assume freq = 50Hz (aka period = 20ms)
-    // 0°   : 0.5 ms duty period ( 2.5%  duty)
-    // 90°  : 1.5 ms duty period ( 7.5%  duty)
-    // 180° : 2.5 ms duty period (12.5%  duty)
-    // hence, scale between min-max duties based on angle
-    constexpr float DUTY_MIN_PERC   {.025}; // 2.5%
-    constexpr float DUTY_MAX_PERC   {.125}; // 12.5%
-    constexpr float DUTY_RANGE      {DUTY_MAX_PERC-DUTY_MIN_PERC};
-
     // perform calcs to scale angle to % duty cycle
     // multiply percent against the actual period to get the final answer
     const int       valid_angle     {ValidateAngle(sel_servo, angle)};
     const float     perc_angle      {static_cast<float>(valid_angle) / static_cast<float>(MAX_ANGLE_ABS)};
-    const float     perc_duty       {DUTY_RANGE*perc_angle + DUTY_MIN_PERC};
+    const float     perc_duty       {DUTY_PERC_RANGE*perc_angle + DUTY_PERC_MIN};
 
     // get the duty cycle (max possible pwm * percentage on)
     return static_cast<int>(PCA9685::MAX_PWM * perc_duty);
