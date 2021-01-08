@@ -111,13 +111,13 @@ class ServoController : public gpio::Interface::PCA9685 {
          * @brief Run the servos through a set pattern or have them move to a specific location and stop
          * @note Have to pass everything by reference do to function mapping requirements
          */
-        // void testServosLoop(
-        //     // not needed, but need to follow call guidlines for fn-mapping to work
-        //     __attribute__((unused)) const std::vector<std::string>& colors={},
-        //     const unsigned int& interval=1000,
-        //     const int& duration=-1,
-        //     __attribute__((unused)) const unsigned int& rate=1
-        // ) const;
+        void testServos(
+            // not needed, but need to follow call guidlines for fn-mapping to work
+            __attribute__((unused)) const std::vector<std::string>& colors={},
+            const unsigned int& interval=1000,
+            const int& duration=-1,
+            __attribute__((unused)) const unsigned int& rate=1
+        ) const;
 
     private:
         /******************************************** Private Variables ********************************************/

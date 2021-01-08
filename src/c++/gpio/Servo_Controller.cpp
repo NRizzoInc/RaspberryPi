@@ -94,6 +94,38 @@ ReturnCodes ServoController::TurnServosOff() const {
     return rtn_succ ? ReturnCodes::Success : ReturnCodes::Error;
 }
 
+void ServoController::testServos(
+    // not needed, but need to follow call guidlines for fn-mapping to work
+    __attribute__((unused)) const std::vector<std::string>& colors,
+    const unsigned int& interval,
+    const int& duration,
+    __attribute__((unused)) const unsigned int& rate
+) const {
+    cout << "Interval: " << interval << "ms" << endl;
+    cout << "Duration: " << duration << "ms" << endl;
+
+    // keep track of time/duration
+    const auto start_time = std::chrono::steady_clock::now();
+
+    while (
+        !ServoController::getShouldThreadExit() &&
+        // if duration == -1 : run forever
+        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
+    ) {
+        // sweep neutral->right
+
+        // sweep right->left
+
+        // neutral
+
+        // sweep up
+
+        // sweep down
+
+        // neutral
+    }
+}
+
 
 /********************************************* Helper Functions ********************************************/
 
