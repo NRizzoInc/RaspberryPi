@@ -102,8 +102,8 @@ ReturnCodes ServoController::GradualMoveServo(
     // note: std::chrono::steady_clock::duration stores as ns
     // hence, rate = ns / angle
     const std::chrono::steady_clock::duration rate { 
-        sweep_displacement > 0 ?
-            duration / sweep_displacement
+        sweep_displacement != 0 ?
+            abs(duration / sweep_displacement)
             : std::chrono::steady_clock::duration(0)
     };
 
