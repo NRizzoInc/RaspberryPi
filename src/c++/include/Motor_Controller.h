@@ -14,6 +14,7 @@
 #include "constants.h"
 #include "PCA9685_Interface.h"
 #include "timing.hpp"
+#include "math_helpers.hpp"
 
 // 3rd Party Includes
 

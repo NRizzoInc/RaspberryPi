@@ -93,6 +93,8 @@ class PCA9685 : public GPIOBase {
         virtual ReturnCodes setIsInit(const bool new_state) const override;
 
     protected:
+        static constexpr float MAX_PWM {4096.0};   // the max possible pwm signal that can be set (12-bit)
+
         /**************** PCA9685 Specific Functions (only utilized by those with direct need) *********************/
 
         /**
@@ -113,16 +115,22 @@ class PCA9685 : public GPIOBase {
 
         /**
          * @brief Sets the pwm signal's frequency
-         * @param freq (defaults to 50MHz) The frequnecy of the pwm signal in MHz
+         * @param freq (defaults to 50Hz) The frequnecy of the pwm signal in Hz
          * @return ReturnCodes Success if no issues
          */
         ReturnCodes SetPwmFreq(const float freq=50.0) const;
 
         /**
-         * @brief Get the pwm frequency
+         * @brief Get the pwm frequency (in Hz)
          * @return The pwm frequency currently being used
          */
         std::optional<float> GetPwmFreq() const;
+
+        /**
+         * @brief Convert the device's pwm frequency to # ticks
+         * @return The period/ticks/cycles in ms
+         */
+        std::optional<float> GetPwmPeriod() const;
 
         /**
          * @brief Sets the pwm duty cycle for a motor (changes the speed/direction of the motor)
@@ -158,7 +166,7 @@ class PCA9685 : public GPIOBase {
         static std::optional<std::uint8_t>  PCA9685_i2c_addr;   // the address of robot's i2c PCA9685 module
         static int                          PCA9685_i2c_fd;     // file descriptor created by setup
         static unsigned int                 PCA9685_init_count; // keep track so can be "deinit" that many times
-        static std::optional<float>         pwm_freq;           // the pwm frequency the device is set to (in MHz)
+        static std::optional<float>         pwm_freq;           // the pwm frequency the device is set to (in Hz)
 
         /********************************************* Helper Functions ********************************************/
 

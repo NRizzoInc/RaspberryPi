@@ -71,8 +71,8 @@ ReturnCodes MotorController::SetSingleMotorPWM(const I2C_MotorAddr motor_dir, co
         duty1 = is_opposite ? 0         : abs(duty);
     } else {
         // duty == 0 (stop)
-        duty0 = 4095;
-        duty1 = 4095;
+        duty0 = PCA9685::MAX_PWM;
+        duty1 = PCA9685::MAX_PWM;
     }
 
     if(SetPwm(ch0, 0, duty0) == ReturnCodes::Success && SetPwm(ch1, 0, duty1) == ReturnCodes::Success) {
@@ -215,8 +215,9 @@ void MotorController::testMotorsLoop(
 /********************************************* Helper Functions ********************************************/
 
 int MotorController::CheckDutyRange(const int duty) const {
-    // range is [-4095, 4095]
-    return std::max(std::min(duty, 4095), -4095);
+    // range is [-4096, 4096]
+    constexpr int MAX_PWM_INT {static_cast<int>(PCA9685::MAX_PWM)};
+    return std::max(std::min(duty, MAX_PWM_INT), Helpers::Math::negate(MAX_PWM_INT));
 }
 
 

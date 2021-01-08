@@ -118,7 +118,7 @@ ReturnCodes PCA9685::SetPwmFreq(const float freq) const {
 
     // scale frequency
     float prescaleval {25000000.0};     // 25MHz
-    prescaleval /= 4096.0;              // 12-bit
+    prescaleval /= PCA9685::MAX_PWM;    
     prescaleval /= freq;                // 25MHz/50 = .5MHz
     prescaleval -= 1.0;
     const int scaled_freq = floor(prescaleval + .5); // round
@@ -164,6 +164,20 @@ ReturnCodes PCA9685::SetPwmFreq(const float freq) const {
 
 std::optional<float> PCA9685::GetPwmFreq() const {
     return pwm_freq;
+}
+
+std::optional<float> PCA9685::GetPwmPeriod() const {
+    // freq is in hz, so result will be in ticks/sec but decimal
+    // convert to ms to not deal with floats (mult by 1000)
+    // i.e. period(sec) =    1 / freq 
+    // i.e. period(ms)  = 1000 / freq
+    if (auto pwm_freq = GetPwmFreq()) {
+        return *pwm_freq > 0 ? 1000 / *pwm_freq : 0;
+    } else {
+        cerr << "Error: pwm frequency not set" << endl;
+        return std::nullopt;
+
+    }
 }
 
 
