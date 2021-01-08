@@ -27,8 +27,47 @@ namespace Servo {
 using Interface::XDirection;
 using Interface::YDirection;
 
-constexpr int   ANGLE_MIN   {0};
-constexpr int   ANGLE_MAX   {180};
+// no servo can ever go passed these values
+constexpr int MAX_ANGLE_ABS {180};
+constexpr int MIN_ANGLE_ABS {0};
+
+/**
+ * Servos might be limited by physical/hardware such that the normal 0-180 rotation is actually askew.
+ * This struct is used to define the max/min angle a servo can take so user does not have to worry about these details
+ * In essence, maps normal [0, 180] => [Actual min, actual max]
+ */
+struct ServoAngleLimits {
+    /**
+     * @param min The min possible angle
+     * @param max The max possible angle
+     */
+    ServoAngleLimits(const int min=MIN_ANGLE_ABS, const int max=MAX_ANGLE_ABS)
+        : min{min}
+        , max{max}
+        , range{max-min}
+        {}
+
+    const int min;        // the min angle the servo can take (maps to 0)
+    const int max;        // the max angle the servo can take (maps to 180)
+    const int range;      // the servo's actual arc length (i.e. 90-180 would have range = 90)
+}; // end of ServoAngleLimits
+
+/**
+ * @brief Contains all relevant data for a servo
+ */
+struct ServoData {
+    /**
+     * @param angle_limits The limits of the given servo
+     * @param start_angle The position the servo should start at
+     */
+    ServoData(const ServoAngleLimits& angle_limits=ServoAngleLimits{}, const int start_angle=90)
+        : limits{angle_limits}
+        , pos{start_angle}
+        {}
+
+    const ServoAngleLimits limits;  // the servo's movement/angle limits
+    int pos;                        // the current angle position of the servo
+}; // end of ServoData
 
 // Maps each tire/motor/servo to its i2c address
 // note robot has 8 total possible servo slots (but only 2 are used) 
@@ -49,22 +88,24 @@ struct ServoAnglePair {
      * @param sel_servo The selected servo
      * @param angle the angle to move the selected servo
      */
-    ServoAnglePair(const I2C_ServoAddr sel_servo, const int angle)
+    ServoAnglePair(const I2C_ServoAddr sel_servo, const std::optional<int> angle=std::nullopt)
         : sel_servo{sel_servo}
         , angle{angle}
         {}
     const I2C_ServoAddr sel_servo;
-    const int angle;
+    const std::optional<int> angle;
 }; // end of ServoAnglePair
 
 /**
  * Handle class for I2C Chip for servos (PCA9685)
  * 
  * see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf
+ * (slightly different bc using "off" period and not "on" period -- +/-2.5% to extremes)
  * Servo pwm math based on duty cycle percentages:
- * 0   degrees: 5%
- * 90  degrees: 7.5%
- * 180 degrees: 10%
+ * 0   degrees:  2.5% (normally 5%)
+ * 90  degrees:  7.5%
+ * 180 degrees: 12.5% (normally 10%)
+ * 360 continous spinning: >= ~13%
  */
 class ServoController : public gpio::Interface::PCA9685 {
 
@@ -96,6 +137,14 @@ class ServoController : public gpio::Interface::PCA9685 {
          */
         int GetServoPos(const I2C_ServoAddr sel_servo) const;
 
+        /**
+         * @brief Get the servo's angle limits
+         * @param sel_servo The servo whose limits to check
+         * @return The servo's angle limits
+         */
+        const ServoAngleLimits& GetServoLimits(const I2C_ServoAddr sel_servo) const;
+
+
         /********************************************* Servo Functions *********************************************/
 
         /**
@@ -126,10 +175,11 @@ class ServoController : public gpio::Interface::PCA9685 {
         /**
          * @brief Set a single servo's pwm with a desired duty cycle (final endpoint for overloads)
          * @param sel_servo The specific servo to set/move
-         * @param angle The position to move the servo to
+         * @param angle The position to move the servo to (if none, moves servo to current position)
          * @return ReturnCodes Success if no issues
+         * @note leave angle empty for initialization
          */
-        ReturnCodes SetServoPos(const I2C_ServoAddr sel_servo, const int angle) const;
+        ReturnCodes SetServoPos(const I2C_ServoAddr sel_servo, const std::optional<int> angle=std::nullopt) const;
         ReturnCodes SetServoPos(const ServoAnglePair) const;
     
         /**
@@ -160,30 +210,25 @@ class ServoController : public gpio::Interface::PCA9685 {
     private:
         /******************************************** Private Variables ********************************************/
 
-        static std::unordered_map<I2C_ServoAddr, int> pos; // maps the servo's to their current positions (angles)
+        static std::unordered_map<I2C_ServoAddr, ServoData> servos; // maps servos' to their current positions (angles)
 
         /********************************************* Helper Functions ********************************************/
 
         /**
-         * @brief Convert the easily understandable angle to the servo's corresponding pwm value
+         * @brief Convert the easily understandable angle to the servo's corresponding pwm pulse value
+         * @param sel_servo The servo whose pwm duty signal you want to find
          * @param angle The angle to check if is valid and covnert to pwm value for the servo [0-180]
-         * @return Integer representing the pwm value to use
+         * @return Integer representing the pwm "off" period value to use
          */
-        int AngleToPwmDuty(const int angle) const;
-
-        /**
-         * @brief Scales angle to be in valid range & into a duty cycle (multiply by period to get # ticks)
-         * @param angle The angle to scale
-         * @return The percentage of time the duty cycle is "on"
-         */
-        float ScaleAnglePercDuty(const int angle) const;
+        int AngleToPwmPulse(const I2C_ServoAddr sel_servo, const int angle) const;
 
         /**
          * @brief Makes sure the passed angle is within the valid range
+         * @param sel_servo The servo whose angle is being validated
          * @param angle The angle to validate/check
          * @return An angle within the range [0, 180]
          */
-        int ValidateAngle(const int angle) const;
+        int ValidateAngle(const I2C_ServoAddr sel_servo, const int angle) const;
 
 }; // ServoController
 

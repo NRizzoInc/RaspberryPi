@@ -11,10 +11,18 @@ using std::endl;
 /********************************************* Static Defines *********************************************/
 
 /// Maps a specific servo to its current (angle) position
-///@note init servos to neutral position (aka 90 degrees)
-std::unordered_map<I2C_ServoAddr, int> ServoController::pos{
-    {I2C_ServoAddr::YAW, 90},
-    {I2C_ServoAddr::PITCH, 90}
+/// init servos to center position (aka 90 degrees)
+/// Yaw (sideways) servo - Normal
+/// Pitch (vertical) servo is reversed (placed at center is actually 270) & cannot go lower than 90 bc hardware
+std::unordered_map<I2C_ServoAddr, ServoData> ServoController::servos{
+    std::pair{
+        I2C_ServoAddr::YAW,
+        ServoData{ServoAngleLimits{0, 180}, 90}
+    },
+    std::pair{
+        I2C_ServoAddr::PITCH,
+        ServoData{ServoAngleLimits{90, 180}, 90}
+    }
 };
 
 /********************************************** Constructors **********************************************/
@@ -49,9 +57,9 @@ ReturnCodes ServoController::init() const {
         return ReturnCodes::Error;
     }
 
-    // starts servos at 90 degrees (neutral)
-    if (SetServoPos({{I2C_ServoAddr::PITCH, 90}, {I2C_ServoAddr::YAW, 90}}) != ReturnCodes::Success) {
-        cerr << "Error: Failed to init servos to neutral position" << endl;
+    // starts servos at 90 degrees (center)
+    if (SetServoPos({{I2C_ServoAddr::PITCH}, {I2C_ServoAddr::YAW}}) != ReturnCodes::Success) {
+        cerr << "Error: Failed to init servos to center position" << endl;
     }
 
     setIsInit(true);
@@ -62,7 +70,11 @@ ReturnCodes ServoController::init() const {
 /********************************************* Getters/Setters *********************************************/
 
 int ServoController::GetServoPos(const I2C_ServoAddr sel_servo) const {
-    return pos.at(sel_servo);
+    return servos.at(sel_servo).pos;
+}
+
+const ServoAngleLimits& ServoController::GetServoLimits(const I2C_ServoAddr sel_servo) const {
+    return servos.at(sel_servo).limits;
 }
 
 
@@ -70,12 +82,16 @@ int ServoController::GetServoPos(const I2C_ServoAddr sel_servo) const {
 
 ReturnCodes ServoController::IncrementServoPos(const I2C_ServoAddr sel_servo, const int change_amt) const {
     const int updated_angle       {GetServoPos(sel_servo) + change_amt};
-    const int valid_updated_angle {ValidateAngle(updated_angle)};
+    const int valid_updated_angle {ValidateAngle(sel_servo, updated_angle)};
     return SetServoPos(sel_servo, valid_updated_angle);
 }
 
 ReturnCodes ServoController::IncrementServoPos(const ServoAnglePair pair) const {
-    return IncrementServoPos(pair.sel_servo, pair.angle);
+    return IncrementServoPos(
+        pair.sel_servo,
+        // if no angle provided, default to not moving (change of 0)
+        pair.angle ? *pair.angle : 0
+    );
 }
 
 ReturnCodes ServoController::IncrementServoPos(const std::vector<ServoAnglePair> servo_angle_pairs) const {
@@ -95,7 +111,7 @@ ReturnCodes ServoController::GradualMoveServo(
     const std::optional<int> start_angle
 ) const {
     // factor in start angle not being current position
-    const int start_pos             { start_angle ? *start_angle : GetServoPos(sel_servo) };
+    const int start_pos             { start_angle.has_value() ? *start_angle : GetServoPos(sel_servo) };
     const int sweep_displacement    { end_angle - start_pos };
 
     // unit of time per each angle (handle divide by zero)
@@ -136,11 +152,22 @@ ReturnCodes ServoController::GradualMoveServo(
     return ReturnCodes::Success;
 }
 
-ReturnCodes ServoController::SetServoPos(const I2C_ServoAddr sel_servo, const int angle) const {
-    // try to convert angle to pwm signal (if success, udpate current state)
-    ReturnCodes rtn = SetPwm(static_cast<int>(sel_servo), 0, AngleToPwmDuty(angle));
+ReturnCodes ServoController::SetServoPos(
+    const I2C_ServoAddr sel_servo,
+    const std::optional<int> angle
+) const {
+    // try to convert angle to pwm signal
+    // if no angle provided, default to current position
+    const int real_angle {angle ? *angle : GetServoPos(sel_servo)};
+    ReturnCodes rtn = SetPwm(
+        static_cast<int>(sel_servo),
+        0,
+        AngleToPwmPulse(sel_servo, real_angle)
+    );
+
+    // (if success, update current state)
     if (rtn == ReturnCodes::Success) {
-        pos[sel_servo] = angle;
+        servos[sel_servo].pos = real_angle;
     }
     return rtn;
 }
@@ -184,12 +211,18 @@ void ServoController::testServos(
     // helper fn that simplifies this repetitive function call
     /// @param is_yaw true if sideways camera, false if vertical camera
     /// @param end_angle the ending position of the servo
-    auto MoveServo = [&](bool is_yaw, int end_angle) {
-        return GradualMoveServo(
+    /// @param dir_travel To the direction of travel (i.e. "left->right")
+    /// @param dist_pen How fast -- needed bc delta=180 will be super fast compared to delta=90
+    /// (i.e.: 1x or 2x if normal or double distance)
+    auto MoveServo = [&](bool is_yaw, int end_angle, const std::string& dir_travel, int dist_pen=1) {
+        cout << "Sweeping Servo " << dir_travel << endl;
+        if(GradualMoveServo(
             is_yaw ? I2C_ServoAddr::YAW : I2C_ServoAddr::PITCH,
-            std::chrono::milliseconds(interval),
+            std::chrono::milliseconds(interval*dist_pen),
             end_angle
-        );
+        ) != ReturnCodes::Success) {
+            cerr << "Error: Failed to sweep servo " << dir_travel << endl;
+        }
     };
 
     // helps keep track if duration is up (needed bc loop may take awhilem but can be split & stopped in piecemeal)
@@ -201,62 +234,64 @@ void ServoController::testServos(
     };
 
     while (!ServoController::getShouldThreadExit() && !isDurationUp()) {
-        // sweep neutral->right
-        cout << "Sweeping Servo Right" << endl;
-        if (MoveServo(true, 180) != ReturnCodes::Success) {
-            cerr << "Error: Failed to sweep servo right" << endl;
-        }
+        ///////// horizontal
+
+        MoveServo(true, 180, "Center -> Right", 1);
         if (ServoController::getShouldThreadExit() || isDurationUp()) break;
 
-        // sweep right->left
+        // sweep 180->0 (double distance)
+        MoveServo(true, 0, "Right -> Left", 2);
+        if (ServoController::getShouldThreadExit() || isDurationUp()) break;
 
-        // neutral
+        MoveServo(true, 90, "Left -> Center", 1);
+        if (ServoController::getShouldThreadExit() || isDurationUp()) break;
+
+        ///////// vertical
+        // center
 
         // sweep up
 
         // sweep down
 
-        // neutral
+        // center
     }
 }
 
 
 /********************************************* Helper Functions ********************************************/
 
-float ServoController::ScaleAnglePercDuty(const int angle) const {
-    // scale [0-180] -> [1.0-2.0]
-    // make angle stay between 0-180
-    // ex: assume freq = 50Hz (aka period = 20ms)
-    // 0   degrees: 1.0 ms duty period (5%   duty)
-    // 90  degrees: 1.5 ms duty period (7.5% duty)
-    // 180 degrees: 2.0 ms duty period (10%  duty)
-    // hence, min=5%, max=10% and scale between them
-    constexpr float DUTY_MIN_PERC       {.05}; // 5%
-    constexpr float DUTY_MAX_PERC       {.10}; // 10%
-    constexpr float DUTY_RANGE          {DUTY_MAX_PERC-DUTY_MIN_PERC};
-
-    // perform calcs to scale angle to % duty cycle
-    // multiply percent against the actual period to get the final answer
-    const int   valid_angle {ValidateAngle(angle)};
-    const float perc_angle  {static_cast<float>(valid_angle) / static_cast<float>(ANGLE_MAX)};
-    const float perc_duty   {DUTY_RANGE*perc_angle + DUTY_MIN_PERC};
-    return perc_duty;
-}
-
-
-int ServoController::AngleToPwmDuty(const int angle) const {
+int ServoController::AngleToPwmPulse(const I2C_ServoAddr sel_servo, const int angle) const {
     // whatever duty cycle/period/ticks comes out to be, have to scale it with the max allowed PWM signal
     // https://learn.adafruit.com/adafruits-raspberry-pi-lesson-8-using-a-servo-motor/servo-motors
     // https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- [age 25]
 
+    // scale [0-180] -> [1.0-2.0]
+    // make angle stay between 0-180
+    // ex: assume freq = 50Hz (aka period = 20ms)
+    // 0   degrees: 0.5 ms duty period ( 2.5%  duty)
+    // 90  degrees: 1.5 ms duty period ( 7.5%  duty)
+    // 180 degrees: 2.5 ms duty period (12.5%  duty)
+    // hence, scale between min-max duties based on angle
+    constexpr float DUTY_MIN_PERC       {.025}; // 2.5%
+    constexpr float DUTY_MAX_PERC       {.125}; // 12.5%
+    constexpr float DUTY_RANGE          {DUTY_MAX_PERC-DUTY_MIN_PERC};
+
+    // perform calcs to scale angle to % duty cycle
+    // multiply percent against the actual period to get the final answer
+    const int               valid_angle {ValidateAngle(sel_servo, angle)};
+    const float             perc_angle  {static_cast<float>(valid_angle) / static_cast<float>(MAX_ANGLE_ABS)};
+    const float             perc_duty   {DUTY_RANGE*perc_angle + DUTY_MIN_PERC};
+
     // get the duty cycle (max possible pwm * percentage on)
-    const float perc_duty {ScaleAnglePercDuty(angle)};
-    return PCA9685::MAX_PWM * perc_duty;
+    const int               pwm_pulse   {static_cast<int>(PCA9685::MAX_PWM * perc_duty)};
+    return pwm_pulse;
 }
 
-int ServoController::ValidateAngle(const int angle) const {
-    // between 0-180
-    return std::max(ANGLE_MIN, std::min(ANGLE_MAX, angle));
+int ServoController::ValidateAngle(const I2C_ServoAddr sel_servo, const int angle) const {
+    // should be between 0-180 but due to safety reasons servos cant do full range
+    //  ~45 (50 to be safe) to 160 [50-160]
+    const ServoAngleLimits limits {GetServoLimits(sel_servo)};
+    return std::max(limits.min, std::min(limits.max, angle));
 }
 
 
