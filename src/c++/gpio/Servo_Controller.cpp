@@ -169,8 +169,7 @@ void ServoController::testServos(
         return GradualMoveServo(
             is_yaw ? I2C_ServoAddr::YAW : I2C_ServoAddr::PITCH,
             std::chrono::milliseconds(interval),
-            end_angle,
-            std::nullopt
+            end_angle
         );
     };
 

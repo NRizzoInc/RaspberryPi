@@ -121,7 +121,7 @@ class ServoController : public gpio::Interface::PCA9685 {
             const I2C_ServoAddr sel_servo,
             const std::chrono::steady_clock::duration duration,
             const int end_angle,
-            const std::optional<int> start_angle
+            const std::optional<int> start_angle=std::nullopt
         ) const;
 
         /**
