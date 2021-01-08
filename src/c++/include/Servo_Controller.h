@@ -28,8 +28,9 @@ using Interface::XDirection;
 using Interface::YDirection;
 
 // no servo can ever go passed these values
-constexpr int MAX_ANGLE_ABS {180};
-constexpr int MIN_ANGLE_ABS {0};
+constexpr int ANGLE_ABS_MIN     {0};
+constexpr int ANGLE_ABS_MAX     {180};
+constexpr int ANGLE_ABS_RANGE   {ANGLE_ABS_MAX-ANGLE_ABS_MIN};
 
 // servo movements are all based on the duty cycle (percentage of time pulse is on/off)
 // ex: assume freq = 50Hz (aka period = 20ms)
@@ -51,7 +52,7 @@ struct ServoAngleLimits {
      * @param min The min possible angle
      * @param max The max possible angle
      */
-    ServoAngleLimits(const int min=MIN_ANGLE_ABS, const int max=MAX_ANGLE_ABS)
+    ServoAngleLimits(const int min=ANGLE_ABS_MIN, const int max=ANGLE_ABS_MAX)
         : min{min}
         , max{max}
         , range{max-min}

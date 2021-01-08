@@ -271,7 +271,7 @@ int ServoController::AngleToPwmPulse(const I2C_ServoAddr sel_servo, const int an
     // perform calcs to scale angle to % duty cycle
     // multiply percent against the actual period to get the final answer
     const int       valid_angle     {ValidateAngle(sel_servo, angle)};
-    const float     perc_angle      {static_cast<float>(valid_angle) / static_cast<float>(MAX_ANGLE_ABS)};
+    const float     perc_angle      {static_cast<float>(valid_angle) / static_cast<float>(ANGLE_ABS_MAX)};
     const float     perc_duty       {DUTY_PERC_RANGE*perc_angle + DUTY_PERC_MIN};
 
     // get the duty cycle (max possible pwm * percentage on)
