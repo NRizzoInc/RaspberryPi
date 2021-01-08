@@ -29,6 +29,7 @@ ServoController::~ServoController() {
         if (TurnServosOff() != ReturnCodes::Success) {
             cerr << "Error: Failed to turn off servos" << endl;
         }
+        cleanup();
     }
     setIsInit(false);
 }

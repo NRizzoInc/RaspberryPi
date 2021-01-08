@@ -85,6 +85,11 @@ class PCA9685 : public GPIOBase {
          */
         virtual ReturnCodes init() const;
 
+        /**
+         * @brief Cleans up utilized resources, should be called in derived destructors
+         */
+        virtual void cleanup() const;
+
         /********************************************* Getters/Setters *********************************************/
 
         virtual bool getIsInit() const override;

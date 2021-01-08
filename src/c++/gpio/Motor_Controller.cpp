@@ -23,6 +23,7 @@ MotorController::~MotorController() {
         if (SetMotorsPWM(0, 0, 0, 0) != ReturnCodes::Success) {
             cerr << "Error: Failed to stop motors" << endl;
         }
+        cleanup();
     }
     setIsInit(false);
 }

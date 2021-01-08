@@ -44,13 +44,9 @@ PCA9685::PCA9685(const std::optional<std::uint8_t> PCA9685_i2c_addr)
 }
 
 PCA9685::~PCA9685() {
-    // since this is base class, it will be the last to destruct
-    // hence, it is safe to close the fd if open
-    if (PCA9685_init_count == 0 && PCA9685_i2c_fd > 0) {
-        cout << "Resetting PCA9685 Device" << endl;
-        close(PCA9685_i2c_fd);
-        PCA9685_i2c_fd = -1;
-    }
+    // since this is base class, it will be the first to destruct
+    // (problematic bc want to close the fd after derived classes reset)
+    // derived classes should call cleanup() instead
 }
 
 
@@ -71,6 +67,16 @@ ReturnCodes PCA9685::init() const {
     }
 
     return ReturnCodes::Success;
+}
+
+void PCA9685::cleanup() const {
+    // workaround for fact that this destructor will be called prior to derived destructors
+    // who still need access to the i2c file descriptor (close when last one is in about to exit)
+    if (PCA9685_init_count == 1 && PCA9685_i2c_fd > 0) {
+        cout << "Resetting PCA9685 Device" << endl;
+        close(PCA9685_i2c_fd);
+        PCA9685_i2c_fd = -1;
+    }
 }
 
 
