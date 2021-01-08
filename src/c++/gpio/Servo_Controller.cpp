@@ -115,9 +115,12 @@ ReturnCodes ServoController::GradualMoveServo(
     // two completely different stop conditions & increment/decrement based on if displacement is negative
     const bool is_neg { sweep_displacement < 0};
     auto isEnd = [&](const int pos_to_check){
-        return is_neg ?
-            pos_to_check < end_angle : // if negative, going towards lower angles (stop when less than end)
-            pos_to_check > end_angle ; // if positive, going towards higher angles (stop when higher than end)
+        return
+            // this function may take awhile, so be mindful if told to stop
+            !ServoController::getShouldThreadExit() ||
+            is_neg ?
+                pos_to_check < end_angle : // if negative, going towards lower angles (stop when less than end)
+                pos_to_check > end_angle ; // if positive, going towards higher angles (stop when higher than end)
     };
 
     // if negative, decrement (i.e. subtract by 1)
