@@ -165,6 +165,8 @@ void ServoController::testServos(
     const auto start_time = std::chrono::steady_clock::now();
 
     // helper fn that simplifies this repetitive function call
+    /// @param is_yaw true if sideways camera, false if vertical camera
+    /// @param end_angle the ending position of the servo
     auto MoveServo = [&](bool is_yaw, int end_angle) {
         return GradualMoveServo(
             is_yaw ? I2C_ServoAddr::YAW : I2C_ServoAddr::PITCH,
