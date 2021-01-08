@@ -10,10 +10,6 @@ using std::endl;
 
 /********************************************* Static Defines *********************************************/
 
-// min, neutral, max
-const ServoAngles ServoController::YAW_ANGLES{2500, 1600, 500};
-const ServoAngles ServoController::PITCH_ANGLES{1300, 1400, 2500};
-
 /********************************************** Constructors **********************************************/
 
 
@@ -62,10 +58,11 @@ ReturnCodes ServoController::init() const {
 ReturnCodes ServoController::SetServoPWM(const I2C_ServoAddr sel_servo, const int angle) const {
     // try to convert angle to pwm signal
     // if fail/invalid dont try to use it
-    std::optional<int> pwm_off_period {AngleToPwm(sel_servo, angle)};
-    if (!pwm_off_period.has_value()) return ReturnCodes::Error;
+    const int pwm_off_period {AngleToPwmDuty(angle)};
 
-    return PCA9685::SetPwm(static_cast<int>(sel_servo), 0, *pwm_off_period);
+    cout << "setting " << static_cast<int>(sel_servo) << " to " << angle << " (" << pwm_off_period << ")" << endl; 
+    return PCA9685::SetPwm(static_cast<int>(sel_servo), 0, pwm_off_period);
+    // return PCA9685::SetPwm(static_cast<int>(sel_servo), 0, pwm_off_period);
 }
 
 ReturnCodes ServoController::SetServoPWM(const ServoAnglePair pair) const {
@@ -94,53 +91,41 @@ ReturnCodes ServoController::TurnServosOff() const {
 
 /********************************************* Helper Functions ********************************************/
 
-std::optional<int> ServoController::AngleToPwm(const I2C_ServoAddr sel_servo, const int angle) const {
-    // make sure angle is within valid range (0-180)
-    const int desired_angle     { std::max(180, std::min(0, angle)) };
+float ServoController::ScaleAnglePercDuty(const int angle) const {
+    // scale [0-180] -> [1.0-2.0]
+    // make angle stay between 0-180
+    // ex: assume freq = 50Hz (aka period = 20ms)
+    // 0   degrees: 1.0 ms duty period (5%   duty)
+    // 90  degrees: 1.5 ms duty period (7.5% duty)
+    // 180 degrees: 2.0 ms duty period (10%  duty)
+    // hence, min=5%, max=10% and scale between them
+    constexpr int   ANGLE_MIN           {0};
+    constexpr int   ANGLE_MAX           {180};
+    constexpr float DUTY_MIN_PERC       {.05}; // 5%
+    constexpr float DUTY_MAX_PERC       {.10}; // 10%
+    constexpr float DUTY_RANGE          {DUTY_MAX_PERC-DUTY_MIN_PERC};
 
-    // the angles fraction of 180 degress (special case for 90)
-    const bool  is_neutral      { angle == 90 }; 
-    const float pwm_scale       { desired_angle / static_cast<float>(180) };
+    // perform calcs to scale angle to % duty cycle
+    // multiply percent against the actual period to get the final answer
+    const int   valid_angle {std::max(ANGLE_MIN, std::min(ANGLE_MAX, angle))};
+    const float perc_angle  {static_cast<float>(valid_angle) / static_cast<float>(ANGLE_MAX)};
+    const float perc_duty   {DUTY_RANGE*perc_angle + DUTY_MIN_PERC};
 
-    // figure out which angles to be analyzing
-    const std::optional<ServoAngles> angles {
-        sel_servo == I2C_ServoAddr::YAW ?
-            std::optional(YAW_ANGLES) : sel_servo == I2C_ServoAddr::PITCH ?
-            std::optional(PITCH_ANGLES) : std::nullopt
-    };
+    cout << "valid_angle: " << valid_angle << endl;
+    cout << "perc_angle: " << perc_angle << endl;
+    cout << "perc_duty: " << perc_duty << endl;
+    return perc_duty;
+}
 
-    if (!angles.has_value()) {
-        cerr << "Error: Invalid Servo Selected" << endl;
-        return std::nullopt;
-    }
 
-    // whatever angle comes out to be, have to translate it to a pwm pulse/duty cycle
+int ServoController::AngleToPwmDuty(const int angle) const {
+    // whatever duty cycle/period/ticks comes out to be, have to scale it with the max allowed PWM signal
+    // https://learn.adafruit.com/adafruits-raspberry-pi-lesson-8-using-a-servo-motor/servo-motors
     // https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf -- [age 25]
-    // account for PWM frequency -- 1/prescale = 4096*Freq / MHz
-    // note: 4096 = 2^12 from 12 bit reg
-    // note: freq is in MHz (divide by Mega to get freq = # ticks)
-    const auto  pwm_freq { PCA9685::GetPwmFreq() };
-    float pwm_tick_mult {};
-    if (pwm_freq.has_value()) {
-        pwm_tick_mult = 4096 * (*pwm_freq) / 1000000;
-    } else {
-        cerr << "Error: pwm frequency not set" << endl;
-        return std::nullopt;
-    }
 
-    // the angle converted to the servo's valid range 
-    // examples:
-    // angle = 0    -> range * 0 + min = min
-    // angle = 90   -> neutral
-    // angle = 180  -> range * 1 + min = range + min = max
-    const int valid_angle {
-        is_neutral ?
-            angles->neutral :
-            static_cast<int>(angles->range * pwm_scale) + angles->min
-    };
-
-    // finally return the angle multiplied by ticks to get duty cycle/pwm
-    return pwm_tick_mult * valid_angle;
+    // get the duty cycle (max possible pwm * percentage on)
+    const float perc_duty {ScaleAnglePercDuty(angle)};
+    return PCA9685::MAX_PWM * perc_duty;
 }
 
 

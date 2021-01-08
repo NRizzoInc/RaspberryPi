@@ -39,31 +39,6 @@ enum class I2C_ServoAddr : int {
     UNUSED_6    = 15,
 }; // end of servo addresses
 
-/**
- * @brief Struct that defines the angles for a specific servo
- * 
- */
-struct ServoAngles {
-    /**
-     * @brief Construct a new Servo Angles struct
-     * @param min 0-degrees (i.e. fully down/left)
-     * @param neutral 90-degrees (i.e. looking straight)
-     * @param max 180-degrees (i.e. fullly up/right)
-     */
-    ServoAngles(const int min, const int neutral, const int max)
-        : min{min}
-        , neutral{neutral}
-        , max{max}
-        , range{max-min}
-        {}
-    
-    // vars
-    const int min;      // maps to 0-degrees
-    const int neutral;  // maps to 90-degrees
-    const int max;      // maps to 180-degrees
-    const int range;
-}; // end of ServoAngles Struct
-
 // contains the address (aka the servo to move) and the angle to move it to
 struct ServoAnglePair {
     /**
@@ -79,8 +54,13 @@ struct ServoAnglePair {
 }; // end of ServoAnglePair
 
 /**
- * @brief Handle class for I2C Chip for servos (PCA9685)
- * @note see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf
+ * Handle class for I2C Chip for servos (PCA9685)
+ * 
+ * see https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf
+ * Servo pwm math based on duty cycle percentages:
+ * 0   degrees: 5%
+ * 90  degrees: 7.5%
+ * 180 degrees: 10%
  */
 class ServoController : public gpio::Interface::PCA9685 {
 
@@ -141,19 +121,21 @@ class ServoController : public gpio::Interface::PCA9685 {
     private:
         /******************************************** Private Variables ********************************************/
 
-        static const ServoAngles YAW_ANGLES;        // defines absolute positions the sideways servo can take
-        static const ServoAngles PITCH_ANGLES;      // defines absolute positions the vertical servo can take
-
         /********************************************* Helper Functions ********************************************/
 
         /**
          * @brief Convert the easily understandable angle to the servo's corresponding pwm value
-         * @param sel_servo The specific servo to set/move
-         * @param angle The angle to check if is valid and covnert to pwm value for the servo
-         * (angle=90: neutral)
-         * @return Integer representing the pwm value to use (std::nullopt if invalid angle)
+         * @param angle The angle to check if is valid and covnert to pwm value for the servo [0-180]
+         * @return Integer representing the pwm value to use
          */
-        std::optional<int> AngleToPwm(const I2C_ServoAddr sel_servo, const int angle) const;
+        int AngleToPwmDuty(const int angle) const;
+
+        /**
+         * @brief Scales angle to be in valid range & into a duty cycle (multiply by period to get # ticks)
+         * @param angle The angle to scale
+         * @return The percentage of time the duty cycle is "on"
+         */
+        float ScaleAnglePercDuty(const int angle) const;
 
 }; // ServoController
 
