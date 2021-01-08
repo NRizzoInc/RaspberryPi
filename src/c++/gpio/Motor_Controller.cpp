@@ -162,11 +162,15 @@ void MotorController::testMotorsLoop(
     // keep track of time/duration
     const auto start_time = std::chrono::steady_clock::now();
 
-    while (
-        !MotorController::getShouldThreadExit() &&
+    // helps keep track if duration is up (needed bc loop may take awhilem but can be split & stopped in piecemeal)
+    auto isDurationUp = [&]()->bool {
         // if duration == -1 : run forever
-        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
-    ) {
+        return
+            duration != -1 &&
+            Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1));
+    };
+
+    while (!MotorController::getShouldThreadExit() && !isDurationUp()) {
         // forward
         if (ChangeMotorDir(YDirection::FORWARD, XDirection::NONE) != ReturnCodes::Success) {
             cerr << "Error: Failed to move motors forward" << endl;
@@ -174,7 +178,7 @@ void MotorController::testMotorsLoop(
             cout << "Moving forward" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-        if (MotorController::getShouldThreadExit()) break;
+        if (MotorController::getShouldThreadExit() || isDurationUp()) break;
 
         // back
         if (ChangeMotorDir(YDirection::REVERSE, XDirection::NONE) != ReturnCodes::Success) {
@@ -183,7 +187,7 @@ void MotorController::testMotorsLoop(
             cout << "Moving backward" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-        if (MotorController::getShouldThreadExit()) break;
+        if (MotorController::getShouldThreadExit() || isDurationUp()) break;
 
         // left
         if (ChangeMotorDir(YDirection::FORWARD, XDirection::LEFT) != ReturnCodes::Success) {
@@ -192,7 +196,7 @@ void MotorController::testMotorsLoop(
             cout << "Moving left" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-        if (MotorController::getShouldThreadExit()) break;
+        if (MotorController::getShouldThreadExit() || isDurationUp()) break;
 
         // right
         if (ChangeMotorDir(YDirection::FORWARD, XDirection::RIGHT) != ReturnCodes::Success) {
@@ -201,7 +205,7 @@ void MotorController::testMotorsLoop(
             cout << "Moving right" << endl;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-        if (MotorController::getShouldThreadExit()) break;
+        if (MotorController::getShouldThreadExit() || isDurationUp()) break;
 
         // stop
         if (ChangeMotorDir(YDirection::NONE, XDirection::NONE) != ReturnCodes::Success) {
