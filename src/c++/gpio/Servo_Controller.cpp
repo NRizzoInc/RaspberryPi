@@ -247,13 +247,16 @@ void ServoController::testServos(
         if (ServoController::getShouldThreadExit() || isDurationUp()) break;
 
         ///////// vertical
-        // center
 
-        // sweep up
+        MoveServo(false, 180, "Center -> Up", 1);
+        if (ServoController::getShouldThreadExit() || isDurationUp()) break;
 
-        // sweep down
+        // sweep 180->0 (double distance)
+        MoveServo(false, 0, "Up -> Down", 2);
+        if (ServoController::getShouldThreadExit() || isDurationUp()) break;
 
-        // center
+        MoveServo(false, 90, "Down -> Center", 1);
+        if (ServoController::getShouldThreadExit() || isDurationUp()) break;
     }
 }
 
