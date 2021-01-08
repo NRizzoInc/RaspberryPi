@@ -57,12 +57,7 @@ ReturnCodes ServoController::init() const {
 
 ReturnCodes ServoController::SetServoPWM(const I2C_ServoAddr sel_servo, const int angle) const {
     // try to convert angle to pwm signal
-    // if fail/invalid dont try to use it
-    const int pwm_off_period {AngleToPwmDuty(angle)};
-
-    cout << "setting " << static_cast<int>(sel_servo) << " to " << angle << " (" << pwm_off_period << ")" << endl; 
-    return PCA9685::SetPwm(static_cast<int>(sel_servo), 0, pwm_off_period);
-    // return PCA9685::SetPwm(static_cast<int>(sel_servo), 0, pwm_off_period);
+    return SetPwm(static_cast<int>(sel_servo), 0, AngleToPwmDuty(angle));
 }
 
 ReturnCodes ServoController::SetServoPWM(const ServoAnglePair pair) const {
@@ -110,10 +105,6 @@ float ServoController::ScaleAnglePercDuty(const int angle) const {
     const int   valid_angle {std::max(ANGLE_MIN, std::min(ANGLE_MAX, angle))};
     const float perc_angle  {static_cast<float>(valid_angle) / static_cast<float>(ANGLE_MAX)};
     const float perc_duty   {DUTY_RANGE*perc_angle + DUTY_MIN_PERC};
-
-    cout << "valid_angle: " << valid_angle << endl;
-    cout << "perc_angle: " << perc_angle << endl;
-    cout << "perc_duty: " << perc_duty << endl;
     return perc_duty;
 }
 
