@@ -202,7 +202,7 @@ ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) cons
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel), off & 0xFF) != ReturnCodes::Success) {
+    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::OFF_LOW_BASE, channel), off & 0xFF) != ReturnCodes::Success) {
         cerr << "Failed to update OFF LOW PWM" << endl;
         return ReturnCodes::Error;
     }
