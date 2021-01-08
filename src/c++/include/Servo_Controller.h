@@ -27,6 +27,9 @@ namespace Servo {
 using Interface::XDirection;
 using Interface::YDirection;
 
+constexpr int   ANGLE_MIN   {0};
+constexpr int   ANGLE_MAX   {180};
+
 // Maps each tire/motor/servo to its i2c address
 // note robot has 8 total possible servo slots (but only 2 are used) 
 enum class I2C_ServoAddr : int {
@@ -96,6 +99,16 @@ class ServoController : public gpio::Interface::PCA9685 {
         /********************************************* Servo Functions *********************************************/
 
         /**
+         * @brief Changes a single servo's position by a descrete angle (final endpoint for overloads)
+         * @param sel_servo The specific servo to set/move
+         * @param angle The amount to change the angle by [-180, 180]
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes IncrementServoPos(const I2C_ServoAddr sel_servo, const int change_amt) const;
+        ReturnCodes IncrementServoPos(const ServoAnglePair pair) const;
+        ReturnCodes IncrementServoPos(const std::vector<ServoAnglePair> servo_angle_pairs) const;
+
+        /**
          * @brief Set a single servo's pwm with a desired duty cycle (final endpoint for overloads)
          * @param sel_servo The specific servo to set/move
          * @param angle The position to move the servo to
@@ -149,6 +162,13 @@ class ServoController : public gpio::Interface::PCA9685 {
          * @return The percentage of time the duty cycle is "on"
          */
         float ScaleAnglePercDuty(const int angle) const;
+
+        /**
+         * @brief Makes sure the passed angle is within the valid range
+         * @param angle The angle to validate/check
+         * @return An angle within the range [0, 180]
+         */
+        int ValidateAngle(const int angle) const;
 
 }; // ServoController
 

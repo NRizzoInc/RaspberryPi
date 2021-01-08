@@ -66,6 +66,25 @@ int ServoController::GetServoPos(const I2C_ServoAddr sel_servo) const {
 
 /********************************************* Servo Functions *********************************************/
 
+ReturnCodes ServoController::IncrementServoPos(const I2C_ServoAddr sel_servo, const int change_amt) const {
+    const int updated_angle       {GetServoPos(sel_servo) + change_amt};
+    const int valid_updated_angle {ValidateAngle(updated_angle)};
+    return SetServoPWM(sel_servo, valid_updated_angle);
+}
+
+ReturnCodes ServoController::IncrementServoPos(const ServoAnglePair pair) const {
+    return IncrementServoPos(pair.sel_servo, pair.angle);
+}
+
+ReturnCodes ServoController::IncrementServoPos(const std::vector<ServoAnglePair> servo_angle_pairs) const {
+    for (const auto& pair : servo_angle_pairs) {
+        if (IncrementServoPos(pair) != ReturnCodes::Success) {
+            return ReturnCodes::Error;
+        }
+    }
+    return ReturnCodes::Success;
+}
+
 ReturnCodes ServoController::SetServoPWM(const I2C_ServoAddr sel_servo, const int angle) const {
     // try to convert angle to pwm signal (if success, udpate current state)
     ReturnCodes rtn = SetPwm(static_cast<int>(sel_servo), 0, AngleToPwmDuty(angle));
@@ -141,15 +160,13 @@ float ServoController::ScaleAnglePercDuty(const int angle) const {
     // 90  degrees: 1.5 ms duty period (7.5% duty)
     // 180 degrees: 2.0 ms duty period (10%  duty)
     // hence, min=5%, max=10% and scale between them
-    constexpr int   ANGLE_MIN           {0};
-    constexpr int   ANGLE_MAX           {180};
     constexpr float DUTY_MIN_PERC       {.05}; // 5%
     constexpr float DUTY_MAX_PERC       {.10}; // 10%
     constexpr float DUTY_RANGE          {DUTY_MAX_PERC-DUTY_MIN_PERC};
 
     // perform calcs to scale angle to % duty cycle
     // multiply percent against the actual period to get the final answer
-    const int   valid_angle {std::max(ANGLE_MIN, std::min(ANGLE_MAX, angle))};
+    const int   valid_angle {ValidateAngle(angle)};
     const float perc_angle  {static_cast<float>(valid_angle) / static_cast<float>(ANGLE_MAX)};
     const float perc_duty   {DUTY_RANGE*perc_angle + DUTY_MIN_PERC};
     return perc_duty;
@@ -165,6 +182,12 @@ int ServoController::AngleToPwmDuty(const int angle) const {
     const float perc_duty {ScaleAnglePercDuty(angle)};
     return PCA9685::MAX_PWM * perc_duty;
 }
+
+int ServoController::ValidateAngle(const int angle) const {
+    // between 0-180
+    return std::max(ANGLE_MIN, std::min(ANGLE_MAX, angle));
+}
+
 
 
 }; // end of Servo namespace
