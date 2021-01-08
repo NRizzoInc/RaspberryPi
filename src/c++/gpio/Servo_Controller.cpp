@@ -117,7 +117,7 @@ ReturnCodes ServoController::GradualMoveServo(
     auto isEnd = [&](const int pos_to_check){
         return
             // this function may take awhile, so be mindful if told to stop
-            !ServoController::getShouldThreadExit() ||
+            ServoController::getShouldThreadExit() ||
             is_neg ?
                 pos_to_check < end_angle : // if negative, going towards lower angles (stop when less than end)
                 pos_to_check > end_angle ; // if positive, going towards higher angles (stop when higher than end)
