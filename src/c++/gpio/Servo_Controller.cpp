@@ -99,6 +99,8 @@ ReturnCodes ServoController::GradualMoveServo(
     const int sweep_displacement    { end_angle - start_pos };
 
     // unit of time per each angle (handle divide by zero)
+    // note: std::chrono::steady_clock::duration stores as ns
+    // hence, rate = ns / angle
     const std::chrono::steady_clock::duration rate { 
         sweep_displacement > 0 ?
             duration / sweep_displacement
@@ -119,8 +121,7 @@ ReturnCodes ServoController::GradualMoveServo(
     };
 
     // if negative, decrement (i.e. subtract by 1)
-    for (int curr_pos = start_pos; isEnd(curr_pos); curr_pos += is_neg ? -1 : 1 ) {
-        cout << "Setting servo " << static_cast<int>(sel_servo) << " to " << curr_pos << endl;
+    for (int curr_pos = start_pos; !isEnd(curr_pos); curr_pos += is_neg ? -1 : 1 ) {
         if(SetServoPos(sel_servo, curr_pos) != ReturnCodes::Success) {
             cerr << "Error: Failed to gradually move servo" << endl;
             return ReturnCodes::Error;
