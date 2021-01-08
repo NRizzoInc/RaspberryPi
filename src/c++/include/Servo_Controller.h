@@ -86,7 +86,7 @@ class ServoController : public gpio::Interface::PCA9685 {
         /********************************************* Servo Functions *********************************************/
 
         /**
-         * @brief Set a single servo's pwm with a desired duty cycle
+         * @brief Set a single servo's pwm with a desired duty cycle (final endpoint for overloads)
          * @param sel_servo The specific servo to set/move
          * @param angle The position to move the servo to
          * @return ReturnCodes Success if no issues
@@ -122,7 +122,7 @@ class ServoController : public gpio::Interface::PCA9685 {
     private:
         /******************************************** Private Variables ********************************************/
 
-        std::unordered_map<I2C_ServoAddr, int> pos;     // maps the servo's to their current positions (angles)
+        mutable std::unordered_map<I2C_ServoAddr, int> pos;     // maps the servo's to their current positions (angles)
 
         /********************************************* Helper Functions ********************************************/
 

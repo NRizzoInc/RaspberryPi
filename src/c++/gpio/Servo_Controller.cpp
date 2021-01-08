@@ -47,6 +47,7 @@ ReturnCodes ServoController::init() const {
         return ReturnCodes::Error;
     }
 
+    // starts servos at 90 degrees (neutral)
     if (SetServoPWM({{I2C_ServoAddr::PITCH, 90}, {I2C_ServoAddr::YAW, 90}}) != ReturnCodes::Success) {
         cerr << "Error: Failed to init servos to neutral position" << endl;
     }
@@ -62,8 +63,12 @@ ReturnCodes ServoController::init() const {
 /********************************************* Servo Functions *********************************************/
 
 ReturnCodes ServoController::SetServoPWM(const I2C_ServoAddr sel_servo, const int angle) const {
-    // try to convert angle to pwm signal
-    return SetPwm(static_cast<int>(sel_servo), 0, AngleToPwmDuty(angle));
+    // try to convert angle to pwm signal (if success, udpate current state)
+    ReturnCodes rtn = SetPwm(static_cast<int>(sel_servo), 0, AngleToPwmDuty(angle));
+    if (rtn == ReturnCodes::Success) {
+        pos[sel_servo] = angle;
+    }
+    return rtn;
 }
 
 ReturnCodes ServoController::SetServoPWM(const ServoAnglePair pair) const {
