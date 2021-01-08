@@ -10,6 +10,7 @@
 #include <chrono>       // for setting sleep durations
 #include <thread>       // for std::this_thread
 #include <optional>
+#include <unordered_map>
 
 // Our Includes
 #include "constants.h"
@@ -120,6 +121,8 @@ class ServoController : public gpio::Interface::PCA9685 {
 
     private:
         /******************************************** Private Variables ********************************************/
+
+        std::unordered_map<I2C_ServoAddr, int> pos;     // maps the servo's to their current positions (angles)
 
         /********************************************* Helper Functions ********************************************/
 

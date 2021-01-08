@@ -15,6 +15,11 @@ using std::endl;
 
 ServoController::ServoController(const std::uint8_t servo_i2c_addr)
     : PCA9685{servo_i2c_addr}
+    , pos{{
+        // init servos to neutral position (aka 90 degrees)
+        {I2C_ServoAddr::YAW, 90},
+        {I2C_ServoAddr::PITCH, 90}
+    }}
 {
     // stub
 }
