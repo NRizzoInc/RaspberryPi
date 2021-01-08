@@ -59,6 +59,10 @@ ReturnCodes ServoController::init() const {
 
 /********************************************* Getters/Setters *********************************************/
 
+int ServoController::GetServoPos(const I2C_ServoAddr sel_servo) const {
+    return pos.at(sel_servo);
+}
+
 
 /********************************************* Servo Functions *********************************************/
 

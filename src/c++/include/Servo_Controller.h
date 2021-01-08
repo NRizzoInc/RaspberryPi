@@ -83,6 +83,16 @@ class ServoController : public gpio::Interface::PCA9685 {
 
         /********************************************* Getters/Setters *********************************************/
 
+        /**
+         * @brief Gets the current position of the selected servo
+         * @param sel_servo The servo whose position to check
+         * @return The servo's current angle
+         * 0: negative (left/down)
+         * 90: neutral
+         * 180: positive (right/up)
+         */
+        int GetServoPos(const I2C_ServoAddr sel_servo) const;
+
         /********************************************* Servo Functions *********************************************/
 
         /**
