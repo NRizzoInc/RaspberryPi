@@ -85,6 +85,40 @@ ReturnCodes ServoController::IncrementServoPos(const std::vector<ServoAnglePair>
     return ReturnCodes::Success;
 }
 
+
+ReturnCodes ServoController::GradualMoveServo(
+    const I2C_ServoAddr sel_servo,
+    const std::chrono::steady_clock::duration duration,
+    const int end_angle,
+    const std::optional<int> start_angle
+) const {
+    // factor in start angle not being current position
+    const int start_pos             { start_angle ? *start_angle : GetServoPos(sel_servo) };
+    const int sweep_displacement    { end_angle - start_pos };
+
+    // unit of time per each angle (handle divide by zero)
+    const std::chrono::steady_clock::duration rate { 
+        sweep_displacement > 0 ?
+            duration / sweep_displacement
+            : std::chrono::steady_clock::duration(0)
+    };
+
+    // fill vector with range of values from start to end
+    std::vector<int> positions(sweep_displacement);
+    std::iota(std::begin(positions), std::end(positions), start_pos); // each element is +1
+
+    for (const auto& curr_pos : positions) {
+        if(SetServoPos(sel_servo, curr_pos) != ReturnCodes::Success) {
+            cerr << "Error: Failed to gradually move servo" << endl;
+            return ReturnCodes::Error;
+        }
+        std::this_thread::sleep_for(rate);
+    }
+
+    // completed movement
+    return ReturnCodes::Success;
+}
+
 ReturnCodes ServoController::SetServoPos(const I2C_ServoAddr sel_servo, const int angle) const {
     // try to convert angle to pwm signal (if success, udpate current state)
     ReturnCodes rtn = SetPwm(static_cast<int>(sel_servo), 0, AngleToPwmDuty(angle));
@@ -130,12 +164,31 @@ void ServoController::testServos(
     // keep track of time/duration
     const auto start_time = std::chrono::steady_clock::now();
 
-    while (
-        !ServoController::getShouldThreadExit() &&
+    // helper fn that simplifies this repetitive function call
+    auto MoveServo = [&](bool is_yaw, int end_angle) {
+        return GradualMoveServo(
+            is_yaw ? I2C_ServoAddr::YAW : I2C_ServoAddr::PITCH,
+            std::chrono::milliseconds(interval),
+            end_angle,
+            std::nullopt
+        );
+    };
+
+    // helps keep track if duration is up (needed bc loop may take awhilem but can be split & stopped in piecemeal)
+    auto isDurationUp = [&]()->bool {
         // if duration == -1 : run forever
-        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
-    ) {
+        return
+            duration != -1 &&
+            Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1));
+    };
+
+    while (!ServoController::getShouldThreadExit() && !isDurationUp()) {
         // sweep neutral->right
+        cout << "Sweeping Servo Right" << endl;
+        if (MoveServo(true, 180) != ReturnCodes::Success) {
+            cerr << "Error: Failed to sweep servo right" << endl;
+        }
+        if (ServoController::getShouldThreadExit() || isDurationUp()) break;
 
         // sweep right->left
 

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <numeric>      // for std::iota (to fill vectors with range of values)
 #include <cmath>        // for abs
 #include <algorithm>    // for max/min
 #include <chrono>       // for setting sleep durations
@@ -107,6 +108,21 @@ class ServoController : public gpio::Interface::PCA9685 {
         ReturnCodes IncrementServoPos(const I2C_ServoAddr sel_servo, const int change_amt) const;
         ReturnCodes IncrementServoPos(const ServoAnglePair pair) const;
         ReturnCodes IncrementServoPos(const std::vector<ServoAnglePair> servo_angle_pairs) const;
+
+        /**
+         * @brief Gradually move a servo from start_angle -> end_angle
+         * @param sel_servo The servo to gradually move
+         * @param duration How long the movement of the servo should take
+         * @param end_angle The angle at which the servo should stop at
+         * @param start_pos The starting position of the servo (defaults to current position)
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes GradualMoveServo(
+            const I2C_ServoAddr sel_servo,
+            const std::chrono::steady_clock::duration duration,
+            const int end_angle,
+            const std::optional<int> start_angle
+        ) const;
 
         /**
          * @brief Set a single servo's pwm with a desired duty cycle (final endpoint for overloads)
