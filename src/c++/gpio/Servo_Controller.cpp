@@ -10,16 +10,18 @@ using std::endl;
 
 /********************************************* Static Defines *********************************************/
 
+/// Maps a specific servo to its current (angle) position
+///@note init servos to neutral position (aka 90 degrees)
+std::unordered_map<I2C_ServoAddr, int> ServoController::pos{
+    {I2C_ServoAddr::YAW, 90},
+    {I2C_ServoAddr::PITCH, 90}
+};
+
 /********************************************** Constructors **********************************************/
 
 
 ServoController::ServoController(const std::uint8_t servo_i2c_addr)
     : PCA9685{servo_i2c_addr}
-    , pos{
-        // init servos to neutral position (aka 90 degrees)
-        {I2C_ServoAddr::YAW, 90},
-        {I2C_ServoAddr::PITCH, 90}
-    }
 {
     // stub
 }
@@ -104,10 +106,21 @@ ReturnCodes ServoController::GradualMoveServo(
     };
 
     // fill vector with range of values from start to end
-    std::vector<int> positions(sweep_displacement);
-    std::iota(std::begin(positions), std::end(positions), start_pos); // each element is +1
+    // std::vector<int> positions(sweep_displacement);
+    // std::iota(std::begin(positions), std::end(positions), start_pos); // each element is +1
+    // cout << Helpers::createVecStr(positions) << endl;
 
-    for (const auto& curr_pos : positions) {
+    // two completely different stop conditions & increment/decrement based on if displacement is negative
+    const bool is_neg { sweep_displacement < 0};
+    auto isEnd = [&](const int pos_to_check){
+        return is_neg ?
+            pos_to_check < end_angle : // if negative, going towards lower angles (stop when less than end)
+            pos_to_check > end_angle ; // if positive, going towards higher angles (stop when higher than end)
+    };
+
+    // if negative, decrement (i.e. subtract by 1)
+    for (int curr_pos = start_pos; isEnd(curr_pos); curr_pos += is_neg ? -1 : 1 ) {
+        cout << "Setting servo " << static_cast<int>(sel_servo) << " to " << curr_pos << endl;
         if(SetServoPos(sel_servo, curr_pos) != ReturnCodes::Success) {
             cerr << "Error: Failed to gradually move servo" << endl;
             return ReturnCodes::Error;

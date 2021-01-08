@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <numeric>      // for std::iota (to fill vectors with range of values)
 #include <cmath>        // for abs
 #include <algorithm>    // for max/min
 #include <chrono>       // for setting sleep durations
@@ -161,7 +160,7 @@ class ServoController : public gpio::Interface::PCA9685 {
     private:
         /******************************************** Private Variables ********************************************/
 
-        mutable std::unordered_map<I2C_ServoAddr, int> pos;     // maps the servo's to their current positions (angles)
+        static std::unordered_map<I2C_ServoAddr, int> pos; // maps the servo's to their current positions (angles)
 
         /********************************************* Helper Functions ********************************************/
 
