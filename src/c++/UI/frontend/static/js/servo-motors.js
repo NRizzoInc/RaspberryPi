@@ -36,9 +36,6 @@ const servo_status = {
     "vert":     0
 }
 
-// controls how much each servo keypress effects the actual servo's position
-let servo_sensitivity = 1
-
 /**
  * @brief handles what happens after the pressing of a button via keyboard or mouse
  * @param {"forward" | "backward" | "left" | "right"} direction The direction being pressed
@@ -62,7 +59,9 @@ const pressMotors = async (direction, isDown) => {
  * @param {0 | 1 | -1} val The value to assign the servo
  */
 const pressServos = async (orient, val) => {
-    servo_status[orient] = val*servo_sensitivity
+    // controls how much each servo keypress effects the actual servo's position
+    const sensitivity_el = document.getElementById("servo-slider")
+    servo_status[orient] = val * sensitivity_el.value
     await sendServoPkt(servo_status)
 }
 
