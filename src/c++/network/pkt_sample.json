@@ -13,8 +13,8 @@
             "left":     false
         },
         "servo": {
-            "horiz":    "+1/-1/0 (right/left/unchanged)",
-            "vert":     "+1/-1/0 (up/down/unchanged)"
+            "horiz":    "+/-/0 (right/left/unchanged)",
+            "vert":     "+/-/0 (up/down/unchanged)"
         },
         "camera": {
             "is_on":    false

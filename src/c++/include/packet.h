@@ -57,8 +57,8 @@ struct motor_pkt_t {
 }; // end of motor_pkt_t
 
 struct servo_pkt_t {
-    int horiz;     // +1/-1/0 = right/left/unchanged
-    int vert;      // +1/-1/0 = up/down/unchanged
+    int horiz;     // +/-/0 = right/left/unchanged
+    int vert;      // +/-/0 = up/down/unchanged
 
     servo_pkt_t()
         : horiz{0}

@@ -30,11 +30,14 @@ const motors_status = {
     "left":     false
 }
 
-// contains current servo status (0 = unchanged, +/-1)
+// contains current servo status (0 = unchanged, or +/-#)
 const servo_status = {
     "horiz":    0,
     "vert":     0
 }
+
+// controls how much each servo keypress effects the actual servo's position
+let servo_sensitivity = 1
 
 /**
  * @brief handles what happens after the pressing of a button via keyboard or mouse
@@ -59,7 +62,7 @@ const pressMotors = async (direction, isDown) => {
  * @param {0 | 1 | -1} val The value to assign the servo
  */
 const pressServos = async (orient, val) => {
-    servo_status[orient] = val
+    servo_status[orient] = val*servo_sensitivity
     await sendServoPkt(servo_status)
 }
 
