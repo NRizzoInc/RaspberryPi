@@ -17,12 +17,13 @@ using std::endl;
 std::unordered_map<I2C_ServoAddr, ServoData> ServoController::servos{
     std::pair{
         I2C_ServoAddr::YAW,
-        ServoData{ServoAngleLimits{0, 180}, 90}
+        // moves opposite of what is expected due to hardware (i.e. 0° should move left, but normally doesnt)
+        ServoData{ServoLimits{0, 180, true}, 90}
     },
     std::pair{
         I2C_ServoAddr::PITCH,
         // limit vert servo to 90-180, but make sure it starts up level (aka the new 0°)
-        ServoData{ServoAngleLimits{90, 180}, 0}
+        ServoData{ServoLimits{90, 180}, 0}
     }
 };
 
@@ -74,7 +75,7 @@ int ServoController::GetServoPos(const I2C_ServoAddr sel_servo) const {
     return servos.at(sel_servo).pos;
 }
 
-const ServoAngleLimits& ServoController::GetServoLimits(const I2C_ServoAddr sel_servo) const {
+const ServoLimits& ServoController::GetServoLimits(const I2C_ServoAddr sel_servo) const {
     return servos.at(sel_servo).limits;
 }
 
@@ -159,16 +160,21 @@ ReturnCodes ServoController::SetServoPos(
 ) const {
     // try to convert angle to pwm signal
     // if no angle provided, default to current position
-    const int real_angle {angle ? *angle : GetServoPos(sel_servo)};
+    const int target_angle {angle ? *angle : GetServoPos(sel_servo)};
+
+    // if servo is set to move in opposite dir, get complement
+    const ServoLimits limits {GetServoLimits(sel_servo)};
+    const int real_angle {limits.opp == 1 ?  target_angle : abs(limits.max - target_angle)};
+    
     ReturnCodes rtn = SetPwm(
         static_cast<int>(sel_servo),
         0,
         AngleToPwmPulse(sel_servo, real_angle)
     );
 
-    // (if success, update current state)
+    // (if success, update current "fake" state)
     if (rtn == ReturnCodes::Success) {
-        servos[sel_servo].pos = real_angle;
+        servos[sel_servo].pos = target_angle;
     }
     return rtn;
 }
@@ -253,10 +259,7 @@ void ServoController::testServos(
         if (ServoController::getShouldThreadExit() || isDurationUp()) break;
 
         // sweep 180->0 (double distance)
-        MoveServo(false, 0, "Up -> Down", 2);
-        if (ServoController::getShouldThreadExit() || isDurationUp()) break;
-
-        MoveServo(false, 90, "Down -> Center", 1);
+        MoveServo(false, 0, "Up -> Center", 1);
         if (ServoController::getShouldThreadExit() || isDurationUp()) break;
     }
 }
@@ -288,7 +291,7 @@ int ServoController::ValidateAngle(const I2C_ServoAddr sel_servo, const int angl
     //      90°     :       135°
     //      180°    :       180°
     // https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range/281164
-    const ServoAngleLimits limits   {GetServoLimits(sel_servo)};
+    const ServoLimits limits        {GetServoLimits(sel_servo)};
     const int angle_rel_to_min      {angle - ANGLE_ABS_MIN};
     const float perc_limit          {static_cast<float>(angle_rel_to_min) / static_cast<float>(ANGLE_ABS_RANGE)};
     return (limits.range * perc_limit) + limits.min;

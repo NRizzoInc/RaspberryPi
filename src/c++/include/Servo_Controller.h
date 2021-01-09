@@ -47,21 +47,25 @@ constexpr float DUTY_PERC_RANGE {DUTY_PERC_MAX-DUTY_PERC_MIN};
  * This struct is used to define the max/min angle a servo can take so user does not have to worry about these details
  * In essence, maps normal [0, 180] => [Actual min, actual max]
  */
-struct ServoAngleLimits {
+struct ServoLimits {
     /**
      * @param min The min possible angle
      * @param max The max possible angle
+     * @param opp_dir (default=false) true if servo moves opposite expected and direction of travel should be flipped
+     * (usually a hardware limitation where 0° & 180° are opposite of what you want them to be)
      */
-    ServoAngleLimits(const int min=ANGLE_ABS_MIN, const int max=ANGLE_ABS_MAX)
+    ServoLimits(const int min=ANGLE_ABS_MIN, const int max=ANGLE_ABS_MAX, const bool opp_dir=false)
         : min{min}
         , max{max}
         , range{max-min}
+        , opp{opp_dir ? -1 : 1} // 1 (positive) means normal 
         {}
 
-    const int min;        // the min angle the servo can take (maps to 0)
-    const int max;        // the max angle the servo can take (maps to 180)
-    const int range;      // the servo's actual arc length (i.e. 90-180 would have range = 90)
-}; // end of ServoAngleLimits
+    const int min;      // the min angle the servo can take (maps to 0°)
+    const int max;      // the max angle the servo can take (maps to 180°)
+    const int range;    // the servo's actual arc length (i.e. 90°-180° would have range = 90°)
+    const int opp;     // (1=normal) -1 if this servo's 0° produces what 180° should and vice versa
+}; // end of ServoLimits
 
 /**
  * @brief Contains all relevant data for a servo
@@ -71,12 +75,12 @@ struct ServoData {
      * @param angle_limits The limits of the given servo
      * @param start_angle The position the servo should start at
      */
-    ServoData(const ServoAngleLimits& angle_limits=ServoAngleLimits{}, const int start_angle=90)
+    ServoData(const ServoLimits& angle_limits=ServoLimits{}, const int start_angle=90)
         : limits{angle_limits}
         , pos{start_angle}
         {}
 
-    const ServoAngleLimits limits;  // the servo's movement/angle limits
+    const ServoLimits limits;  // the servo's movement/angle limits
     int pos;                        // the current angle position of the servo
 }; // end of ServoData
 
@@ -153,7 +157,7 @@ class ServoController : public gpio::Interface::PCA9685 {
          * @param sel_servo The servo whose limits to check
          * @return The servo's angle limits
          */
-        const ServoAngleLimits& GetServoLimits(const I2C_ServoAddr sel_servo) const;
+        const ServoLimits& GetServoLimits(const I2C_ServoAddr sel_servo) const;
 
 
         /********************************************* Servo Functions *********************************************/
