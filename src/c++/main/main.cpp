@@ -42,10 +42,11 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     // determine if dealing with server or client
-    const bool is_client { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "client" };
-    const bool is_server { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "server" };
-    const bool is_cam    { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "camera" };
-    const bool is_net    { is_client || is_server }; // true if client or server
+    // need to be static to be captured by ctrl+c lambda
+    static const bool is_client { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "client" };
+    static const bool is_server { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "server" };
+    static const bool is_cam    { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "camera" };
+    static const bool is_net    { is_client || is_server }; // true if client or server
 
     /* ============================================ Create GPIO Obj =========================================== */
     // create single static gpio obj to controll rpi
@@ -96,6 +97,11 @@ int main(int argc, char* argv[]) {
         cout << "Caught ctrl+c: " << signum << endl;
         if(gpio_handler.setShouldThreadExit(true) != RPI::ReturnCodes::Success) {
             cerr << "Error: Failed to stop gpio thread" << endl;
+        }
+
+        // send reset packet to server if client
+        if(is_client && net_agent->updatePkt({}) != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to send reset command to server" << endl;
         }
         
         if(net_agent->setExitCode(true) != RPI::ReturnCodes::Success) {
