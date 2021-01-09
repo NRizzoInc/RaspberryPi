@@ -195,10 +195,11 @@ ReturnCodes ServoController::SetServoPos(const std::vector<ServoAnglePair> servo
 ReturnCodes ServoController::TurnServosOff() const {
     // have to make sure to turn ON mode off, and OFF mode on
     bool rtn_succ {true};
-    rtn_succ &= TurnFullOff(static_cast<int>(I2C_ServoAddr::PITCH), true) == ReturnCodes::Success;
-    rtn_succ &= TurnFullOn(static_cast<int>(I2C_ServoAddr::PITCH), false) == ReturnCodes::Success;
-    rtn_succ &= TurnFullOff(static_cast<int>(I2C_ServoAddr::YAW), true) == ReturnCodes::Success;
-    rtn_succ &= TurnFullOn(static_cast<int>(I2C_ServoAddr::YAW), false) == ReturnCodes::Success;
+    for (const auto& servo_to_off : servos) {
+        const int servo_ch {static_cast<int>(servo_to_off.first)};
+        rtn_succ &= TurnFullOff(servo_ch, true) == ReturnCodes::Success;
+        rtn_succ &= TurnFullOn(servo_ch, false) == ReturnCodes::Success;
+    }
     return rtn_succ ? ReturnCodes::Success : ReturnCodes::Error;
 }
 
