@@ -129,18 +129,22 @@ $("document").ready( async () => {
 
         stop_dict.intervals.push(setInterval(
             async () => {
+                // attach random string to force reload of JUST the image
+                const cache_refresh = `?v=${new Date().getTime()}`
+                const new_img_url = cam_original_src + cache_refresh
+
                 // if connection dies, dont try to reload image (keep last)
                 // only refresh image if backend is still up
                 // -- prevents issue with reloading to blank image and erroring
-                const src_exist = await doesPageExist(cam_original_src, "GET")
+                const src_exist = await doesPageExist(new_img_url, "GET")
                 if (!src_exist) {
                     StopCamActivites()
                     return // prevent latest frame from reloading
                 }
 
-                // attach random string to force reload of JUST the image
-                const cache_refresh = `?v=${new Date().getTime()}`
-                cam_vid.src = cam_original_src + cache_refresh
+                // actually reload page
+                cam_vid.src = new_img_url
+
             }, 1000 / fps // need ms per frame
         ))
     }
