@@ -4,7 +4,7 @@
  * The arrow/wasd keys are responsible for the robot's motors & movement
  */
 
-import { sendMotorPkt } from "./pkt.js"
+import { sendMotorPkt, sendServoPkt } from "./pkt.js"
 
 /**
  * @brief Gets which controller is being used based on element
@@ -30,13 +30,19 @@ const motors_status = {
     "left":     false
 }
 
+// contains current servo status (0 = unchanged, +/-1)
+const servo_status = {
+    "horiz":    0,
+    "vert":     0
+}
+
 /**
  * @brief handles what happens after the pressing of a button via keyboard or mouse
  * @param {"forward" | "backward" | "left" | "right"} direction The direction being pressed
  * @param {Boolean} isDown True if key is currently being pressed, False if is not
  * @note keyCode list: https://keycode.info/
  */
-const press = async (direction, isDown) => {
+const pressMotors = async (direction, isDown) => {
     // if down, motor should turn on (needs to be true/false for json to be parsable)
     //  -- lucky that js & c++ use same nomenclature)
 
@@ -49,6 +55,15 @@ const press = async (direction, isDown) => {
 }
 
 /**
+ * @param {"horiz" | "vert"} orient Which servo 
+ * @param {0 | 1 | -1} val The value to assign the servo
+ */
+const pressServos = async (orient, val) => {
+    servo_status[orient] = val
+    await sendServoPkt(servo_status)
+}
+
+/**
  * @brief keyboard listener handler
  * @param {EventListenerObject} e The event object
  * @param {Boolean} isDown True if key is currently being pressed, False if is not
@@ -56,21 +71,32 @@ const press = async (direction, isDown) => {
  */
 const handleKeyboard = (e, isDown) => {
     switch (e.key) {
-        case "a":
+        // servo keypresses
         case "ArrowLeft":
-            press("left", isDown);
+            pressServos("horiz", isDown ? -1 : 0)
+            break;
+        case "ArrowRight":
+            pressServos("horiz", isDown ?  1 : 0)
+            break;
+        case "ArrowUp":
+            pressServos("vert", isDown ?  1 : 0)
+            break;
+        case "ArrowDown":
+            pressServos("vert", isDown ? -1 : 0)
+            break;
+
+        // motor keypresses
+        case "a":
+            pressMotors("left", isDown);
             break;
         case "d":
-        case "ArrowRight":
-            press("right", isDown);
+            pressMotors("right", isDown);
             break;
         case "w":
-        case "ArrowUp":
-            press("forward", isDown);
+            pressMotors("forward", isDown);
             break;
         case "s":
-        case "ArrowDown":
-            press("backward", isDown);
+            pressMotors("backward", isDown);
             break;
     }
 }
