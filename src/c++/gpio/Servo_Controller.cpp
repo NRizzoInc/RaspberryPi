@@ -170,6 +170,8 @@ ReturnCodes ServoController::SetServoPos(
     // (if success, update current "fake" state)
     if (rtn == ReturnCodes::Success) {
         servos[sel_servo].pos = target_angle;
+    } else {
+        cerr << "Failed to set servo " << static_cast<int>(sel_servo) << " to " << target_angle << endl;
     }
     return rtn;
 }
