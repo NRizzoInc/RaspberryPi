@@ -32,7 +32,8 @@ It is much simpler to actually run **both** the client & server on the RPI witho
 2. Gradually increase the brightness of the LEDs until they reach the maximum and restart: `--mode intensity`
 3. Control the LEDs using their corresponding buttons: `--mode btns`
 4. Test the robots capability to move in each direction: `--mode motors`
-5. test the camera and save the latest frame to disk: `--mode camera`
+5. Test the robots capability to move the camera's servos: `--mode servos`
+6. Test the camera and save the latest frame to disk: `--mode camera`
 
 Use `./main.py --help` or `./bin/rpi_driver --help` to learn how to use it.
 
@@ -81,5 +82,3 @@ Click on raspberry pi symbol on top left -> "Preferences" -> "Raspberry Pi Confi
 ### Final Appearance
 
 ![image.png](https://images.zenhubusercontent.com/5f0e67368238228fc09554ca/393abaf8-8595-44c4-8e1d-608d4d057b1f)
-
-
