@@ -21,7 +21,8 @@ std::unordered_map<I2C_ServoAddr, ServoData> ServoController::servos{
     },
     std::pair{
         I2C_ServoAddr::PITCH,
-        ServoData{ServoAngleLimits{90, 180}, 90}
+        // limit vert servo to 90-180, but make sure it starts up level (aka the new 0°)
+        ServoData{ServoAngleLimits{90, 180}, 0}
     }
 };
 
