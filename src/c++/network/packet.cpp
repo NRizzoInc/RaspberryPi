@@ -149,6 +149,8 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     translated_pkt.cntrl.motor.backward = findIfExists<bool>(data, {"control",  "motor",    "backward"  });
     translated_pkt.cntrl.motor.right    = findIfExists<bool>(data, {"control",  "motor",    "right"     });
     translated_pkt.cntrl.motor.left     = findIfExists<bool>(data, {"control",  "motor",    "left"      });
+    translated_pkt.cntrl.servo.horiz    = findIfExists<int> (data, {"control",  "servo",    "horiz"     });
+    translated_pkt.cntrl.servo.vert     = findIfExists<int> (data, {"control",  "servo",    "vert"      });
     translated_pkt.cntrl.camera.is_on   = findIfExists<bool>(data, {"control",  "camera",   "is_on"     });
     translated_pkt.ACK                  = findIfExists<bool>(data, {"ACK"});
 
@@ -178,6 +180,10 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
                 {"backward",    pkt.cntrl.motor.backward},
                 {"right",       pkt.cntrl.motor.right},
                 {"left",        pkt.cntrl.motor.left}
+            }},
+            {"servo", {
+                {"horiz",       pkt.cntrl.servo.horiz},
+                {"vert",        pkt.cntrl.servo.vert},
             }},
             {"camera", {
                 {"is_on",       pkt.cntrl.camera.is_on}
