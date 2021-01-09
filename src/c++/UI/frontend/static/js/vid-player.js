@@ -4,7 +4,7 @@
  */
 
 import { getJsonData, doesPageExist } from "./request_handler.js"
-import { sendPkt } from "./pkt.js"
+import { sendCamPkt } from "./pkt.js"
 
 
 // todo: add image title, hover, etc
@@ -33,7 +33,7 @@ $("document").ready( async () => {
     }
 
     // start off by initializing camera properly
-    sendPkt({}, {}, {}, camera_status)
+    sendCamPkt(camera_status)
 
     /**************************************** Event Listeners ****************************************************/
 
@@ -64,7 +64,7 @@ $("document").ready( async () => {
         }
 
         // update backend with camera status
-        sendPkt({}, {}, {}, camera_status)
+        sendCamPkt(camera_status)
     }
 
     /**

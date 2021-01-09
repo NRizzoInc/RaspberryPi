@@ -4,7 +4,7 @@
  * The arrow/wasd keys are responsible for the robot's motors & movement
  */
 
-import { sendPkt } from "./pkt.js"
+import { sendMotorPkt } from "./pkt.js"
 
 /**
  * @brief Gets which controller is being used based on element
@@ -44,7 +44,7 @@ const press = async (direction, isDown) => {
     // (prevent sending duplicate packets)
     if (motors_status[direction] != isDown) {
         motors_status[direction] = isDown
-        await sendPkt({}, motors_status, {}, {})
+        await sendMotorPkt(motors_status)
     }
 }
 
