@@ -58,6 +58,12 @@ ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
 
 /********************************************* Client Functions ********************************************/
 
+ReturnCodes TcpClient::sendResetPkt() {
+    // no special cases that should use default (yet)
+    // setting a new packet triggers control thread to send this new packet
+    return updatePkt({});
+}
+
 void TcpClient::ControlLoopFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)

@@ -99,6 +99,12 @@ class TcpBase : public Packet {
         bool getIsInit() const;
         void setIsInit(const bool new_status);
 
+        /**
+         * @brief Sends a reset packet to the other host
+         * @return Success if no issues
+         */
+        virtual ReturnCodes sendResetPkt() = 0;
+
     protected:
         /****************************************** Shared Common Functions ****************************************/
 

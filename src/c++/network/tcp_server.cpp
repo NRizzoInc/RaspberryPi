@@ -110,6 +110,12 @@ const std::vector<unsigned char>& TcpServer::getLatestCamFrame() const {
     return Packet::getLatestCamFrame();
 }
 
+ReturnCodes TcpServer::sendResetPkt() {
+    // make sure client receives last cam frame before shutdown
+    // setting a new packet triggers video thread to send this new packet
+    return setLatestCamFrame(getLatestCamFrame());
+}
+
 void TcpServer::ControlLoopFn(const bool print_data) {
     // create a char buffer that hold the max allowed size
     char buf[Constants::Network::MAX_DATA_SIZE];
