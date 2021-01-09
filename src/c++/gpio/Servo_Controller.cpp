@@ -83,8 +83,12 @@ const ServoLimits& ServoController::GetServoLimits(const I2C_ServoAddr sel_servo
 /********************************************* Servo Functions *********************************************/
 
 ReturnCodes ServoController::IncrementServoPos(const I2C_ServoAddr sel_servo, const int change_amt) const {
-    const int updated_angle       {GetServoPos(sel_servo) + change_amt};
-    const int valid_updated_angle {ValidateAngle(sel_servo, updated_angle)};
+    if (change_amt == 0) return ReturnCodes::Success;
+
+    const int curr_angle            {GetServoPos(sel_servo)};
+    const int updated_angle         {curr_angle + change_amt};
+    // SetServoPos() handles the scaling of the angle, just need to make sure its within the valid range
+    const int valid_updated_angle   {std::min(ANGLE_ABS_MAX, std::max(ANGLE_ABS_MIN, updated_angle))};
     return SetServoPos(sel_servo, valid_updated_angle);
 }
 

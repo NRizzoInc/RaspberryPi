@@ -242,6 +242,7 @@ class ServoController : public gpio::Interface::PCA9685 {
          * @param sel_servo The servo whose angle is being validated
          * @param angle The angle to validate/check
          * @return An angle within the range [0, 180]
+         * @note Should only be used by SetServoPos() or else might counteract itself
          */
         int ValidateAngle(const I2C_ServoAddr sel_servo, const int angle) const;
 
