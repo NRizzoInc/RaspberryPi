@@ -30,6 +30,12 @@ const motors_status = {
     "left":     false
 }
 
+// controls & stores the servo's sensitivity via arrow keys
+const sensitivity_el = document.getElementById("servo-slider")
+const sensitivity_out_el = document.getElementById("servo-slider-val")
+const sensitivity_beg_msg = sensitivity_out_el.innerHTML // save prior to editing and adding actual sensitivity val
+const handleSider = () => sensitivity_out_el.innerHTML = `${sensitivity_beg_msg} ${sensitivity_el.value}`
+
 // contains current servo status (0 = unchanged, or +/-#)
 const servo_status = {
     "horiz":    0,
@@ -60,7 +66,6 @@ const pressMotors = async (direction, isDown) => {
  */
 const pressServos = async (orient, val) => {
     // controls how much each servo keypress effects the actual servo's position
-    const sensitivity_el = document.getElementById("servo-slider")
     servo_status[orient] = val * sensitivity_el.value
     await sendServoPkt(servo_status)
 }
@@ -121,3 +126,7 @@ ctrlers.forEach( (btn_el) => {
     btn_el.addEventListener("mousedown",  (e) => handleMouse(e, true))
     btn_el.addEventListener("mouseup",    (e) => handleMouse(e, false))
 })
+
+// Update the current slider value (each time the slider is dragged)
+sensitivity_el.addEventListener("input", (e) => handleSider())
+handleSider() // display default slider value on load
