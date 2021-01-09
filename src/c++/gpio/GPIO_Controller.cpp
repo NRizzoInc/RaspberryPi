@@ -121,20 +121,25 @@ ReturnCodes GPIOController::gpioHandlePkt(const Network::CommonPkt& pkt) const {
     bool rtn {true}; // changes to false if any return not Success
 
     // handle leds
-    const auto& leds_status  {pkt.cntrl.led};
+    const auto& leds_status { pkt.cntrl.led };
     rtn &= ReturnCodes::Success == setLED("blue",          leds_status.blue);
     rtn &= ReturnCodes::Success == setLED("green",         leds_status.green);
     rtn &= ReturnCodes::Success == setLED("red",           leds_status.red);
     rtn &= ReturnCodes::Success == setLED("yellow",        leds_status.yellow);
 
     // handle motors
-    const auto& motor_status         { pkt.cntrl.motor };
-    rtn &= ReturnCodes::Success == ChangeMotorDir(
+    const auto& motor_status { pkt.cntrl.motor };
+    rtn &= ChangeMotorDir(
         motor_status.forward,
         motor_status.backward,
         motor_status.left,
         motor_status.right
-    );
+    ) == ReturnCodes::Success;
+
+    // handle servos
+    const auto& servo_status { pkt.cntrl.servo };
+    rtn &= IncrementServoPos(Servo::I2C_ServoAddr::YAW, servo_status.horiz) == ReturnCodes::Success;
+    rtn &= IncrementServoPos(Servo::I2C_ServoAddr::PITCH, servo_status.vert) == ReturnCodes::Success;
 
     return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 }
