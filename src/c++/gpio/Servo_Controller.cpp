@@ -125,11 +125,6 @@ ReturnCodes ServoController::GradualMoveServo(
             : std::chrono::steady_clock::duration(0)
     };
 
-    // fill vector with range of values from start to end
-    // std::vector<int> positions(sweep_displacement);
-    // std::iota(std::begin(positions), std::end(positions), start_pos); // each element is +1
-    // cout << Helpers::createVecStr(positions) << endl;
-
     // two completely different stop conditions & increment/decrement based on if displacement is negative
     const bool is_neg { sweep_displacement < 0};
     auto isEnd = [&](const int pos_to_check){
