@@ -33,6 +33,10 @@ export const sendPkt = async (
         "right":    false,
         "left":     false
     },
+    servos={
+        "horiz":    0, // +1/-1/0 (right/left/unchanged)
+        "vert":     0  // +1/-1/0 (up/down/unchanged)
+    },
     camera={}
 ) => {
     // handle sending data back to web app server
@@ -40,6 +44,7 @@ export const sendPkt = async (
         "control": {
             "led"       : leds,
             "motor"     : motors,
+            "servo"     : servos,
             "camera"    : camera
         },
     }

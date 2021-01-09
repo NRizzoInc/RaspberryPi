@@ -44,7 +44,7 @@ const press = async (direction, isDown) => {
     // (prevent sending duplicate packets)
     if (motors_status[direction] != isDown) {
         motors_status[direction] = isDown
-        await sendPkt({}, motors_status)
+        await sendPkt({}, motors_status, {}, {})
     }
 }
 

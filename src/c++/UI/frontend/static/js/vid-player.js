@@ -33,7 +33,7 @@ $("document").ready( async () => {
     }
 
     // start off by initializing camera properly
-    sendPkt({}, {}, camera_status)
+    sendPkt({}, {}, {}, camera_status)
 
     /**************************************** Event Listeners ****************************************************/
 
@@ -64,7 +64,7 @@ $("document").ready( async () => {
         }
 
         // update backend with camera status
-        sendPkt({}, {}, camera_status)
+        sendPkt({}, {}, {}, camera_status)
     }
 
     /**
