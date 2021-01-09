@@ -29,7 +29,7 @@ class GPIOBase {
         /********************************************* Getters/Setters *********************************************/
 
         virtual bool getIsInit() const;
-        ReturnCodes setIsInit(const bool new_state) const;
+        virtual ReturnCodes setIsInit(const bool new_state) const;
 
         /**
          * @brief Set whether the thread should stop

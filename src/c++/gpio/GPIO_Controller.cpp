@@ -14,11 +14,12 @@ namespace gpio {
 const ModeMap GPIOController::mode_to_action {GPIOController::createFnMap()};
 
 /********************************************** Constructors **********************************************/
-GPIOController::GPIOController(const std::uint8_t motor_i2c_addr)
+GPIOController::GPIOController(const std::uint8_t i2c_addr)
     // call constructors for parents
     : LED::LEDController()
     , Button::ButtonController()
-    , Motor::MotorController(motor_i2c_addr)
+    , Motor::MotorController(i2c_addr)
+    , Servo::ServoController(i2c_addr)
 
     // init vars
     , run_thread{}
@@ -66,6 +67,7 @@ bool GPIOController::getIsInit() const {
     return LEDController::getIsInit() 
         && ButtonController::getIsInit()
         && MotorController::getIsInit()
+        && ServoController::getIsInit()
         ;
 }
 
@@ -89,6 +91,10 @@ ReturnCodes GPIOController::init() const {
         cerr << "Failed to properly init motors" << endl;
         return ReturnCodes::Error;
     }
+    if (ServoController::init() != ReturnCodes::Success) {
+        cerr << "Failed to properly init servos" << endl;
+        return ReturnCodes::Error;
+    }
 
     // set callback so that when the button is pressed, the LED's state changes
     ButtonController::setBtnCallback([&](const std::string& color, const bool btn_state){
@@ -106,6 +112,7 @@ ReturnCodes GPIOController::setShouldThreadExit(const bool new_status) const {
     rtn &= LEDController::setShouldThreadExit(new_status)       == ReturnCodes::Success;
     rtn &= ButtonController::setShouldThreadExit(new_status)    == ReturnCodes::Success;
     rtn &= MotorController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
+    rtn &= ServoController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
     return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 
 }
@@ -114,20 +121,25 @@ ReturnCodes GPIOController::gpioHandlePkt(const Network::CommonPkt& pkt) const {
     bool rtn {true}; // changes to false if any return not Success
 
     // handle leds
-    const auto& leds_status  {pkt.cntrl.led};
+    const auto& leds_status { pkt.cntrl.led };
     rtn &= ReturnCodes::Success == setLED("blue",          leds_status.blue);
     rtn &= ReturnCodes::Success == setLED("green",         leds_status.green);
     rtn &= ReturnCodes::Success == setLED("red",           leds_status.red);
     rtn &= ReturnCodes::Success == setLED("yellow",        leds_status.yellow);
 
     // handle motors
-    const auto& motor_status         { pkt.cntrl.motor };
-    rtn &= ReturnCodes::Success == ChangeMotorDir(
+    const auto& motor_status { pkt.cntrl.motor };
+    rtn &= ChangeMotorDir(
         motor_status.forward,
         motor_status.backward,
         motor_status.left,
         motor_status.right
-    );
+    ) == ReturnCodes::Success;
+
+    // handle servos
+    const auto& servo_status { pkt.cntrl.servo };
+    rtn &= IncrementServoPos(Servo::I2C_ServoAddr::YAW, servo_status.horiz) == ReturnCodes::Success;
+    rtn &= IncrementServoPos(Servo::I2C_ServoAddr::PITCH, servo_status.vert) == ReturnCodes::Success;
 
     return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 }
@@ -196,7 +208,8 @@ ModeMap GPIOController::createFnMap() {
     to_rtn["blink"]       = reinterpret_cast<void(LEDController::*)()>(&LEDController::blinkLEDs);
     to_rtn["intensity"]   = reinterpret_cast<void(LEDController::*)()>(&LEDController::LEDIntensity);
     to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
-    to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testLoop);
+    to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testMotorsLoop);
+    to_rtn["servos"]      = reinterpret_cast<void(GPIOController::*)()>(&ServoController::testServos);
     to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["client"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["camera"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);

@@ -20,10 +20,10 @@
 #include "LED_Controller.h"
 #include "Button_Controller.h"
 #include "Motor_Controller.h"
+#include "Servo_Controller.h"
 #include "packet.h"
 
 // 3rd Party Includes
-#include <wiringPi.h>
 
 namespace RPI {
 namespace gpio {
@@ -42,16 +42,21 @@ using ModeMap = Helpers::Map::ClassFnMap<GPIOController>;
 /**
  * @brief Handles all GPIO related operations
  */
-class GPIOController : public LED::LEDController, public Button::ButtonController, public Motor::MotorController {
+class GPIOController : 
+    public LED::LEDController,
+    public Button::ButtonController,
+    public Motor::MotorController, 
+    public Servo::ServoController
+{
     public:
         /********************************************** Constructors **********************************************/
 
         /**
          * @brief Construct a gpio controller responsible for managing all things relating to the gpio
          * (i.e. buttons, leds, motors, etc...)
-         * @param motor_i2c_addr The address of the motor controller i2c board
+         * @param i2c_addr The address of the i2c PCA9685 device
          */
-        GPIOController(const std::uint8_t motor_i2c_addr);
+        GPIOController(const std::uint8_t i2c_addr);
         virtual ~GPIOController();
 
         /********************************************* Getters/Setters *********************************************/

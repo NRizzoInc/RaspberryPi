@@ -56,6 +56,16 @@ struct motor_pkt_t {
         {}
 }; // end of motor_pkt_t
 
+struct servo_pkt_t {
+    int horiz;     // +/-/0 = right/left/unchanged
+    int vert;      // +/-/0 = up/down/unchanged
+
+    servo_pkt_t()
+        : horiz{0}
+        , vert{0}
+        {}
+}; // end of servo_pkt_t
+
 struct camera_pkt_t {
     bool is_on;
 
@@ -68,6 +78,7 @@ struct camera_pkt_t {
 struct control_t {
     led_pkt_t led;
     motor_pkt_t motor;
+    servo_pkt_t servo;
     camera_pkt_t camera;
 }; // end of control_t
 

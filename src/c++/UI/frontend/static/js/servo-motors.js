@@ -4,7 +4,7 @@
  * The arrow/wasd keys are responsible for the robot's motors & movement
  */
 
-import { sendPkt } from "./pkt.js"
+import { sendMotorPkt, sendServoPkt } from "./pkt.js"
 
 /**
  * @brief Gets which controller is being used based on element
@@ -30,13 +30,25 @@ const motors_status = {
     "left":     false
 }
 
+// controls & stores the servo's sensitivity via arrow keys
+const sensitivity_el = document.getElementById("servo-slider")
+const sensitivity_out_el = document.getElementById("servo-slider-val")
+const sensitivity_beg_msg = sensitivity_out_el.innerHTML // save prior to editing and adding actual sensitivity val
+const handleSider = () => sensitivity_out_el.innerHTML = `${sensitivity_beg_msg} ${sensitivity_el.value}`
+
+// contains current servo status (0 = unchanged, or +/-#)
+const servo_status = {
+    "horiz":    0,
+    "vert":     0
+}
+
 /**
  * @brief handles what happens after the pressing of a button via keyboard or mouse
  * @param {"forward" | "backward" | "left" | "right"} direction The direction being pressed
  * @param {Boolean} isDown True if key is currently being pressed, False if is not
  * @note keyCode list: https://keycode.info/
  */
-const press = async (direction, isDown) => {
+const pressMotors = async (direction, isDown) => {
     // if down, motor should turn on (needs to be true/false for json to be parsable)
     //  -- lucky that js & c++ use same nomenclature)
 
@@ -44,8 +56,18 @@ const press = async (direction, isDown) => {
     // (prevent sending duplicate packets)
     if (motors_status[direction] != isDown) {
         motors_status[direction] = isDown
-        await sendPkt({}, motors_status)
+        await sendMotorPkt(motors_status)
     }
+}
+
+/**
+ * @param {"horiz" | "vert"} orient Which servo 
+ * @param {0 | 1 | -1} val The value to assign the servo
+ */
+const pressServos = async (orient, val) => {
+    // controls how much each servo keypress effects the actual servo's position
+    servo_status[orient] = val * sensitivity_el.value
+    await sendServoPkt(servo_status)
 }
 
 /**
@@ -56,21 +78,32 @@ const press = async (direction, isDown) => {
  */
 const handleKeyboard = (e, isDown) => {
     switch (e.key) {
-        case "a":
+        // servo keypresses
         case "ArrowLeft":
-            press("left", isDown);
+            pressServos("horiz", isDown ? -1 : 0)
+            break;
+        case "ArrowRight":
+            pressServos("horiz", isDown ?  1 : 0)
+            break;
+        case "ArrowUp":
+            pressServos("vert", isDown ?  1 : 0)
+            break;
+        case "ArrowDown":
+            pressServos("vert", isDown ? -1 : 0)
+            break;
+
+        // motor keypresses
+        case "a":
+            pressMotors("left", isDown);
             break;
         case "d":
-        case "ArrowRight":
-            press("right", isDown);
+            pressMotors("right", isDown);
             break;
         case "w":
-        case "ArrowUp":
-            press("forward", isDown);
+            pressMotors("forward", isDown);
             break;
         case "s":
-        case "ArrowDown":
-            press("backward", isDown);
+            pressMotors("backward", isDown);
             break;
     }
 }
@@ -93,3 +126,7 @@ ctrlers.forEach( (btn_el) => {
     btn_el.addEventListener("mousedown",  (e) => handleMouse(e, true))
     btn_el.addEventListener("mouseup",    (e) => handleMouse(e, false))
 })
+
+// Update the current slider value (each time the slider is dragged)
+sensitivity_el.addEventListener("input", (e) => handleSider())
+handleSider() // display default slider value on load

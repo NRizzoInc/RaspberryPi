@@ -8,12 +8,13 @@
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/common.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/d-pad.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/button.css">
-    <link rel="stylesheet" type="text/css" href="../static/extern/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="../static/stylesheets/video.css">
+    <link rel="stylesheet" type="text/css" href="../static/stylesheets/rangeslider.css">
+    <link rel="stylesheet" type="text/css" href="../static/extern/font-awesome-4.7.0/css/font-awesome.min.css">
     <script type="module" src="../static/js/jquery.js"></script>
     <script type="module" src="../static/js/pkt.js"></script>
     <script type="module" src="../static/js/buttons.js"></script>
-    <script type="module" src="../static/js/d-pad.js"></script>
+    <script type="module" src="../static/js/servo-motors.js"></script>
     <script type="module" src="../static/js/vid-player.js"></script>
     <script type="module" src="../static/js/request_handler.js"></script>
     <title>RaspberryPi Client</title>
@@ -28,12 +29,20 @@
             <div class="width-50 vert-arrange">
                 <img id="Cam-Stream" class="cam-stream" src="/Camera">
                 <!--toggle with playpause-icon (start off showing pause bc starts on)-->
-                <button id="play-pause-cam-btn" class="cam-btns width-10">
-                    <i id="play-pause-cam-icon" class="fa"></i>
-                </button>
+                <div class="row flex-inline width-50 ">
+                    <button id="play-pause-cam-btn" class="cam-btns width-10">
+                        <i id="play-pause-cam-icon" class="fa"></i>
+                    </button>
+                    <div class="width-50 margin-horiz">
+                        <input id="servo-slider" type="range" min="0" max="40" value="5" class="slider">
+                        <label id="servo-slider-val" for="servo-slider" class="servo-slider-text">
+                            Servo Sensitivty:
+                        </label>
+                    </div>
+                </div>
             </div>
             <!------------------------- D-Pad HTML: https://codepen.io/tswone/pen/GLzZLd ------------------------->
-            <div class="width-50">
+            <div class="width-40">
                 <nav class="d-pad">
                     <a class="forward"      name="d-pad-forward"    href="#"></a>
                     <a class="right"        name="d-pad-right"      href="#"></a>

@@ -3,7 +3,7 @@
  * @file Handles the toggling of led button colors
  */
 
-import { sendPkt } from "./pkt.js"
+import { sendLedPkt } from "./pkt.js"
 
 const ColorList = ["red", "yellow", "green", "blue"]
 
@@ -42,7 +42,7 @@ const leds_state = led_btns.reduce((led_dict, el) => {
 const handleEvent = (btn_color) => {
     // toggle state
     leds_state[btn_color] = !leds_state[btn_color]
-    sendPkt(leds_state, {})
+    sendLedPkt(leds_state)
 
     // if on, keep button darker/highlighted
     const darken_class = "btn-darken"

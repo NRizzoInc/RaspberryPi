@@ -12,6 +12,10 @@
             "right":    false,
             "left":     false
         },
+        "servo": {
+            "horiz":    "+/-/0 (right/left/unchanged)",
+            "vert":     "+/-/0 (up/down/unchanged)"
+        },
         "camera": {
             "is_on":    false
         }
