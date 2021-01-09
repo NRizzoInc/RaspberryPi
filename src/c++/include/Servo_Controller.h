@@ -120,7 +120,7 @@ struct ServoAnglePair {
  * 0°   :  2.5% (normally 5%)
  * 90°  :  7.5%
  * 180° : 12.5% (normally 10%)
- * 360 continous spinning: >= ~13%
+ * 360° continous spinning: >= ~13%
  */
 class ServoController : public gpio::Interface::PCA9685 {
 
@@ -146,9 +146,9 @@ class ServoController : public gpio::Interface::PCA9685 {
          * @brief Gets the current position of the selected servo
          * @param sel_servo The servo whose position to check
          * @return The servo's current angle
-         * 0: negative (left/down)
-         * 90: neutral
-         * 180: positive (right/up)
+         * 0°: negative (left/down)
+         * 90°: neutral
+         * 180°: positive (right/up)
          */
         int GetServoPos(const I2C_ServoAddr sel_servo) const;
 
