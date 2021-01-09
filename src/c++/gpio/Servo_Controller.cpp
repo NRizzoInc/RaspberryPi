@@ -280,9 +280,17 @@ int ServoController::AngleToPwmPulse(const I2C_ServoAddr sel_servo, const int an
 
 int ServoController::ValidateAngle(const I2C_ServoAddr sel_servo, const int angle) const {
     // should be between 0-180 but due to safety reasons servos cant do full range
-    //  ~45 (50 to be safe) to 160 [50-160]
-    const ServoAngleLimits limits {GetServoLimits(sel_servo)};
-    return std::max(limits.min, std::min(limits.max, angle));
+    // user expects 0-180 so if limited, need to scale appropriately
+    // i.e. min = 90 & max = 180:
+    //  Input Angle :  Output Angle
+    //      0°      :       90°
+    //      90°     :       135°
+    //      180°    :       180°
+    // https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range/281164
+    const ServoAngleLimits limits   {GetServoLimits(sel_servo)};
+    const int angle_rel_to_min      {angle - ANGLE_ABS_MIN};
+    const float perc_limit          {static_cast<float>(angle_rel_to_min) / static_cast<float>(ANGLE_ABS_RANGE)};
+    return (limits.range * perc_limit) + limits.min;
 }
 
 
