@@ -131,7 +131,7 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
 /*************************************** Packet Read/Write Functions ***************************************/
 
 CommonPkt Packet::readPkt(const char* pkt_buf) const {
-    // see pkt_sample.json for format
+    // see ctrl_pkt_sample.json for format
     // if no data sent, just use current packet
     if (std::strlen(pkt_buf) == 0) {
         return getCurrentPkt();
@@ -200,7 +200,7 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
 
 
 std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
-    // see pkt_sample.json for format
+    // see ctrl_pkt_sample.json for format
     return convertPktToJson(pkt_to_send).dump();
 }
 
