@@ -31,7 +31,7 @@ using bson = std::vector<std::uint8_t>;
 // typically uint16_t but camera frames are very large (will never have issues now)
 using PktSize_t = std::uint64_t;
 
-// packet structure follows format found @pkt_sample.json
+// packet structure follows format found @ctrl_pkt_sample.json
 struct led_pkt_t {
     bool red;
     bool yellow;

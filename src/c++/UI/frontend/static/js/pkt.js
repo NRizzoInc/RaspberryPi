@@ -16,7 +16,7 @@ const toBool = (val) => {
 
 /**
  * @brief Final endpoint for sending packets to the web app backend which sends to server
- * @note see pkt_sample.json in network dir for what it should look like
+ * @note see ctrl_pkt_sample.json in network dir for what it should look like
  */
 export const sendPkt = async (leds, motors, servos, camera) => {
     // handle sending data back to web app server
