@@ -167,6 +167,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
             header.total_length-total_recv_size, // the amount of stream data left to receive
             static_cast<std::uint64_t>(Constants::Network::MAX_DATA_SIZE)
         )};
+
         const int rcv_size = ::recv(socket_fd, recv_buf+total_recv_size, max_stream_size, 0);
         if(rcv_size < 0) {
             // TODO: print this if --verbose
@@ -180,6 +181,13 @@ RecvRtn TcpBase::recvData(int socket_fd) {
             break;
         }
         total_recv_size += rcv_size;
+    }
+
+    const std::uint16_t recv_checksum {CalcChecksum(recv_buf, total_recv_size)};
+    const bool checksum_match {header.checksum != recv_checksum};
+    if (!checksum_match) {
+        cerr << "Error: recv packet's checksum does not match" << endl;
+        rtn_code = RecvSendRtnCodes::ChecksumMismatch;
     }
 
     return RecvRtn{
@@ -201,7 +209,7 @@ SendRtn TcpBase::sendData(
     // construct header packet to send pkt to send prior to data
     HeaderPkt_t header_pkt      {};
     header_pkt.total_length     = size_to_tx;
-    header_pkt.checksum         = header_pkt.CalcChecksum(buf, size_to_tx);
+    header_pkt.checksum         = CalcChecksum(buf, size_to_tx);
 
     /*************************************** send data pkt header *************************************/
     // send the header for the packet so recv can know size (send with no special props)
