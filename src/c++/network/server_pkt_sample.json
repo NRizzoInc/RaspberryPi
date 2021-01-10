@@ -1,0 +1,9 @@
+{
+    "camera": {
+        "framesize":        "size of the 'frame' buffer",
+        "fps":              "fps of video",
+        "width":            "width of video frame",
+        "height":           "height of video frame",
+        "frame":            "uchar buffer"
+    }
+}

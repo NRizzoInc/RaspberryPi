@@ -31,6 +31,8 @@ using bson = std::vector<std::uint8_t>;
 // typically uint16_t but camera frames are very large (will never have issues now)
 using PktSize_t = std::uint64_t;
 
+
+/************************************ Client -> Server Control Packet Structs ******************************/
 // packet structure follows format found @ctrl_pkt_sample.json
 struct led_pkt_t {
     bool red;
@@ -79,6 +81,7 @@ struct camera_pkt_t {
 
 }; // end of camera_pkt_t
 
+// contains key information from client about what server should do (hence "control")
 struct control_t {
     led_pkt_t led;
     motor_pkt_t motor;
@@ -86,8 +89,37 @@ struct control_t {
     camera_pkt_t camera;
 }; // end of control_t
 
+
+/************************************ Server -> Client Data Packet Structs ******************************/
+// packet structure follows format found @server_pkt_sample.json
+
+/// contains key information on the camera data coming from the server
+struct cam_frame_t {
+    PktSize_t framesize;            // the size of the video frame's buffer
+    std::uint8_t fps;               // the video's frame rate
+    std::uint16_t width;            // the width of the video's frame (max would be 1080p)
+    std::uint16_t height;           // the height of the video's frame (max would be 1080p)
+    unsigned char* frame;           // buffer containing the video frame
+
+    cam_frame_t()
+        : framesize{0}
+        , fps{Constants::Camera::VID_FRAMERATE}
+        , width{Constants::Camera::FRAME_WIDTH}
+        , height{Constants::Camera::FRAME_HEIGHT}
+        , frame{}
+        {}
+}; // end of cam_frame_t
+
+// contains data from server that needs to be relayed to client
+struct ServerDataPkt_t {
+    cam_frame_t camera;
+}; // ServerDataPkt_t
+
+
+/************************************ Final Common Packet ******************************/
 struct CommonPkt {
-    control_t cntrl;
+    control_t cntrl;                        // contains data from client that server wants
+    ServerDataPkt_t server_data;            // contains data from server that client wants
     bool ACK;
 }; // end of CommonPkt
 
