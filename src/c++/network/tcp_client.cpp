@@ -58,6 +58,15 @@ ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
 
 /********************************************* Client Functions ********************************************/
 
+ReturnCodes TcpClient::sendResetPkt() {
+    // setting a new packet triggers control thread to send this new packet
+    // special cases:
+    //      Camera: on reset, camera should turn off
+    CommonPkt reset_pkt {};
+    reset_pkt.cntrl.camera.is_on = false;
+    return updatePkt(reset_pkt);
+}
+
 void TcpClient::ControlLoopFn(const bool print_data) {
     /********************************* Connect Setup  ********************************/
     // connect to server (if failed to connect, just stop)
@@ -144,7 +153,6 @@ void TcpClient::VideoStreamHandler() {
         try {
             // convert string -> std::vector<unsigned char> by providing the start ptr and end
             if(setLatestCamFrame(img_recv.buf) != ReturnCodes::Success) {
-            // if(setLatestCamFrame(std::vector<unsigned char>(img.begin(), img.end())) != ReturnCodes::Success) {
                 cerr << save_frame_err << endl;
             }
         } catch (std::exception& err) {

@@ -60,6 +60,13 @@ class TcpServer : public TcpBase {
             const int port
         );
 
+        /**
+         * @brief Sends a reset packet to the client that resets most things to default
+         * @note There might be some special cases that it doesnt use the defaults for
+         * @return ReturnCodes Success if no issues
+         */
+        virtual ReturnCodes sendResetPkt() override;
+
     protected:
 
         /**

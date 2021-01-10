@@ -70,7 +70,7 @@ struct camera_pkt_t {
     bool is_on;
 
     camera_pkt_t()
-        : is_on{false}
+        : is_on{true} // have server start recording immediately on connect
         {}
 
 }; // end of camera_pkt_t

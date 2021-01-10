@@ -3,9 +3,63 @@
  * @file Handles the continous updating of the video stream
  */
 
-import { getJsonData, doesPageExist } from "./request_handler.js"
+import { getJsonData, DataIfPageExists } from "./request_handler.js"
 import { sendCamPkt } from "./pkt.js"
 
+
+/**
+ * @brief Tries to load an image (if successful resolves to loaded image for usage)
+ * @param {String} url The url to load image from 
+ * @return {Promise<HTMLImageElement | null >} Resolves to loaded image context (or null on error)
+ * @credit https://draeton.github.io/javascript/library/2011/09/11/check-if-image-exists-javascript.html
+ */
+const CheckImage = async (url) => {
+    return new Promise( async (resolve, reject) => {
+
+        let img = new Image()
+        let timeout = null
+
+        // common function to end the timeout checker early
+        const endActiveTimeout = () => {
+            if(timeout != null) clearTimeout(timeout)
+        }
+
+        // setup img load/error callbacks
+        img.onload = () => {
+            // only run once
+            endActiveTimeout()
+            resolve(img)
+        }
+
+        img.onerror = () => {
+            endActiveTimeout()
+            resolve(null)
+        }
+
+        // first check that image url exists (or else loading it will throw errors)
+        const img_data = await DataIfPageExists(url, "GET")
+        const img_exists = img_data != null
+
+        // actually try to load image if exists (with a timeout)
+        if (img_exists) {
+            // hack: cannot directly load GET requested img into element (has to natively handle it)
+            // url should be cached at this point so not a big waste to double get
+            img.src = url
+        } else {
+            img.onerror.call(img)
+        }
+
+        timeout = setTimeout(() => {
+                img.onerror.call(img)
+            }, 1000 // 1 sec
+        )
+
+        // if image already compelte (i.e. cached) trigger onload callback manually
+        if (img.complete) {
+            img.onload.call(img)
+        }
+    })
+}
 
 // todo: add image title, hover, etc
 
@@ -87,7 +141,9 @@ $("document").ready( async () => {
                 if (!isCamStopped) return
 
                 // if camera currently stopped, but the page is back up, then restart
-                else if (await doesPageExist(cam_original_src, "GET")) {
+                const img_data = await CheckImage(cam_original_src)
+                const img_exists = img_data != null
+                if (img_exists) {
                     StartCamActivities()
                     clearInterval(WakeupInterval)
                     WakeupInterval = null
@@ -129,18 +185,23 @@ $("document").ready( async () => {
 
         stop_dict.intervals.push(setInterval(
             async () => {
+                // attach random string to force reload of JUST the image
+                const cache_refresh = `?v=${new Date().getTime()}`
+                const new_img_url = cam_original_src + cache_refresh
+
                 // if connection dies, dont try to reload image (keep last)
                 // only refresh image if backend is still up
                 // -- prevents issue with reloading to blank image and erroring
-                const src_exist = await doesPageExist(cam_original_src, "GET")
-                if (!src_exist) {
+                const img_data = await CheckImage(new_img_url)
+                const img_exists = img_data != null
+                if (!img_exists) {
                     StopCamActivites()
                     return // prevent latest frame from reloading
                 }
 
-                // attach random string to force reload of JUST the image
-                const cache_refresh = `?v=${new Date().getTime()}`
-                cam_vid.src = cam_original_src + cache_refresh
+                // actually reload page
+                cam_vid.src = img_data.src
+
             }, 1000 / fps // need ms per frame
         ))
     }

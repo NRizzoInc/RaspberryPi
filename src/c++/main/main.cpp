@@ -99,9 +99,8 @@ int main(int argc, char* argv[]) {
             cerr << "Error: Failed to stop gpio thread" << endl;
         }
 
-        // send reset packet to server if client
-        if(is_client && net_agent->updatePkt({}) != RPI::ReturnCodes::Success) {
-            cerr << "Error: Failed to send reset command to server" << endl;
+        if(net_agent->sendResetPkt() != RPI::ReturnCodes::Success) {
+            cerr << "Error: Failed to send reset command" << endl;
         }
         
         if(net_agent->setExitCode(true) != RPI::ReturnCodes::Success) {
