@@ -59,9 +59,12 @@ ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
 /********************************************* Client Functions ********************************************/
 
 ReturnCodes TcpClient::sendResetPkt() {
-    // no special cases that should use default (yet)
     // setting a new packet triggers control thread to send this new packet
-    return updatePkt({});
+    // special cases:
+    //      Camera: on reset, camera should turn off
+    CommonPkt reset_pkt {};
+    reset_pkt.cntrl.camera.is_on = false;
+    return updatePkt(reset_pkt);
 }
 
 void TcpClient::ControlLoopFn(const bool print_data) {
