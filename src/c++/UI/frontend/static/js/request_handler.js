@@ -53,14 +53,16 @@ export async function getJsonData(url) {
  */
 export async function DataIfPageExists(url, method) {
     let reqResponse = null
+    jQuery.migrateMute = true; // suppress warnings (temporary)
     try {
         reqResponse = await $.ajax({
             url: url,
             type: method,
-            timeout: 1000 // set timeout to 1 sec
+            timeout: 1000, // set timeout to 1 sec
         })
-        return reqResponse
     } catch (err) {
-        return null
+        // console.log(`error loading ${url}: ${err}`)
     }
+    jQuery.migrateMute = false // unsuppress warnings when done
+    return reqResponse
 }

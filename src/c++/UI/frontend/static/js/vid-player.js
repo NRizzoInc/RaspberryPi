@@ -14,11 +14,9 @@ import { sendCamPkt } from "./pkt.js"
  * @credit https://draeton.github.io/javascript/library/2011/09/11/check-if-image-exists-javascript.html
  */
 const CheckImage = async (url) => {
-    return new Promise( (resolve, reject) => {
+    return new Promise( async (resolve, reject) => {
 
         let img = new Image()
-        let loaded = false
-        let errored = false
         let timeout = null
 
         // common function to end the timeout checker early
@@ -29,32 +27,29 @@ const CheckImage = async (url) => {
         // setup img load/error callbacks
         img.onload = () => {
             // only run once
-            console.log("resolve")
             endActiveTimeout()
-
-            if (loaded) {
-                resolve(img)
-            }
-            loaded = true
             resolve(img)
         }
 
         img.onerror = () => {
-            // only run once
-            console.log(`reject null: ${url}`)
             endActiveTimeout()
-            if (errored) {
-                resolve(null);
-            }
-            errored = true
-            // resolve null on error
             resolve(null)
         }
 
-        // actually try to load image (with a timeout)
-        img.src = url
+        // first check that image url exists (or else loading it will throw errors)
+        const img_data = await DataIfPageExists(url, "GET")
+        const img_exists = img_data != null
+
+        // actually try to load image if exists (with a timeout)
+        if (img_exists) {
+            // hack: cannot directly load GET requested img into element (has to natively handle it)
+            // url should be cached at this point so not a big waste to double get
+            img.src = url
+        } else {
+            img.onerror.call(img)
+        }
+
         timeout = setTimeout(() => {
-                console.log("calling timeout")
                 img.onerror.call(img)
             }, 1000 // 1 sec
         )
@@ -149,7 +144,6 @@ $("document").ready( async () => {
                 const img_data = await CheckImage(cam_original_src)
                 const img_exists = img_data != null
                 if (img_exists) {
-                    console.log("starting")
                     StartCamActivities()
                     clearInterval(WakeupInterval)
                     WakeupInterval = null
@@ -201,7 +195,6 @@ $("document").ready( async () => {
                 const img_data = await CheckImage(new_img_url)
                 const img_exists = img_data != null
                 if (!img_exists) {
-                    console.log("stopping")
                     StopCamActivites()
                     return // prevent latest frame from reloading
                 }
