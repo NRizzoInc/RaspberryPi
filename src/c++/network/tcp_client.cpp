@@ -117,7 +117,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
     cout << "Exiting Client Control Sender" << endl;
 }
 
-void TcpClient::VideoStreamHandler() {
+void TcpClient::VideoStreamHandler(const bool print_data) {
     // connect to camera server (if failed to connect, just stop)
     // add space at end of "camera" to make prints even
     if(connectToServer(cam_data_sock_fd, server_ip, cam_data_port, "camera ") != ReturnCodes::Success) {
@@ -128,8 +128,9 @@ void TcpClient::VideoStreamHandler() {
     /********************************* Receiving From Server ********************************/
     while(!getExitCode()) {
 
-        // recv image/frame in the form of a string container (to also store size)
-        const RecvRtn img_recv { recvData(cam_data_sock_fd) };
+        // call recvData and save result in str container to get size
+        const RecvRtn       img_recv    { recvData(cam_data_sock_fd) };
+        const std::string&  img_data    { std::string{img_recv.buf.begin(), img_recv.buf.end()} };
 
         // check if the data_size is smaller than 0
         // (if so, print message bc might have been fluke)
@@ -148,11 +149,29 @@ void TcpClient::VideoStreamHandler() {
         }
         */
 
+        // print the buf to the terminal(if told to)
+        if (print_data) {
+            cout << "Recv: " << img_data.size() << " bytes" << endl;
+        }
+
+        // convert stringified json to json so it can be parsed into struct
         // if no issues, save the new video frame
         constexpr auto save_frame_err {"Failed to update camera data from server"};
         try {
+            const CommonPkt pkt {readPkt(img_data.c_str())};
+            if(updatePkt(pkt) != ReturnCodes::Success) {
+                cerr << "Failed to update from server info" << endl;
+            }
+
+            // call receive callback if set
+            if (recv_cb) {
+                if (recv_cb(pkt) != ReturnCodes::Success) {
+                    cerr << "ERROR: Failed to process received packet from server" << endl;
+                }
+            }
+
             // convert string -> std::vector<unsigned char> by providing the start ptr and end
-            if(setLatestCamFrame(img_recv.buf) != ReturnCodes::Success) {
+            if(setLatestCamFrame(pkt.server.camera) != ReturnCodes::Success) {
                 cerr << save_frame_err << endl;
             }
         } catch (std::exception& err) {

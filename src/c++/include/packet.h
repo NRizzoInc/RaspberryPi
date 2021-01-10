@@ -94,32 +94,32 @@ struct control_t {
 // packet structure follows format found @server_pkt_sample.json
 
 /// contains key information on the camera data coming from the server
-struct cam_frame_t {
-    PktSize_t framesize;            // the size of the video frame's buffer
-    std::uint8_t fps;               // the video's frame rate
-    std::uint16_t width;            // the width of the video's frame (max would be 1080p)
-    std::uint16_t height;           // the height of the video's frame (max would be 1080p)
-    unsigned char* frame;           // buffer containing the video frame
+struct CamFrame_t {
+    PktSize_t framesize;                    // the size of the video frame's buffer
+    std::uint8_t fps;                       // the video's frame rate
+    std::uint16_t width;                    // the width of the video's frame (max would be 1080p)
+    std::uint16_t height;                   // the height of the video's frame (max would be 1080p)
+    std::vector<unsigned char> frame;       // buffer containing the video frame
 
-    cam_frame_t()
+    CamFrame_t()
         : framesize{0}
         , fps{Constants::Camera::VID_FRAMERATE}
         , width{Constants::Camera::FRAME_WIDTH}
         , height{Constants::Camera::FRAME_HEIGHT}
         , frame{}
         {}
-}; // end of cam_frame_t
+}; // end of CamFrame_t
 
 // contains data from server that needs to be relayed to client
 struct ServerDataPkt_t {
-    cam_frame_t camera;
+    CamFrame_t camera;
 }; // ServerDataPkt_t
 
 
 /************************************ Final Common Packet ******************************/
 struct CommonPkt {
     control_t cntrl;                        // contains data from client that server wants
-    ServerDataPkt_t server_data;            // contains data from server that client wants
+    ServerDataPkt_t server;                 // contains data from server that client wants
     bool ACK;
 }; // end of CommonPkt
 
@@ -183,14 +183,14 @@ class Packet {
          * @return Reference to the char buffer in the form of a char vector
          * @note Needs to use a mutex bc of read/write race condition with server
          */
-        virtual const std::vector<unsigned char>& getLatestCamFrame() const;
+        virtual const CamFrame_t& getLatestCamFrame() const;
 
         /**
          * @brief Set the latest frame from the camera video stream
          * @return Success if no issues
          * @note Needs to use a mutex bc of read/write race condition with server
          */
-        virtual ReturnCodes setLatestCamFrame(const std::vector<unsigned char>& new_frame);
+        virtual ReturnCodes setLatestCamFrame(const CamFrame_t& new_frame);
 
         /*************************************** Packet Read/Write Functions ***************************************/
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
@@ -222,12 +222,10 @@ class Packet {
         /******************************************** Private Variables ********************************************/
 
         // regular data packet variables
-        CommonPkt                       latest_ctrl_pkt;    // holds the most up to date information from client
-        mutable std::mutex              reg_pkt_mutex;      // controls access to the `latest_ctrl_pkt` data
+        CommonPkt                       latest_common_pkt;      // holds the most up to date information from client
+        mutable std::mutex              common_pkt_mutex;       // controls access to the `latest_common_pkt` data
 
         // camera pkt variables
-        std::vector<unsigned char>      latest_frame;       // contains the most up to date camera frame
-        mutable std::mutex              frame_mutex;        // controls access to the `latest_frame` data
 
 
         /********************************************* Helper Functions ********************************************/

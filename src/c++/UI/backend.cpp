@@ -246,7 +246,8 @@ void WebApp::handleVidReq(
 ) {
     try {
         // stores pixel data
-        const std::vector<unsigned char>& frame   { client_ptr->getLatestCamFrame() };
+        const auto& cam_data                      { client_ptr->getLatestCamFrame() };
+        const std::vector<unsigned char>& frame   { cam_data.frame };
         const std::size_t img_size                { frame.size() };
         const char* frame_buf                     { img_size > 0 ? (char*)frame.data() : "" };
 

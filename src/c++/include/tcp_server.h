@@ -77,21 +77,22 @@ class TcpServer : public TcpBase {
 
         /**
          * @brief Starts up a non-blocking function to send video frames from camera to client
+         * @param print_data Should received data be printed?
          */
-        virtual void VideoStreamHandler() override;
+        virtual void VideoStreamHandler(const bool print_data) override;
 
         /**
          * @brief Set the latest frame from the camera video stream (and set bool saying there is new data)
          * @return Success if no issues
          * @note Bool is used to prevent over sending of the same traffic over and over again
          */
-        virtual ReturnCodes setLatestCamFrame(const std::vector<unsigned char>& new_frame) override;
+        virtual ReturnCodes setLatestCamFrame(const CamFrame_t& new_frame) override;
 
         /**
          * @brief Get the latest frame from the camera video stream (and set new atomic flag to false)
          * @return Reference to the char buffer in the form of a char vector
          */
-        virtual const std::vector<unsigned char>& getLatestCamFrame() const override;
+        virtual const CamFrame_t& getLatestCamFrame() const override;
 
 
     private:

@@ -166,8 +166,9 @@ class TcpBase : public Packet {
         /**
          * @brief The function to run regarding video frames when starting up the TCP server/client
          * (override so that it can be called by runNetAgent() in a thread)
+         * @param print_data Should received data be printed?
          */
-        virtual void VideoStreamHandler() = 0;
+        virtual void VideoStreamHandler(const bool print_data) = 0;
 
         /**
          * @brief Function called by the destructor to close the sockets

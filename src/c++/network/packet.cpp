@@ -89,7 +89,6 @@ std::uint16_t CalcChecksum(const void* data_buf, std::size_t size) {
 
 /********************************************** Constructors **********************************************/
 Packet::Packet()
-    : latest_frame(Constants::Camera::FRAME_SIZE, '0') // init to black frame (0s) to make sure size != 0
 {
     // stub
 }
@@ -102,28 +101,28 @@ Packet::~Packet() {
 
 const CommonPkt& Packet::getCurrentPkt() const {
     // lock to make sure data can be gotten without new data being written
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
-    return latest_ctrl_pkt;
+    std::unique_lock<std::mutex> lk{common_pkt_mutex};
+    return latest_common_pkt;
 }
 
 ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
-    latest_ctrl_pkt = updated_pkt;
+    std::unique_lock<std::mutex> lk{common_pkt_mutex};
+    latest_common_pkt = updated_pkt;
     return ReturnCodes::Success;
 }
 
-const std::vector<unsigned char>& Packet::getLatestCamFrame() const {
+const CamFrame_t& Packet::getLatestCamFrame() const {
     // lock to make sure data can be gotten without new data being written
-    std::unique_lock<std::mutex> lk{frame_mutex};
-    return latest_frame;
+    std::unique_lock<std::mutex> lk{common_pkt_mutex};
+    return latest_common_pkt.server.camera;
 }
 
 
-ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
+ReturnCodes Packet::setLatestCamFrame(const CamFrame_t& new_frame) {
     // lock to make sure data can be written without it trying to be read simultaneously
-    std::unique_lock<std::mutex> lk{frame_mutex};
-    latest_frame = new_frame;
+    std::unique_lock<std::mutex> lk{common_pkt_mutex};
+    latest_common_pkt.server.camera = new_frame;
     return ReturnCodes::Success;
 }
 
@@ -141,6 +140,7 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     const json& data = json::parse(pkt_buf);
     CommonPkt translated_pkt;
 
+    // control data
     translated_pkt.cntrl.led.red        = findIfExists<bool>(data, {"control",  "led",      "red"       });
     translated_pkt.cntrl.led.yellow     = findIfExists<bool>(data, {"control",  "led",      "yellow"    });
     translated_pkt.cntrl.led.green      = findIfExists<bool>(data, {"control",  "led",      "green"     });
@@ -152,6 +152,17 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     translated_pkt.cntrl.servo.horiz    = findIfExists<int> (data, {"control",  "servo",    "horiz"     });
     translated_pkt.cntrl.servo.vert     = findIfExists<int> (data, {"control",  "servo",    "vert"      });
     translated_pkt.cntrl.camera.is_on   = findIfExists<bool>(data, {"control",  "camera",   "is_on"     });
+
+    // server data
+    auto& server {translated_pkt.server}; // keep lines short
+    server.camera.fps               = findIfExists<std::uint8_t>  (data, {"server",   "camera",   "fps"       });
+    server.camera.framesize         = findIfExists<PktSize_t>     (data, {"server",   "camera",   "framesize" });
+    server.camera.height            = findIfExists<std::uint16_t> (data, {"server",   "camera",   "height"    });
+    server.camera.width             = findIfExists<std::uint16_t> (data, {"server",   "camera",   "width"     });
+    // cannot transfer binary/ char* directly into json (stored as vector)
+    server.camera.frame             = findIfExists<std::vector<unsigned char>>(data, {"server", "camera", "frame"});
+
+    // other
     translated_pkt.ACK                  = findIfExists<bool>(data, {"ACK"});
 
     return translated_pkt;
@@ -167,8 +178,8 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
     // https://github.com/nlohmann/json#json-as-first-class-data-type
     // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
     // key-values are seperated by commas not ':'
-    json json_pkt = {{
-        "control", {
+    json json_pkt = {
+        {"control", {
             {"led", {
                 {"red",         pkt.cntrl.led.red},
                 {"yellow",      pkt.cntrl.led.yellow},
@@ -187,6 +198,15 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
             }},
             {"camera", {
                 {"is_on",       pkt.cntrl.camera.is_on}
+            }}
+        }},
+        {"server", {
+            {"camera", {
+                {"framesize",   pkt.server.camera.framesize},
+                {"fps",         pkt.server.camera.fps},
+                {"width",       pkt.server.camera.width},
+                {"height",      pkt.server.camera.height},
+                {"frame",       pkt.server.camera.frame}
             }}
         }},
         {"ACK", pkt.ACK}

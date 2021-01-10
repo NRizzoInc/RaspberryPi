@@ -73,8 +73,9 @@ class TcpClient : public TcpBase {
 
         /**
          * @brief Starts up a non-blocking function to recv video frames from server camera 
+         * @param print_data Should received data be printed?
          */
-        virtual void VideoStreamHandler() override;
+        virtual void VideoStreamHandler(const bool print_data) override;
 
     private:
         /******************************************** Private Variables ********************************************/

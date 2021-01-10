@@ -98,14 +98,14 @@ ReturnCodes TcpServer::acceptClient(
     return ReturnCodes::Success;
 }
 
-ReturnCodes TcpServer::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
+ReturnCodes TcpServer::setLatestCamFrame(const CamFrame_t& new_frame) {
     Packet::setLatestCamFrame(new_frame);
     has_new_cam_data.store(true);
     cam_data_cv.notify_one();
     return ReturnCodes::Success;
 }
 
-const std::vector<unsigned char>& TcpServer::getLatestCamFrame() const {
+const CamFrame_t& TcpServer::getLatestCamFrame() const {
     has_new_cam_data.store(false);
     return Packet::getLatestCamFrame();
 }
@@ -182,7 +182,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
     }
 }
 
-void TcpServer::VideoStreamHandler() {
+void TcpServer::VideoStreamHandler(const bool print_data) {
     // server has to send the most up to date video frame to the client
     // keep sending until told to stop
 
@@ -206,9 +206,19 @@ void TcpServer::VideoStreamHandler() {
                 );
 
                 /********************************* Sending Camera Data to Client ********************************/
-                const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
-                const SendRtn send_rtn {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
+                // the server should be continuously updating the packet so it is ready to send
+                const std::string   json_str    {writePkt(getCurrentPkt())};
+                data_lock.unlock();             // unlock after leaving critical region
+                const char*         send_pkt    {json_str.c_str()};
+                const std::size_t   pkt_size    {json_str.size()};
 
+                // print the stringified json if told to
+                if (print_data) {
+                    cout << "Sending (" << pkt_size << "Bytes): " << send_pkt << endl;
+                }
+
+                // send the stringified json to the server
+                const SendRtn send_rtn {sendData(cam_data_sock_fd, send_pkt, pkt_size)};
                 if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
                     cout << "Error: Send camera data to client (suggests closed endpoint)" << endl;
                     close_conns.store(true); // tell control socket to stop

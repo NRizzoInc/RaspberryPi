@@ -102,9 +102,9 @@ void TcpBase::runNetAgent(const bool print_data) {
         ControlLoopFn(print_data);
     }};
 
-    cam_vid_thread = std::thread{[this]() {
+    cam_vid_thread = std::thread{[this, print_data]() mutable {
         // dont pin fn to TcpBase since it should be overridden by derived classes
-        VideoStreamHandler();
+        VideoStreamHandler(print_data);
     }};
 
     // unlock & notify so joiner can continue

@@ -137,8 +137,13 @@ int main(int argc, char* argv[]) {
             return rtn_code ? RPI::ReturnCodes::Success : RPI::ReturnCodes::Error;
         });
 
-        if(Camera.setGrabCallback([&](const std::vector<unsigned char>& grabbed_frame) {
-                net_agent->setLatestCamFrame(grabbed_frame);
+        if(Camera.setGrabCallback(
+            [&](const std::vector<unsigned char>& grabbed_frame) {
+                // TODO: get some of these fields via camera's getters
+                RPI::Network::CamFrame_t cam_data;
+                cam_data.frame = grabbed_frame;
+                cam_data.framesize = grabbed_frame.size();
+                net_agent->setLatestCamFrame(cam_data);
             }
         ) != RPI::ReturnCodes::Success) {
             cerr << "Error: Failed to set camera grab callback" << endl;
