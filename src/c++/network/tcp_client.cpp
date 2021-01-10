@@ -93,7 +93,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
         // client starts by sending data to other endpoint
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
-        const std::string   json_str    {writePkt(getCurrentPkt())};
+        const std::string   json_str    {writePkt(getCurrentPkt(), PktType::Control)};
         data_lock.unlock();             // unlock after leaving critical region
         const char*         send_pkt    {json_str.c_str()};
         const std::size_t   pkt_size    {json_str.size()};
@@ -175,8 +175,7 @@ void TcpClient::VideoStreamHandler(const bool print_data) {
                 cerr << save_frame_err << endl;
             }
         } catch (std::exception& err) {
-            cerr << save_frame_err << endl;
-            cerr << err.what() << endl;
+            cerr << save_frame_err << ": " << err.what() << endl;
         }
     }
 

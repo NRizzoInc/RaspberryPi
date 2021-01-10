@@ -207,7 +207,7 @@ void TcpServer::VideoStreamHandler(const bool print_data) {
 
                 /********************************* Sending Camera Data to Client ********************************/
                 // the server should be continuously updating the packet so it is ready to send
-                const std::string   json_str    {writePkt(getCurrentPkt())};
+                const std::string   json_str    {writePkt(getCurrentPkt(), PktType::ServerData)};
                 data_lock.unlock();             // unlock after leaving critical region
                 const char*         send_pkt    {json_str.c_str()};
                 const std::size_t   pkt_size    {json_str.size()};

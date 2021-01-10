@@ -154,64 +154,81 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
     translated_pkt.cntrl.camera.is_on   = findIfExists<bool>(data, {"control",  "camera",   "is_on"     });
 
     // server data
-    auto& server {translated_pkt.server}; // keep lines short
-    server.camera.fps               = findIfExists<std::uint8_t>  (data, {"server",   "camera",   "fps"       });
-    server.camera.framesize         = findIfExists<PktSize_t>     (data, {"server",   "camera",   "framesize" });
-    server.camera.height            = findIfExists<std::uint16_t> (data, {"server",   "camera",   "height"    });
-    server.camera.width             = findIfExists<std::uint16_t> (data, {"server",   "camera",   "width"     });
+    translated_pkt.server.camera.fps        = findIfExists<std::uint8_t>  (data, {"server", "camera", "fps"       });
+    translated_pkt.server.camera.framesize  = findIfExists<PktSize_t>     (data, {"server", "camera", "framesize" });
+    translated_pkt.server.camera.height     = findIfExists<std::uint16_t> (data, {"server", "camera", "height"    });
+    translated_pkt.server.camera.width      = findIfExists<std::uint16_t> (data, {"server", "camera", "width"     });
     // cannot transfer binary/ char* directly into json (stored as vector)
-    server.camera.frame             = findIfExists<std::vector<unsigned char>>(data, {"server", "camera", "frame"});
+    translated_pkt.server.camera.frame = findIfExists<std::vector<unsigned char>>(data, {"server", "camera", "frame"});
 
     // other
-    translated_pkt.ACK                  = findIfExists<bool>(data, {"ACK"});
+    translated_pkt.ACK = findIfExists<bool>(data, {"ACK"});
 
     return translated_pkt;
 }
 
 /// wraps to char buffer version of function
-CommonPkt Packet::readPkt(json pkt_json) const {
+CommonPkt Packet::readPkt(const json& pkt_json) const {
     return readPkt(pkt_json.dump().c_str());
 }
 
 
-json Packet::convertPktToJson(const CommonPkt& pkt) const {
-    // https://github.com/nlohmann/json#json-as-first-class-data-type
-    // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
-    // key-values are seperated by commas not ':'
-    json json_pkt = {
+/*************************************** Packet to JSON Functions ***************************************/
+// https://github.com/nlohmann/json#json-as-first-class-data-type
+// have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
+// key-values are seperated by commas not ':'
+
+json Packet::convertPktToJson(const control_t& ctrl_pkt) const {
+    json json_ctrl_pkt = {
         {"control", {
             {"led", {
-                {"red",         pkt.cntrl.led.red},
-                {"yellow",      pkt.cntrl.led.yellow},
-                {"green",       pkt.cntrl.led.green},
-                {"blue",        pkt.cntrl.led.blue}
+                {"red",         ctrl_pkt.led.red},
+                {"yellow",      ctrl_pkt.led.yellow},
+                {"green",       ctrl_pkt.led.green},
+                {"blue",        ctrl_pkt.led.blue}
             }},
             {"motor", {
-                {"forward",     pkt.cntrl.motor.forward},
-                {"backward",    pkt.cntrl.motor.backward},
-                {"right",       pkt.cntrl.motor.right},
-                {"left",        pkt.cntrl.motor.left}
+                {"forward",     ctrl_pkt.motor.forward},
+                {"backward",    ctrl_pkt.motor.backward},
+                {"right",       ctrl_pkt.motor.right},
+                {"left",        ctrl_pkt.motor.left}
             }},
             {"servo", {
-                {"horiz",       pkt.cntrl.servo.horiz},
-                {"vert",        pkt.cntrl.servo.vert},
+                {"horiz",       ctrl_pkt.servo.horiz},
+                {"vert",        ctrl_pkt.servo.vert},
             }},
             {"camera", {
-                {"is_on",       pkt.cntrl.camera.is_on}
+                {"is_on",       ctrl_pkt.camera.is_on}
             }}
         }},
+    };
+    return json_ctrl_pkt;
+}
+
+json Packet::convertPktToJson(const ServerDataPkt_t& server_pkt) const {
+    json json_server_pkt = {
         {"server", {
             {"camera", {
-                {"framesize",   pkt.server.camera.framesize},
-                {"fps",         pkt.server.camera.fps},
-                {"width",       pkt.server.camera.width},
-                {"height",      pkt.server.camera.height},
-                {"frame",       pkt.server.camera.frame}
+                {"framesize",   server_pkt.camera.framesize},
+                {"fps",         server_pkt.camera.fps},
+                {"width",       server_pkt.camera.width},
+                {"height",      server_pkt.camera.height},
+                {"frame",       server_pkt.camera.frame}
             }}
         }},
+    };
+    return json_server_pkt;
+}
+
+json Packet::convertPktToJson(const CommonPkt& pkt) const {
+
+    // merging jsons: https://github.com/nlohmann/json/issues/1807
+    json full_common_pkt = {
         {"ACK", pkt.ACK}
     };
-    return json_pkt;
+    full_common_pkt.update(convertPktToJson(pkt.cntrl));
+    full_common_pkt.update(convertPktToJson(pkt.server));
+    return full_common_pkt;
 
     // TODO: use cbor or bson for faster/concise pkt transfers
     // std::vector<std::uint8_t> vec_char {json::to_cbor(json_pkt)};
@@ -219,9 +236,17 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
 }
 
 
-std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
-    // see ctrl_pkt_sample.json for format
-    return convertPktToJson(pkt_to_send).dump();
+std::string Packet::writePkt(const CommonPkt& pkt_to_send, const PktType rel_pkt) const {
+    // see ctrl_pkt_sample.json & for server_pkt_sample.json format
+
+    if (rel_pkt == PktType::Control) {
+        return convertPktToJson(pkt_to_send.cntrl).dump();
+    } else if (rel_pkt == PktType::ServerData) {
+        return convertPktToJson(pkt_to_send.server).dump();
+    } else {
+        // otherwise write full packet
+        return convertPktToJson(pkt_to_send).dump();
+    }
 }
 
 

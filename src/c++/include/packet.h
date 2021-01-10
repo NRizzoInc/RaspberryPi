@@ -123,6 +123,12 @@ struct CommonPkt {
     bool ACK;
 }; // end of CommonPkt
 
+// defines which sub type of packet is looking to be sent/received
+enum class PktType {
+    Control,            // This packet contains control data from client that needs to be sent to server
+    ServerData          // This packet contains sensor data from server that needs to be sent to client
+};
+
 
 // struct to be sent prior to sending an actual data packet so its size & checksum can be known
 // https://en.wikipedia.org/wiki/IPv4#Header
@@ -206,17 +212,20 @@ class Packet {
          * @param pkt_json A json containing the packet info
          * @return The packet translated into the struct
          */
-        CommonPkt readPkt(json pkt_json) const;
+        CommonPkt readPkt(const json& pkt_json) const;
 
 
         json convertPktToJson(const CommonPkt& pkt) const;
+        json convertPktToJson(const control_t& pkt) const;
+        json convertPktToJson(const ServerDataPkt_t& pkt) const;
 
         /**
          * @brief Construct & serialize a serialized json packet to easily send over network
          * @param pkt_to_send The packet to send
+         * @param rel_pkt Selects which portion of the common packet you want to send
          * @return The serialized json string to send
          */
-        std::string writePkt(const CommonPkt& pkt_to_send) const;
+        std::string writePkt(const CommonPkt& pkt_to_send, const PktType rel_pkt) const;
 
     private:
         /******************************************** Private Variables ********************************************/
