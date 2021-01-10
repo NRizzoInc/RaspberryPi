@@ -3,9 +3,68 @@
  * @file Handles the continous updating of the video stream
  */
 
-import { getJsonData, doesPageExist } from "./request_handler.js"
+import { getJsonData, DataIfPageExists } from "./request_handler.js"
 import { sendCamPkt } from "./pkt.js"
 
+
+/**
+ * @brief Tries to load an image (if successful resolves to loaded image for usage)
+ * @param {String} url The url to load image from 
+ * @return {Promise<HTMLImageElement | null >} Resolves to loaded image context (or null on error)
+ * @credit https://draeton.github.io/javascript/library/2011/09/11/check-if-image-exists-javascript.html
+ */
+const CheckImage = async (url) => {
+    return new Promise( (resolve, reject) => {
+
+        let img = new Image()
+        let loaded = false
+        let errored = false
+        let timeout = null
+
+        // common function to end the timeout checker early
+        const endActiveTimeout = () => {
+            if(timeout != null) clearTimeout(timeout)
+        }
+
+        // setup img load/error callbacks
+        img.onload = () => {
+            // only run once
+            console.log("resolve")
+            endActiveTimeout()
+
+            if (loaded) {
+                resolve(img)
+            }
+            loaded = true
+            resolve(img)
+        }
+
+        img.onerror = () => {
+            // only run once
+            console.log(`reject null: ${url}`)
+            endActiveTimeout()
+            if (errored) {
+                resolve(null);
+            }
+            errored = true
+            // resolve null on error
+            resolve(null)
+        }
+
+        // actually try to load image (with a timeout)
+        img.src = url
+        timeout = setTimeout(() => {
+                console.log("calling timeout")
+                img.onerror.call(img)
+            }, 1000 // 1 sec
+        )
+
+        // if image already compelte (i.e. cached) trigger onload callback manually
+        if (img.complete) {
+            img.onload.call(img)
+        }
+    })
+}
 
 // todo: add image title, hover, etc
 
@@ -87,7 +146,10 @@ $("document").ready( async () => {
                 if (!isCamStopped) return
 
                 // if camera currently stopped, but the page is back up, then restart
-                else if (await doesPageExist(cam_original_src, "GET")) {
+                const img_data = await CheckImage(cam_original_src)
+                const img_exists = img_data != null
+                if (img_exists) {
+                    console.log("starting")
                     StartCamActivities()
                     clearInterval(WakeupInterval)
                     WakeupInterval = null
@@ -136,8 +198,10 @@ $("document").ready( async () => {
                 // if connection dies, dont try to reload image (keep last)
                 // only refresh image if backend is still up
                 // -- prevents issue with reloading to blank image and erroring
-                const src_exist = await doesPageExist(new_img_url, "GET")
-                if (!src_exist) {
+                const img_data = await CheckImage(new_img_url)
+                const img_exists = img_data != null
+                if (!img_exists) {
+                    console.log("stopping")
                     StopCamActivites()
                     return // prevent latest frame from reloading
                 }

@@ -49,18 +49,18 @@ export async function getJsonData(url) {
  * @brief Perform a GET/POST request on the desired page and check if it exists
  * @param {String} url The url to GET/POST
  * @param {"POST", "GET"} method The type of request to perform 
- * @returns {Boolean} True if page exists and is requestable. False if error/dne 
+ * @returns {*} null if error/dne. The data otherwise 
  */
-export async function doesPageExist(url, method) {
-    let reqResponse = {}
+export async function DataIfPageExists(url, method) {
+    let reqResponse = null
     try {
         reqResponse = await $.ajax({
             url: url,
             type: method,
             timeout: 1000 // set timeout to 1 sec
         })
-        return true
+        return reqResponse
     } catch (err) {
-        return false
+        return null
     }
 }
