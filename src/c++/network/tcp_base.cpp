@@ -161,14 +161,14 @@ RecvRtn TcpBase::recvData(int socket_fd) {
     /*********************************** recv actual data packets *************************************/
 
     // prepare bufs for receiving
-    std::uint64_t total_recv_size {0};
+    PktSize_t total_recv_size {0};
     char recv_buf[header.total_length];
     RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Sucess}; // default to success
     while (total_recv_size < header.total_length) {
         // append new data to top of buf (new start = start + curr size)
-        const std::uint64_t max_stream_size {std::min(
+        const PktSize_t max_stream_size {std::min(
             header.total_length-total_recv_size, // the amount of stream data left to receive
-            static_cast<std::uint64_t>(Constants::Network::MAX_DATA_SIZE)
+            static_cast<PktSize_t>(Constants::Network::MAX_DATA_SIZE)
         )};
 
         // actually recv data
@@ -196,9 +196,11 @@ RecvRtn TcpBase::recvData(int socket_fd) {
     }
 
     const std::uint16_t recv_checksum {CalcChecksum(recv_buf, total_recv_size)};
-    const bool checksum_match {header.checksum != recv_checksum};
+    const bool checksum_match {header.checksum == recv_checksum};
     if (!checksum_match) {
-        cerr << "Error: recv packet's checksum does not match" << endl;
+        cerr << "Error: checksum does not match: " 
+             << recv_checksum << " (actual " << header.checksum << ")"
+             << endl;
         rtn_code = RecvSendRtnCodes::ChecksumMismatch;
     }
 
@@ -211,7 +213,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
 SendRtn TcpBase::sendData(
     int& socket_fd,
     const void* buf,
-    const std::uint32_t size_to_tx
+    const PktSize_t size_to_tx
 ) {
     // make sure data socket is open/valid first
     if(socket_fd < 0) {
@@ -241,11 +243,11 @@ SendRtn TcpBase::sendData(
     const int sent_size = ::send(socket_fd, buf, size_to_tx, MSG_NOSIGNAL);
     if (sent_size < 0 || sent_size != static_cast<int>(size_to_tx)) {
         cerr << "ERROR: Sending Data (" << sent_size << "/" << size_to_tx << ")" << endl;
-        return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Error};
+        return SendRtn{static_cast<PktSize_t>(sent_size), RecvSendRtnCodes::Error};
     }
 
     // iff successful, sent_size >= 0 so can safely cast to uint
-    return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Sucess};
+    return SendRtn{static_cast<PktSize_t>(sent_size), RecvSendRtnCodes::Sucess};
 }
 
 
