@@ -108,10 +108,12 @@ struct HeaderPkt_t {
     HeaderPkt_t     (std::istream& stream);
     // to string makes conversion from HeaderPkt_t easy
     std::string     toString();
-    std::uint16_t   CalcChecksum(const void* data_buf, std::size_t size);
     std::uint8_t    ihl() const;
     std::size_t     size() const;
 };
+
+// helper function to calculate the checksum of a data stream
+std::uint16_t CalcChecksum(const void* data_buf, std::size_t size);
 
 
 

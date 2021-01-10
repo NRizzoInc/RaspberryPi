@@ -67,7 +67,7 @@ HeaderPkt_t::HeaderPkt_t(std::istream& stream) {
 }
 
 // credit: https://stackoverflow.com/a/23726131/13933174
-std::uint16_t HeaderPkt_t::CalcChecksum(const void* data_buf, std::size_t size) {
+std::uint16_t CalcChecksum(const void* data_buf, std::size_t size) {
     unsigned char x;
     unsigned short crc = 0xFFFF;
 
