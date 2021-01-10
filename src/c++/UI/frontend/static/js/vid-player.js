@@ -200,7 +200,7 @@ $("document").ready( async () => {
                 }
 
                 // actually reload page
-                cam_vid.src = new_img_url
+                cam_vid.src = img_data.src
 
             }, 1000 / fps // need ms per frame
         ))
