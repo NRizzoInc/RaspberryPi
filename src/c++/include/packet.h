@@ -27,6 +27,10 @@ namespace Network {
 using json = nlohmann::json;
 using bson = std::vector<std::uint8_t>;
 
+// defines max length a packet can have 
+// typically uint16_t but camera frames are very large (will never have issues now)
+using PktSize_t = std::uint64_t;
+
 // packet structure follows format found @pkt_sample.json
 struct led_pkt_t {
     bool red;
@@ -94,7 +98,7 @@ struct CommonPkt {
 struct HeaderPkt_t {
     std::uint8_t    ver_ihl;        // 4 bits version and 4 bits internet header length (ver=IPv<#>)
     std::uint8_t    tos;            // type of service
-    std::uint64_t   total_length;   // typically uint16_t but camera frames are very large (will never have issues now)
+    PktSize_t       total_length;   // 
     std::uint16_t   id;             // 
     std::uint16_t   flags_fo;       // 3 bits flags and 13 bits fragment-offset
     std::uint8_t    ttl;            // time to live

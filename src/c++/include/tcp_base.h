@@ -41,7 +41,7 @@ struct RecvRtn {
 };
 
 struct SendRtn {
-    std::uint32_t       size;   // the size of the  sent data -- pinned to uint32_t bc thats max send size currently
+    PktSize_t           size;   // the size of the sent data
     RecvSendRtnCodes    RtnCode;
 };
 
@@ -140,14 +140,14 @@ class TcpBase : public Packet {
          * @param size_to_tx size to transmit
          * (other host closes conn) & instead returns EPIPE (negative)
          * @return number of bytes sent (RtnCode == Success if no issues)
-         * - max size is std::uint32_t bc thats the max packet length
+         * - max size is PktSize_t bc thats the max packet length that can be set in header packet
          * @todo Handle packet sizes larger that automatically loop when sending packets
          * @note sends will not result in a broken SIGPIPE signal to prevent program from being killed
          */
         virtual SendRtn sendData(
             int& socket_fd,
             const void* buf,
-            const std::uint32_t size_to_tx
+            const PktSize_t size_to_tx
         );
 
         /**
