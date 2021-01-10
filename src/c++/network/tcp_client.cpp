@@ -150,7 +150,6 @@ void TcpClient::VideoStreamHandler() {
         try {
             // convert string -> std::vector<unsigned char> by providing the start ptr and end
             if(setLatestCamFrame(img_recv.buf) != ReturnCodes::Success) {
-            // if(setLatestCamFrame(std::vector<unsigned char>(img.begin(), img.end())) != ReturnCodes::Success) {
                 cerr << save_frame_err << endl;
             }
         } catch (std::exception& err) {
