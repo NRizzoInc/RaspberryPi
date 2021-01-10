@@ -94,7 +94,7 @@ struct CommonPkt {
 struct HeaderPkt_t {
     std::uint8_t    ver_ihl;        // 4 bits version and 4 bits internet header length (ver=IPv<#>)
     std::uint8_t    tos;            // type of service
-    std::uint32_t   total_length;   // typically uint16_t but camera frames are very large (>100,000)
+    std::uint64_t   total_length;   // typically uint16_t but camera frames are very large (will never have issues now)
     std::uint16_t   id;             // 
     std::uint16_t   flags_fo;       // 3 bits flags and 13 bits fragment-offset
     std::uint8_t    ttl;            // time to live

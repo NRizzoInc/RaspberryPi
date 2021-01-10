@@ -134,12 +134,13 @@ RecvRtn TcpBase::recvData(int socket_fd) {
             max_header_size-header_rx_size, // amount of header pkt left to recv
             static_cast<int>(Constants::Network::MAX_DATA_SIZE)
         )};
+
         const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, max_stream_left, 0);
         if (header_rx_partial < 0) {
             // TODO: print this if --verbose
             // cerr << "Error: receiving header packet" << endl;
             return RecvRtn{{}, RecvSendRtnCodes::Error};
-        } 
+        }
         else if (header_rx_partial == 0) {
             // end of stream
             // TODO: print this if --verbose
@@ -157,14 +158,14 @@ RecvRtn TcpBase::recvData(int socket_fd) {
     /*********************************** recv actual data packets *************************************/
 
     // prepare bufs for receiving
-    std::uint32_t total_recv_size {0};
+    std::uint64_t total_recv_size {0};
     char recv_buf[header.total_length];
     RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Sucess}; // default to success
     while (total_recv_size < header.total_length) {
         // append new data to top of buf (new start = start + curr size)
-        const std::uint32_t max_stream_size {std::min(
+        const std::uint64_t max_stream_size {std::min(
             header.total_length-total_recv_size, // the amount of stream data left to receive
-            static_cast<std::uint32_t>(Constants::Network::MAX_DATA_SIZE)
+            static_cast<std::uint64_t>(Constants::Network::MAX_DATA_SIZE)
         )};
         const int rcv_size = ::recv(socket_fd, recv_buf+total_recv_size, max_stream_size, 0);
         if(rcv_size < 0) {
