@@ -8,6 +8,7 @@
 #include <chrono> // for time units
 #include <atomic>
 #include <functional>
+#include <experimental/filesystem> // to get path to classifier files
 
 // Our Includes
 #include "constants.h"
@@ -16,11 +17,14 @@
 // 3rd Party Includes
 #include <raspicam_cv.h>
 #include <opencv2/imgproc.hpp> // for putText()
+#include <opencv2/objdetect.hpp> // for object detection
 
 namespace RPI {
 
 namespace Camera {
 
+// filesystem namespace shortened for convenience bc super long & experimental
+namespace fs = std::experimental::filesystem;
 
 // for convenience within this namesapce bc super long
 using time_point = std::chrono::_V2::system_clock::time_point;
@@ -109,9 +113,23 @@ class CamHandler : public raspicam::RaspiCam_Cv {
         time_point                  start_time;    // when camera started grabbing
         GrabFrameCb                 grab_cb;       // callback to use when a frame is grabbed
 
+        // PreDefined/Trained Object Detection Classifiers (Facial Recognition)
+        cv::CascadeClassifier      facial_classifier;       // contains facial classifiers
+        cv::CascadeClassifier      obstruct_classifier;     // classifier for objects that object face
+
         /********************************************* Helper Functions ********************************************/
 
+        /**
+         * @brief Sets up the camera properties & settings prior to recording
+         * @return ReturnCodes Success if no issues
+         */
         ReturnCodes SetupCam();
+
+        /**
+         * @brief Loads the classifier files for facial detection
+         * @return ReturnCodes Sucess if no issues
+         */
+        ReturnCodes LoadClassifiers();
 
 }; // end of CamHandler class
 

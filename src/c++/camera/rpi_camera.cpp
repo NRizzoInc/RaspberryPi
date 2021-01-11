@@ -118,7 +118,15 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
         RaspiCam_Cv::grab();
         RaspiCam_Cv::retrieve(image);
 
-        // add timestamp to frame
+        // make sure valid frame
+        if(image.empty()) {
+            cerr << "Error: Bad video frame" << endl;
+            continue;
+        }
+
+        // perform facial recognition (should be done PRIOR to any other modifications)
+
+        // add timestamp to frame (after detection)
         std::string timecode    { Helpers::Timing::GetTimecode() };
         const int fontFace      { cv::FONT_HERSHEY_SIMPLEX };
         const double fontScale  { 1.0 };
@@ -134,6 +142,7 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
             thickness,
             false                                           // relative to top-left
         );
+
 
         // increment frame count
         ++frame_count;
@@ -161,13 +170,15 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
 /********************************************* Helper Functions ********************************************/
 
 ReturnCodes CamHandler::SetupCam() {
-    // set camera properties
+    // set camera properties & settings
+    bool rtn {true};
+
     // TODO: make sure is using h264 raw encoding to mp4
-    RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC1 );
-    RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC3 );
-    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_WIDTH, Constants::Camera::FRAME_WIDTH );
-    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_HEIGHT, Constants::Camera::FRAME_HEIGHT );
-    RaspiCam_Cv::set( CV_CAP_PROP_FPS, Constants::Camera::VID_FRAMERATE );
+    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC1 );
+    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC3 );
+    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FRAME_WIDTH, Constants::Camera::FRAME_WIDTH );
+    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FRAME_HEIGHT, Constants::Camera::FRAME_HEIGHT );
+    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FPS, Constants::Camera::VID_FRAMERATE );
 
     // open camera after setting correct settings
     if(OpenCam() != ReturnCodes::Success) {
@@ -175,7 +186,33 @@ ReturnCodes CamHandler::SetupCam() {
         return ReturnCodes::Error;
     }
 
-    return ReturnCodes::Success;
+    // load facial recognition classifiers
+    rtn &= LoadClassifiers() == ReturnCodes::Success;
+
+    return rtn ? ReturnCodes::Success : ReturnCodes::Error;
+}
+
+
+ReturnCodes CamHandler::LoadClassifiers() {
+    // TODO: use cli to path these files
+    // these paths/files comes from the opencv package
+    fs::path classifiers_dir            {"/usr/share/opencv/haarcascades/"};
+    fs::path facial_classifier_file     {classifiers_dir / "haarcascade_frontalcatface.xml"};
+    fs::path obstruct_classifier_file   {classifiers_dir / "haarcascade_eye_tree_eyeglasses.xml"};
+    const bool face_rtn                 {facial_classifier.load(facial_classifier_file.string())};
+    const bool obstruct_rtn             {obstruct_classifier.load(obstruct_classifier_file.string())};
+
+    // check rtn codes
+    if(!face_rtn) {
+        cerr << "Error: Failed to load facial recognition classifier: " << facial_classifier_file << endl;
+    }
+
+    if (!obstruct_rtn) {
+        cerr << "Error: Failed to load obstruction recognition classifier: " << obstruct_classifier_file << endl;
+    }
+
+    return face_rtn && obstruct_rtn ? ReturnCodes::Success : ReturnCodes::Error;
+
 }
 
 
