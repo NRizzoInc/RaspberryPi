@@ -249,10 +249,10 @@ ReturnCodes CamHandler::DetectAndDraw(cv::Mat& img) {
 
     // convert img to grayscale
     cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
-    cv::equalizeHist(gray_img, gray_img);
+    // cv::equalizeHist(gray_img, gray_img);
 
     // detect faces of different sizes using cascade classifier
-    facial_classifier.detectMultiScale(gray_img, faces);
+    facial_classifier.detectMultiScale(gray_img, faces, 1.3, 5);
 
     // draw circles around the faces
     for (auto& face : faces) {
@@ -263,18 +263,17 @@ ReturnCodes CamHandler::DetectAndDraw(cv::Mat& img) {
         );
 
         // actually draw circle (centered around face) on img
-        cv::ellipse(
-            img,
-            center,
-            cv::Size( face.width/2, face.height/2 ),
-            0,
-            0,
-            360,
-            cv::Scalar( 255, 0, 255 ),
-            4
+        cv::circle(
+            img,                                // img to draw on
+            center,                             // circle's center pt
+            (face.width + face.height) / 3,     // radius
+            cv::Scalar( 255, 0, 255 ),          // color (purple)
+            4                                   // thickness
         );
 
         // detect & draw eyes in each face
+
+        /* (Dont care about circling the eyes currently)
         cv::Mat faceROI = gray_img(face);
         std::vector<cv::Rect> eyes; // stores detected eyes
         eye_classifier.detectMultiScale(faceROI, eyes);
@@ -296,6 +295,7 @@ ReturnCodes CamHandler::DetectAndDraw(cv::Mat& img) {
             );
 
         } // end of iteration over eyes in faces
+        */
 
     } // end of iteration over faces
 
