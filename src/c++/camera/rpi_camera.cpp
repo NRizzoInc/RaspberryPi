@@ -125,6 +125,9 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
         }
 
         // perform facial recognition (should be done PRIOR to any other modifications)
+        if(DetectAndDraw(image) != ReturnCodes::Success) {
+            cerr << "Error: Failed to perform facial recogniition on image" << endl;
+        }
 
         // add timestamp to frame (after detection)
         std::string timecode    { Helpers::Timing::GetTimecode() };
@@ -193,26 +196,97 @@ ReturnCodes CamHandler::SetupCam() {
 }
 
 
+/******************************************** Facial Recognition Functions *******************************************/
+// credit: https://www.geeksforgeeks.org/opencv-c-program-face-detection/
+// credit: https://docs.opencv.org/3.4/db/d28/tutorial_cascade_classifier.html
+
+// how to iterate over cv::Mat:
+// -- https://docs.opencv.org/master/d3/d63/classcv_1_1Mat.html#a952ef1a85d70a510240cb645a90efc0d
+// pos contains the current pixel's (z,y,z) coordinate that can be used
+//      -- pos[0] = x, pos[1] = y, pos[2] = z
+// "pixel" is reference to the currently selected pixel in the image at that point
+//      -- to modify the contents of the image: pixel.x/y/z = ...
+
 ReturnCodes CamHandler::LoadClassifiers() {
     // TODO: use cli to path these files
     // these paths/files comes from the opencv package
     fs::path classifiers_dir            {"/usr/share/opencv/haarcascades/"};
     fs::path facial_classifier_file     {classifiers_dir / "haarcascade_frontalcatface.xml"};
-    fs::path obstruct_classifier_file   {classifiers_dir / "haarcascade_eye_tree_eyeglasses.xml"};
+    fs::path eye_classifier_file        {classifiers_dir / "haarcascade_eye_tree_eyeglasses.xml"};
     const bool face_rtn                 {facial_classifier.load(facial_classifier_file.string())};
-    const bool obstruct_rtn             {obstruct_classifier.load(obstruct_classifier_file.string())};
+    const bool eye_rtn                  {eye_classifier.load(eye_classifier_file.string())};
 
     // check rtn codes
     if(!face_rtn) {
         cerr << "Error: Failed to load facial recognition classifier: " << facial_classifier_file << endl;
     }
 
-    if (!obstruct_rtn) {
-        cerr << "Error: Failed to load obstruction recognition classifier: " << obstruct_classifier_file << endl;
+    if (!eye_rtn) {
+        cerr << "Error: Failed to load eye classifier: " << eye_classifier_file << endl;
     }
 
-    return face_rtn && obstruct_rtn ? ReturnCodes::Success : ReturnCodes::Error;
+    return face_rtn && eye_rtn ? ReturnCodes::Success : ReturnCodes::Error;
 
+}
+
+ReturnCodes CamHandler::DetectAndDraw(cv::Mat& img) {
+    // define some needed in between step vars
+    std::vector<cv::Rect> faces;
+    cv::Mat gray_img;
+
+    // convert img to grayscale
+    cv::cvtColor(img, gray_img, cv::COLOR_BGR2GRAY);
+    cv::equalizeHist(gray_img, gray_img);
+
+    // detect faces of different sizes using cascade classifier
+    facial_classifier.detectMultiScale(gray_img, faces);
+
+    // draw circles around the faces
+    for (auto& face : faces) {
+        // center a point/circle in the middle of the object
+        const cv::Point center(
+            face.x + face.width/2,
+            face.y + face.height/2
+        );
+
+        // actually draw circle (centered around face) on img
+        cv::ellipse(
+            img,
+            center,
+            cv::Size( face.width/2, face.height/2 ),
+            0,
+            0,
+            360,
+            cv::Scalar( 255, 0, 255 ),
+            4
+        );
+
+        // detect & draw eyes in each face
+        cv::Mat faceROI = gray_img(face);
+        std::vector<cv::Rect> eyes; // stores detected eyes
+        eye_classifier.detectMultiScale(faceROI, eyes);
+
+        for (auto& eye : eyes) {
+            const cv::Point eye_center(
+                face.x + eye.x + eye.width/2,
+                face.y + eye.y + eye.height/2
+            );
+            
+            // draw the actual circle around the eye
+            const int radius = cvRound( (eye.width + eye.height) * 0.25 );
+            cv::circle(
+                img,
+                eye_center,
+                radius,
+                cv::Scalar( 255, 0, 0 ),
+                4
+            );
+
+        } // end of iteration over eyes in faces
+
+    } // end of iteration over faces
+
+    return ReturnCodes::Success;
 }
 
 

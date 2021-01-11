@@ -115,7 +115,7 @@ class CamHandler : public raspicam::RaspiCam_Cv {
 
         // PreDefined/Trained Object Detection Classifiers (Facial Recognition)
         cv::CascadeClassifier      facial_classifier;       // contains facial classifiers
-        cv::CascadeClassifier      obstruct_classifier;     // classifier for objects that object face
+        cv::CascadeClassifier      eye_classifier;          // classifier for objects that object face
 
         /********************************************* Helper Functions ********************************************/
 
@@ -125,11 +125,20 @@ class CamHandler : public raspicam::RaspiCam_Cv {
          */
         ReturnCodes SetupCam();
 
+        /*************************************** Facial Recognition Functions **************************************/
+
         /**
          * @brief Loads the classifier files for facial detection
          * @return ReturnCodes Sucess if no issues
          */
         ReturnCodes LoadClassifiers();
+
+        /**
+         * @brief Performs facial recognition on the passed image using preloaded classifiers
+         * @param img The image to detect faces on & modify (hence not const)
+         * @return ReturnCodes Success if no issues
+         */
+        ReturnCodes DetectAndDraw(cv::Mat& img);
 
 }; // end of CamHandler class
 
