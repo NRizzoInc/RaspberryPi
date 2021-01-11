@@ -13,6 +13,8 @@ To fully run the robot's systems, both the client and server need to be used.
 1. First start up the server: `./bin/rpi_driver --mode server`
 2. Then start up the client: `./bin/rpi_driver --mode client --ip <RPI's ip address>`
 
+_Note:_ Using the verbose flag (`--verbose`) will show extra information in the terminal as the program is running.
+
 ## Usage
 
 Check out [this guide](https://github.com/NRizzoInc/RaspberryPi/wiki) for how to use the server & client to control the RPI.
