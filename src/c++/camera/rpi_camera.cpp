@@ -9,15 +9,34 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+// these paths/files comes from the opencv package
+// const fs::path classifiers_dir          {"/usr/share/opencv/haarcascades/"};
+const fs::path CURR_DIR                 {fs::path{__FILE__}.parent_path()};
+const fs::path classifiers_dir          {CURR_DIR / "classifiers"};
+
 /********************************************** Constructors **********************************************/
 
-CamHandler::CamHandler(const bool verbosity, const int max_frame_count, const bool should_init)
+CamHandler::CamHandler(
+    const bool verbosity,
+    const int max_frame_count,
+    const bool should_init,
+    const std::string face_xml,
+    const std::string eye_xml
+)
     : raspicam::RaspiCam_Cv{}
     , is_verbose{verbosity}
     , frame_count{0}
     , max_frames{max_frame_count}       // defaults to infinite = -1
     , stop_thread{false}
     , should_record{false}
+    , facial_classifier{std::pair{
+        face_xml != ""  ? fs::path{face_xml} : fs::path{classifiers_dir / "haarcascade_frontalface.xml"},
+        cv::CascadeClassifier{}
+    }}
+    , eye_classifier{std::pair{
+        eye_xml != "" ?  fs::path{eye_xml} : fs::path{classifiers_dir / "haarcascade_eye_tree_eyeglasses.xml"},
+        cv::CascadeClassifier{}
+    }}
 {
     if (should_init) {
         if(SetupCam() != ReturnCodes::Success) {
@@ -209,33 +228,36 @@ ReturnCodes CamHandler::SetupCam() {
 // "pixel" is reference to the currently selected pixel in the image at that point
 //      -- to modify the contents of the image: pixel.x/y/z = ...
 
+
+ReturnCodes CamHandler::LoadClassifiers(Classifier& classifiers_pair) {
+    const fs::path&         classifier_path     {classifiers_pair.first};
+    cv::CascadeClassifier&  classifier_obj      {classifiers_pair.second};
+    const bool              load_rtn            {classifier_obj.load(classifier_path.string())};
+    return load_rtn ? ReturnCodes::Success : ReturnCodes::Error;
+}
+
+
 ReturnCodes CamHandler::LoadClassifiers() {
     // TODO: use cli to path these files
-    // these paths/files comes from the opencv package
-    // const fs::path classifiers_dir          {"/usr/share/opencv/haarcascades/"};
-    const fs::path CURR_DIR                 {fs::path{__FILE__}.parent_path()};
-    const fs::path classifiers_dir          {CURR_DIR / "classifiers"};
-    const fs::path facial_classifier_file   {classifiers_dir / "haarcascade_frontalface.xml"};
-    const fs::path eye_classifier_file      {classifiers_dir / "haarcascade_eye_tree_eyeglasses.xml"};
-    const bool face_rtn                     {facial_classifier.load(facial_classifier_file.string())};
-    const bool eye_rtn                      {eye_classifier.load(eye_classifier_file.string())};
+    const bool face_rtn         {LoadClassifiers(facial_classifier) == ReturnCodes::Success};
+    const bool eye_rtn          {LoadClassifiers(eye_classifier) == ReturnCodes::Success};
 
     // print some debug info
     if (is_verbose) {
-        cout << std::boolalpha << "face classifier: " << facial_classifier_file 
-             << " (loaded " << !facial_classifier.empty() << ")" << endl;
+        cout << std::boolalpha << "face classifier: " << facial_classifier.first 
+             << " (loaded " << !facial_classifier.second.empty() << ")" << endl;
 
-        cout << std::boolalpha << "eye classifier: " << eye_classifier_file
-             << " (loaded " << !eye_classifier.empty() << ")" << endl;
+        cout << std::boolalpha << "eye classifier: " << eye_classifier.first
+             << " (loaded " << !eye_classifier.second.empty() << ")" << endl;
     }
 
     // check rtn codes
     if(!face_rtn) {
-        cerr << "Error: Failed to load facial recognition classifier: " << facial_classifier_file << endl;
+        cerr << "Error: Failed to load facial recognition classifier: " << facial_classifier.first << endl;
     }
 
     if (!eye_rtn) {
-        cerr << "Error: Failed to load eye classifier: " << eye_classifier_file << endl;
+        cerr << "Error: Failed to load eye classifier: " << eye_classifier.first << endl;
     }
 
     return face_rtn && eye_rtn ? ReturnCodes::Success : ReturnCodes::Error;
@@ -252,7 +274,7 @@ ReturnCodes CamHandler::DetectAndDraw(cv::Mat& img) {
     // cv::equalizeHist(gray_img, gray_img);
 
     // detect faces of different sizes using cascade classifier
-    facial_classifier.detectMultiScale(gray_img, faces, 1.3, 5);
+    facial_classifier.second.detectMultiScale(gray_img, faces, 1.3, 5);
 
     // draw circles around the faces
     for (auto& face : faces) {

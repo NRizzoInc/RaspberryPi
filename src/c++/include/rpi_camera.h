@@ -31,6 +31,8 @@ using time_point = std::chrono::_V2::system_clock::time_point;
 
 using GrabFrameCb = std::function<void(const std::vector<unsigned char>& frame)>;
 
+using Classifier = std::pair<const fs::path, cv::CascadeClassifier>;
+
 /**
  * @brief Extends the raspicam opencv camera class
  * @note use `isOpened()` to check open status
@@ -45,6 +47,8 @@ class CamHandler : public raspicam::RaspiCam_Cv {
          * @brief Construct a new camera handler object
          * @param verbosity If true, will print more information that is strictly necessary
          * @param max_frame_count (defualts to -1 = infinite) If set, only this number of frames will be taken
+         * @param face_xml (default to local version) Absolute path to the opencv face classifier xml file
+         * @param eye_xml  (default to local version) Absolute path to the opencv eye classifier xml file
          * @param should_init (default=true) Initialize obj in constructor 
          * (If false, you will have to call SetupCam() manually).
          * Needed if running client code on non-rpi w/o camera to open 
@@ -52,7 +56,9 @@ class CamHandler : public raspicam::RaspiCam_Cv {
         CamHandler(
             const bool verbosity=false,
             const int max_frame_count=-1,
-            const bool should_init=true
+            const bool should_init=true,
+            const std::string face_xml="",
+            const std::string eye_xml=""
         );
         virtual ~CamHandler();
 
@@ -120,8 +126,8 @@ class CamHandler : public raspicam::RaspiCam_Cv {
         GrabFrameCb                 grab_cb;       // callback to use when a frame is grabbed
 
         // PreDefined/Trained Object Detection Classifiers (Facial Recognition)
-        cv::CascadeClassifier      facial_classifier;       // contains facial classifiers
-        cv::CascadeClassifier      eye_classifier;          // classifier for objects that object face
+        Classifier                  facial_classifier;
+        Classifier                  eye_classifier;          // classifier for objects that object face
 
         /********************************************* Helper Functions ********************************************/
 
@@ -138,6 +144,9 @@ class CamHandler : public raspicam::RaspiCam_Cv {
          * @return ReturnCodes Sucess if no issues
          */
         ReturnCodes LoadClassifiers();
+
+        // uses pairing to easily load the file into the cv obj
+        ReturnCodes LoadClassifiers(Classifier& classifiers_pair);
 
         /**
          * @brief Performs facial recognition on the passed image using preloaded classifiers
