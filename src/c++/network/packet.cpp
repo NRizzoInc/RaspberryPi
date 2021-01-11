@@ -129,6 +129,7 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
 
 
 /*************************************** Packet Read/Write Functions ***************************************/
+// note: when using copy constructor cannot use {} because stores original json into an array
 
 CommonPkt Packet::readPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
     // see pkt_sample.json for format
@@ -189,15 +190,18 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
     return json_pkt;
 }
 
-
-std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
-    // note: when using copy constructor cannot use {} because stores original json into an array
+std::string Packet::writePkt(const json& pkt_to_send) const {
     // see pkt_sample.json for format
     // use bson for faster/concise pkt transfers
-    const json& pkt_json = convertPktToJson(pkt_to_send);
-    const bson& pkt_bson = json::to_bson(pkt_json);
+    const bson& pkt_bson = json::to_bson(pkt_to_send);
     const std::string& pkt_bson_str = std::string{pkt_bson.begin(), pkt_bson.end()};
     return pkt_bson_str;
+}
+
+
+std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
+    const json& pkt_json = convertPktToJson(pkt_to_send);
+    return writePkt(pkt_json);
 }
 
 
