@@ -2,12 +2,19 @@
 # the commit's SHA1, and whether the building workspace was dirty or not
 # defines RPI_Version library which should be compiled into main
 
+# include method for getting current git versioning info
+include(GetGitRevisionDescription REQUIRED) # https://stackoverflow.com/a/4318642/13933174
+git_describe_working_tree(GIT_DESC) # define GIT_DESC
+
+#################### some additional git defines not included in package
+
 execute_process(COMMAND
     "${GIT_EXECUTABLE}" describe --match=NeVeRmAtCh --always --abbrev=40 --dirty
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     OUTPUT_VARIABLE GIT_SHA1
     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
 
 # the date of the commit
 execute_process(COMMAND
