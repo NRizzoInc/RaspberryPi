@@ -174,14 +174,12 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
 
 ReturnCodes CamHandler::SetupCam() {
     // set camera properties & settings
-    bool rtn {true};
-
     // TODO: make sure is using h264 raw encoding to mp4
-    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC1 );
-    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC3 );
-    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FRAME_WIDTH, Constants::Camera::FRAME_WIDTH );
-    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FRAME_HEIGHT, Constants::Camera::FRAME_HEIGHT );
-    rtn &= RaspiCam_Cv::set( CV_CAP_PROP_FPS, Constants::Camera::VID_FRAMERATE );
+    RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC1 );
+    RaspiCam_Cv::set( CV_CAP_PROP_FORMAT, CV_8UC3 );
+    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_WIDTH, Constants::Camera::FRAME_WIDTH );
+    RaspiCam_Cv::set( CV_CAP_PROP_FRAME_HEIGHT, Constants::Camera::FRAME_HEIGHT );
+    RaspiCam_Cv::set( CV_CAP_PROP_FPS, Constants::Camera::VID_FRAMERATE );
 
     // open camera after setting correct settings
     if(OpenCam() != ReturnCodes::Success) {
@@ -190,9 +188,12 @@ ReturnCodes CamHandler::SetupCam() {
     }
 
     // load facial recognition classifiers
-    rtn &= LoadClassifiers() == ReturnCodes::Success;
+    if (LoadClassifiers() != ReturnCodes::Success) {
+        cerr << "Error: Failed to load classifiers" << endl;
+        return ReturnCodes::Error;
+    }
 
-    return rtn ? ReturnCodes::Success : ReturnCodes::Error;
+    return ReturnCodes::Success;
 }
 
 
