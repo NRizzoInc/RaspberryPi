@@ -53,6 +53,8 @@ namespace CLI::Results {
         WEB_PORT,
         MOTOR_ADDR,
         VID_FRAMES,
+        FACEXML,
+        EYEXML,
         VERBOSITY
     }; // end of ParseResults's keys
 

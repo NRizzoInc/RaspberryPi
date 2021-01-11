@@ -131,10 +131,23 @@ ReturnCodes CLI_Parser::addFlags() {
 
     /****************************************** Camera Flags *****************************************/
 
-    add_option("-f,--frames", cli_res[CLI::Results::ParseKeys::VID_FRAMES])
+    auto cam_group = add_option_group("Camera");
+    cam_group->add_option("-f,--frames", cli_res[CLI::Results::ParseKeys::VID_FRAMES])
         ->description("The number of frames to capture before stopping the video (-1 = infinite)")
         ->required(false)
         ->default_val("-1")
+        ;
+
+    cam_group->add_option("--face-xml", cli_res[CLI::Results::ParseKeys::FACEXML])
+        ->description("The absolute path to the opencv `haarcascade_frontalface.xml` to use for facial recognition")
+        ->required(false)
+        ->check(::CLI::ExistingFile)
+        ;
+
+    cam_group->add_option("--eye-xml", cli_res[CLI::Results::ParseKeys::EYEXML])
+        ->description("The absolute path to the opencv `haarcascade_eye_tree_eyeglasses.xml` to use for occular recognition")
+        ->required(false)
+        ->check(::CLI::ExistingFile)
         ;
 
     /*************************************** Miscellaneous Flags *************************************/
