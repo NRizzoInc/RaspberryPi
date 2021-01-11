@@ -158,6 +158,13 @@ class Packet {
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
 
         /**
+         * @brief Final endpoint for readPkt -- can just call this one directly if have correct material
+         * @param pkt_json The jsonified packet to parse
+         * @return The parsed json packet in struct form
+         */
+        CommonPkt readPkt(const json& pkt_json) const;
+
+        /**
          * @brief Interprets a received packet and translates it to an easier type to deal with
          * @param pkt_buf A char array containing a stringified json/bson
          * @param size The size of the packet buffer
@@ -165,6 +172,14 @@ class Packet {
          * @return The packet translated into the struct
          */
         CommonPkt readPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const;
+
+        /**
+         * @brief Inbetween function that will just convert a buffered bson packet into a regular json
+         * @param pkt_buf The bson packet buffer
+         * @param size The size of the buffer
+         * @return The jsonified packet buffer
+         */
+        json readPkt(const char* pkt_buf, const std::size_t size) const;
 
 
         /**
