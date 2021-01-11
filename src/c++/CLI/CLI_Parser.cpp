@@ -57,8 +57,12 @@ ReturnCodes CLI_Parser::addFlags() {
         ->take_first()
         ;
 
+    /******************************************** Testing Flags *******************************************/
+
+    auto test_group = add_option_group("Testing");
+
     const char delim {','};
-    add_option("-c,--colors", cli_res[CLI::Results::ParseKeys::COLORS])
+    test_group->add_option("-c,--colors", cli_res[CLI::Results::ParseKeys::COLORS])
         ->description("Which LEDs/Buttons to use (comma-seperated)")
         ->required(false)
         // method for taking in multiple args => str-represented vector
@@ -69,19 +73,19 @@ ReturnCodes CLI_Parser::addFlags() {
         ->join(delim)
         ;
 
-    add_option("-i,--interval", cli_res[CLI::Results::ParseKeys::INTERVAL])
+    test_group->add_option("-i,--interval", cli_res[CLI::Results::ParseKeys::INTERVAL])
         ->description("The interval (in ms) between changing LEDs' states")
         ->required(false)
         ->default_val("1000")
         ;
 
-    add_option("-d,--duration", cli_res[CLI::Results::ParseKeys::DURATION])
+    test_group->add_option("-d,--duration", cli_res[CLI::Results::ParseKeys::DURATION])
         ->description("How long the program should run (in ms)")
         ->required(false)
         ->default_val("-1")
         ;
 
-    add_option("-r,--rate", cli_res[CLI::Results::ParseKeys::RATE])
+    test_group->add_option("-r,--rate", cli_res[CLI::Results::ParseKeys::RATE])
         ->description("How fast the LEDs' intensity should change (1x, 2x, 3x...)")
         ->required(false)
         ->default_val("1")
@@ -89,22 +93,24 @@ ReturnCodes CLI_Parser::addFlags() {
 
     /**************************************** Networking Flags ****************************************/
 
+    auto net_group = add_option_group("Network");
+
     // mark them both as needing mode_opt bc its results impact them
-    add_option("-a,--ip", cli_res[CLI::Results::ParseKeys::IP])
+    net_group->add_option("-a,--ip", cli_res[CLI::Results::ParseKeys::IP])
         ->description("The server's ip address")
         ->required(false)
         ->default_val("127.0.0.1")
         ->check(::CLI::ValidIPV4)
         ;
 
-    add_option("-p,--control-port", cli_res[CLI::Results::ParseKeys::CTRL_PORT])
+    net_group->add_option("-p,--control-port", cli_res[CLI::Results::ParseKeys::CTRL_PORT])
         ->description("The server's/client's port number for controlling the robot's movement")
         ->required(false)
         ->default_val("55555")
         ->check(::CLI::Range(1024, 65535))
         ;
 
-    add_option("--cam-port", cli_res[CLI::Results::ParseKeys::CAM_PORT])
+    net_group->add_option("--cam-port", cli_res[CLI::Results::ParseKeys::CAM_PORT])
         ->description("The server's/client's port number for sending & receiving camera data")
         ->required(false)
         ->default_val("55556")
@@ -113,8 +119,10 @@ ReturnCodes CLI_Parser::addFlags() {
 
     /**************************************** I2C Address Flags ***************************************/
 
-    add_option("--motor-addr", cli_res[CLI::Results::ParseKeys::MOTOR_ADDR])
-        ->description("The motor controller's i2c address in hex (find with i2cdetect -y 1)")
+    auto hardware_group = add_option_group("Hardware");
+
+    hardware_group->add_option("--i2c-addr", cli_res[CLI::Results::ParseKeys::I2C_ADDR])
+        ->description("The PCA9685's (motor/servo controller) i2c address in hex (find with i2cdetect -y 1)")
         ->required(false)
         ->default_val("0x40")
         ->check(::CLI::Number)
@@ -122,7 +130,7 @@ ReturnCodes CLI_Parser::addFlags() {
 
     /****************************************** Web App Flags *****************************************/
 
-    add_option("--web-port", cli_res[CLI::Results::ParseKeys::WEB_PORT])
+    net_group->add_option("--web-port", cli_res[CLI::Results::ParseKeys::WEB_PORT])
         ->description("The web-app's port number")
         ->required(false)
         ->default_val("5001")
