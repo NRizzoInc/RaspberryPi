@@ -4,7 +4,7 @@ This repo contains both C++ and Python code for interfacing with a Raspberry Pi 
 In the future however, I plan on stop supporting the Python code base in favor of C++.
 _Note:_ I may rever to the raspberry pi as RPI for short.
 
-## Current Features 
+## Current Features
 
 ### Main Features
 
@@ -12,6 +12,8 @@ To fully run the robot's systems, both the client and server need to be used.
 
 1. First start up the server: `./bin/rpi_driver --mode server`
 2. Then start up the client: `./bin/rpi_driver --mode client --ip <RPI's ip address>`
+
+_Note:_ Using the verbose flag (`--verbose`) will show extra information in the terminal as the program is running.
 
 ## Usage
 
@@ -24,7 +26,6 @@ You can run the client on another device, but you would need to build & install 
 ### Running Client on RaspberryPi (recommended)
 
 It is much simpler to actually run **both** the client & server on the RPI without specifying an ip (defaults to **localhost**). This in turn starts up a web app client which can be accessed by any device on the same network as the RPI. If you follow [this guide for setting up a hostname](https://www.howtogeek.com/167195/how-to-change-your-raspberry-pi-or-other-linux-devices-hostname/), then accessing the web app from another computer is as easy as opening a browser and going to `http://<hostname>:<client port (default 5001)>/RPI-Client`.
-
 
 ### Features that can be run locally without the client
 
@@ -67,12 +68,12 @@ See the `PinDiagrams` directory gain an understanding of my RPI's pin usage.
 
 _Note: the C++ code utilizes the `wPi` column in the `./PinDiagrams/README.md` file_
 
-| wPi Pins 	| LEDs 	| Buttons 	|
-|:--------:	|:----:	|:-------:	|
-|    Red   	|   22  |    26    	|
-|  Yellow  	|   23  |    27    	|
-|   Green  	|   24  |    28    	|
-|   Blue   	|   25  |    29    	|
+| wPi Pins  | LEDs  | Buttons   |
+|:--------: |:----: |:-------:  |
+|    Red    |   22  |    26     |
+|  Yellow   |   23  |    27     |
+|   Green   |   24  |    28     |
+|   Blue    |   25  |    29     |
 
 ### Software Configuration
 

@@ -53,7 +53,11 @@ class TcpBase : public Packet {
     public:
         /********************************************** Constructors **********************************************/
 
-        TcpBase();
+        /**
+         * @brief Construct a TcpBase object (should be created via cast from a derived class)
+         * @param verbosity If true, will print more information that is strictly necessary
+         */
+        TcpBase(const bool verbosity=false);
         virtual ~TcpBase();
 
         /**
@@ -188,6 +192,7 @@ class TcpBase : public Packet {
     private:
         /******************************************** Private Variables ********************************************/
 
+        const bool                  is_verbose;         // false if should only print errors/important info
         std::atomic_bool            should_exit;        // true if should exit/stop connection
         std::thread                 control_thread;     // holds the thread proc for ControlLoopFn()
         std::thread                 cam_vid_thread;     // holds the thread proc for VideoStreamHandler()

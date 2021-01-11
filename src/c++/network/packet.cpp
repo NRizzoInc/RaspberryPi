@@ -129,34 +129,48 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
 
 
 /*************************************** Packet Read/Write Functions ***************************************/
+// note: when using copy constructor cannot use {} because stores original json into an array
+
+json Packet::readPkt(const char* pkt_buf, const std::size_t size) const {
+    // if empty, will just be empty json
+    return json::from_bson(std::string(pkt_buf, size));
+}
+
 
 CommonPkt Packet::readPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
-    // see pkt_sample.json for format
     // if no data sent, just use current packet
-    if (std::strlen(pkt_buf) == 0) {
+    if (std::strlen(pkt_buf) == 0 || size == 0) {
         return getCurrentPkt();
     }
 
     // if valid str, parse and convert stringified bson to json covnert to standard pkt
     // (use bson for faster/concise pkt transfers)
-    const json& data = is_bson ? json::from_bson(std::string(pkt_buf, size)) : json::parse(pkt_buf);
-    CommonPkt translated_pkt;
-
-    translated_pkt.cntrl.led.red        = findIfExists<bool>(data, {"control",  "led",      "red"       });
-    translated_pkt.cntrl.led.yellow     = findIfExists<bool>(data, {"control",  "led",      "yellow"    });
-    translated_pkt.cntrl.led.green      = findIfExists<bool>(data, {"control",  "led",      "green"     });
-    translated_pkt.cntrl.led.blue       = findIfExists<bool>(data, {"control",  "led",      "blue"      });
-    translated_pkt.cntrl.motor.forward  = findIfExists<bool>(data, {"control",  "motor",    "forward"   });
-    translated_pkt.cntrl.motor.backward = findIfExists<bool>(data, {"control",  "motor",    "backward"  });
-    translated_pkt.cntrl.motor.right    = findIfExists<bool>(data, {"control",  "motor",    "right"     });
-    translated_pkt.cntrl.motor.left     = findIfExists<bool>(data, {"control",  "motor",    "left"      });
-    translated_pkt.cntrl.servo.horiz    = findIfExists<int> (data, {"control",  "servo",    "horiz"     });
-    translated_pkt.cntrl.servo.vert     = findIfExists<int> (data, {"control",  "servo",    "vert"      });
-    translated_pkt.cntrl.camera.is_on   = findIfExists<bool>(data, {"control",  "camera",   "is_on"     });
-    translated_pkt.ACK                  = findIfExists<bool>(data, {"ACK"});
-
-    return translated_pkt;
+    const json& pkt_json = is_bson ? readPkt(pkt_buf, size) : json::parse(pkt_buf);
+    return readPkt(pkt_json);
 }
+
+
+CommonPkt Packet::readPkt(const json& pkt_json) const {
+    // see pkt_sample.json for format
+    // actually parse packet and save into struct
+    CommonPkt pkt;
+
+    pkt.cntrl.led.red        = findIfExists<bool>(pkt_json, {"control",  "led",      "red"       });
+    pkt.cntrl.led.yellow     = findIfExists<bool>(pkt_json, {"control",  "led",      "yellow"    });
+    pkt.cntrl.led.green      = findIfExists<bool>(pkt_json, {"control",  "led",      "green"     });
+    pkt.cntrl.led.blue       = findIfExists<bool>(pkt_json, {"control",  "led",      "blue"      });
+    pkt.cntrl.motor.forward  = findIfExists<bool>(pkt_json, {"control",  "motor",    "forward"   });
+    pkt.cntrl.motor.backward = findIfExists<bool>(pkt_json, {"control",  "motor",    "backward"  });
+    pkt.cntrl.motor.right    = findIfExists<bool>(pkt_json, {"control",  "motor",    "right"     });
+    pkt.cntrl.motor.left     = findIfExists<bool>(pkt_json, {"control",  "motor",    "left"      });
+    pkt.cntrl.servo.horiz    = findIfExists<int> (pkt_json, {"control",  "servo",    "horiz"     });
+    pkt.cntrl.servo.vert     = findIfExists<int> (pkt_json, {"control",  "servo",    "vert"      });
+    pkt.cntrl.camera.is_on   = findIfExists<bool>(pkt_json, {"control",  "camera",   "is_on"     });
+    pkt.ACK                  = findIfExists<bool>(pkt_json, {"ACK"});
+
+    return pkt;
+}
+
 
 json Packet::convertPktToJson(const CommonPkt& pkt) const {
     // https://github.com/nlohmann/json#json-as-first-class-data-type
@@ -189,15 +203,18 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
     return json_pkt;
 }
 
-
-std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
-    // note: when using copy constructor cannot use {} because stores original json into an array
+std::string Packet::writePkt(const json& pkt_to_send) const {
     // see pkt_sample.json for format
     // use bson for faster/concise pkt transfers
-    const json& pkt_json = convertPktToJson(pkt_to_send);
-    const bson& pkt_bson = json::to_bson(pkt_json);
+    const bson& pkt_bson = json::to_bson(pkt_to_send);
     const std::string& pkt_bson_str = std::string{pkt_bson.begin(), pkt_bson.end()};
     return pkt_bson_str;
+}
+
+
+std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
+    const json& pkt_json = convertPktToJson(pkt_to_send);
+    return writePkt(pkt_json);
 }
 
 

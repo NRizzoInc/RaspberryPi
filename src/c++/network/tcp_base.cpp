@@ -10,8 +10,9 @@ using std::endl;
 
 /********************************************** Constructors **********************************************/
 
-TcpBase::TcpBase()
+TcpBase::TcpBase(const bool verbosity)
     : Packet{}
+    , is_verbose{verbosity}
     , should_exit{false}
     , control_thread{}
     , started_threads{false}
@@ -136,14 +137,16 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         )};
         const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, max_stream_left, 0);
         if (header_rx_partial < 0) {
-            // TODO: print this if --verbose
-            // cerr << "Error: receiving header packet" << endl;
+            if(is_verbose) {
+                cerr << "Error: receiving header packet" << endl;
+            }
             return RecvRtn{{}, RecvSendRtnCodes::Error};
         } 
         else if (header_rx_partial == 0) {
             // end of stream
-            // TODO: print this if --verbose
-            // cerr << "Error: other host closed connection while sending header packet" << endl;
+            if(is_verbose) {
+                cerr << "Error: other host closed connection while sending header packet" << endl;
+            }
             return RecvRtn{{}, RecvSendRtnCodes::ClosedConn};
         }
         header_rx_size += header_rx_partial;
@@ -166,18 +169,28 @@ RecvRtn TcpBase::recvData(int socket_fd) {
             header.total_length-total_recv_size, // the amount of stream data left to receive
             static_cast<std::uint32_t>(Constants::Network::MAX_DATA_SIZE)
         )};
+
+        // actually recv data
         const int rcv_size = ::recv(socket_fd, recv_buf+total_recv_size, max_stream_size, 0);
+
+        // error checking
         if(rcv_size < 0) {
-            // TODO: print this if --verbose
-            cerr << "ERROR: RECV (" << total_recv_size << "/" << header.total_length << ")" << endl;
+            if(is_verbose) {
+                cerr << "ERROR: RECV (" << total_recv_size << "/" << header.total_length << ")" << endl;
+            }
             rtn_code = RecvSendRtnCodes::Error;
             break;
-        } else if (rcv_size == 0) {
-            // TODO: print this if --verbose
-            cerr << "ERROR: RECV - other host closed connection" << endl;
+        }
+
+        else if (rcv_size == 0) {
+            if(is_verbose) {
+                cerr << "ERROR: RECV - other host closed connection" << endl;
+            }
             rtn_code = RecvSendRtnCodes::ClosedConn;
             break;
         }
+
+        // increment progress
         total_recv_size += rcv_size;
     }
 
@@ -210,7 +223,6 @@ SendRtn TcpBase::sendData(
     const int max_header_size {sizeof(HeaderPkt_t)};
     const int header_sent_size = ::send(socket_fd, str_pkt.c_str(), max_header_size, MSG_NOSIGNAL);
     if(header_sent_size < 0) {
-        // TODO: print this if --verbose
         cerr << "ERROR: Send header packet (" << header_sent_size << "/" << max_header_size << ")" << endl;
         return SendRtn{0, RecvSendRtnCodes::Error};
     }
@@ -220,7 +232,6 @@ SendRtn TcpBase::sendData(
     // send actual data now that other side knows size of this packet
     const int sent_size = ::send(socket_fd, buf, size_to_tx, MSG_NOSIGNAL);
     if (sent_size < 0 || sent_size != static_cast<int>(size_to_tx)) {
-        // TODO: print this if --verbose
         cerr << "ERROR: Sending Data (" << sent_size << "/" << size_to_tx << ")" << endl;
         return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Error};
     }

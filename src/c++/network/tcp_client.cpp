@@ -13,9 +13,10 @@ TcpClient::TcpClient(
     const std::string& ip_addr,
     const int ctrl_port_num,
     const int cam_port_num,
-    const bool should_init
+    const bool should_init,
+    const bool verbosity
 )
-    : TcpBase{}
+    : TcpBase{verbosity}
     , ctrl_data_sock_fd{-1}                 // init to invalid
     , server_ip{ip_addr}                    // ip address to try to reach server
     , ctrl_data_port{ctrl_port_num}         // port the client tries to reach the server at for sending control pkts
@@ -93,14 +94,16 @@ void TcpClient::ControlLoopFn(const bool print_data) {
         // client starts by sending data to other endpoint
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
-        const std::string   json_str    {writePkt(getCurrentPkt())};
+        const CommonPkt&    curr_pkt    {getCurrentPkt()};
         data_lock.unlock();             // unlock after leaving critical region
-        const char*         send_pkt    {json_str.c_str()};
-        const std::size_t   pkt_size    {json_str.size()};
+        const json&         pkt_json    {convertPktToJson(curr_pkt)};
+        const std::string   bson_str    {writePkt(pkt_json)};
+        const char*         send_pkt    {bson_str.c_str()};
+        const std::size_t   pkt_size    {bson_str.size()};
 
         // print the stringified json if told to
         if (print_data) {
-            cout << "Sending (" << pkt_size << "Bytes): " << send_pkt << endl;
+            cout << "Sending (" << pkt_size << "Bytes): " << pkt_json.dump() << endl;
         }
 
         // send the stringified json to the server

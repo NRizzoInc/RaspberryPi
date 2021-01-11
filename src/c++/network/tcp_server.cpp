@@ -10,8 +10,13 @@ namespace Network {
 
 /********************************************** Constructors **********************************************/
 
-TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bool should_init)
-    : TcpBase{}
+TcpServer::TcpServer(
+    const int ctrl_data_port,
+    const int cam_send_port,
+    const bool should_init,
+    const bool verbosity
+)
+    : TcpBase{verbosity}
     , close_conns{false}                    // set true if one socket gets closed, set back to false on restart
     , ctrl_listen_sock_fd{-1}               // init to invalid
     , ctrl_data_sock_fd{-1}                 // init to invalid
@@ -137,7 +142,6 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
                 if (ctrl_recv.RtnCode == RecvSendRtnCodes::Error) {
-                    // TODO: print only with --verbose
                     cout << "Error - client control socket recv error" << endl;
                 }
 
@@ -149,14 +153,20 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                     break;
                 } 
 
-                // print the buf to the terminal(if told to)
-                if (print_data) {
-                    cout << "Recv: " + data << endl;
-                }
-
                 // convert stringified json to json so it can be parsed into struct
                 try {
-                    const CommonPkt pkt {readPkt(data.c_str(), data.size(), true)};
+                    // note: data is transmitted as bson so have to interpret & parse pkt first
+                    const json& recv_json = readPkt(data.c_str(), data.size());
+
+                    // parse & print the buf to the terminal(if told to)
+                    if (print_data) {
+                        cout << "Recv Control Data: " + recv_json.dump() << endl;
+                    }
+
+                    // actually try to parse recv packet into the struct
+                    const CommonPkt pkt {readPkt(recv_json)};
+
+                    // actually update the saved most recent packet in memory
                     if(updatePkt(pkt) != ReturnCodes::Success) {
                         cerr << "Failed to update from client info" << endl;
                     }

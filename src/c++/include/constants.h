@@ -52,7 +52,8 @@ namespace CLI::Results {
         CAM_PORT,
         WEB_PORT,
         MOTOR_ADDR,
-        VID_FRAMES
+        VID_FRAMES,
+        VERBOSITY
     }; // end of ParseResults's keys
 
     // maps CLI's results (stored in string form) as {ParseKeys::<key> : value}
