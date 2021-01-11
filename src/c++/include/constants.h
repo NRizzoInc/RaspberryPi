@@ -55,7 +55,8 @@ namespace CLI::Results {
         VID_FRAMES,
         FACEXML,
         EYEXML,
-        VERBOSITY
+        VERBOSITY,
+        VERSION
     }; // end of ParseResults's keys
 
     // maps CLI's results (stored in string form) as {ParseKeys::<key> : value}

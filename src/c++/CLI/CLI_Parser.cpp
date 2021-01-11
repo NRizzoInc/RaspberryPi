@@ -48,12 +48,19 @@ const CLI::Results::ParseResults& CLI_Parser::parse_flags() noexcept(false) {
 
 /********************************************* Helper Functions ********************************************/
 ReturnCodes CLI_Parser::addFlags() {
-    add_option("-m,--mode", cli_res[CLI::Results::ParseKeys::MODE])
+
+    /******************************************** Required Flags ******************************************/
+    // make list of mutually exclusive requires: https://github.com/CLIUtils/CLI11/issues/88
+    auto req_list = add_subcommand("", "Mutually Exclusive Options")
+        ->require_option(1) // only require one of the mutually exclusive values
+        ;
+
+    // add mode to required list - either mode or something else is needed  (i.e. --version)
+    req_list->add_option("-m,--mode", cli_res[CLI::Results::ParseKeys::MODE])
         ->description("Which action to perform")
-        ->required(true)
+        // ->required(true) // instead added to mutually exclusive requires list at end
         ->check(::CLI::IsMember(mode_list))
-        // make sure only 1 mode is ever taken
-        ->expected(1)
+        ->expected(1) // make sure only 1 mode is ever taken
         ->take_first()
         ;
 
@@ -95,7 +102,6 @@ ReturnCodes CLI_Parser::addFlags() {
 
     auto net_group = add_option_group("Network");
 
-    // mark them both as needing mode_opt bc its results impact them
     net_group->add_option("-a,--ip", cli_res[CLI::Results::ParseKeys::IP])
         ->description("The server's ip address")
         ->required(false)
@@ -158,9 +164,19 @@ ReturnCodes CLI_Parser::addFlags() {
         ->check(::CLI::ExistingFile)
         ;
 
-    /*************************************** Miscellaneous Flags *************************************/
-    add_flag("-v,--verbose", cli_res[CLI::Results::ParseKeys::VERBOSITY])
+    /*********************************** Miscellaneous/Main/Required Flags *********************************/
+
+    auto misc_group = add_option_group("Miscellaneous");
+
+    misc_group->add_flag("-v,--verbose", cli_res[CLI::Results::ParseKeys::VERBOSITY])
         ->description("Use this flag to increase verbosity (more prints)")
+        ->required(false)
+        ->default_val(false)
+        ;
+
+    // if version provided, exclude other required option
+    req_list->add_flag("-x,--version", cli_res[CLI::Results::ParseKeys::VERSION])
+        ->description("Show the git version used to compile the executable & exit")
         ->required(false)
         ->default_val(false)
         ;
