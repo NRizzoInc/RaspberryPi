@@ -212,11 +212,22 @@ ReturnCodes CamHandler::SetupCam() {
 ReturnCodes CamHandler::LoadClassifiers() {
     // TODO: use cli to path these files
     // these paths/files comes from the opencv package
-    fs::path classifiers_dir            {"/usr/share/opencv/haarcascades/"};
-    fs::path facial_classifier_file     {classifiers_dir / "haarcascade_frontalcatface.xml"};
-    fs::path eye_classifier_file        {classifiers_dir / "haarcascade_eye_tree_eyeglasses.xml"};
-    const bool face_rtn                 {facial_classifier.load(facial_classifier_file.string())};
-    const bool eye_rtn                  {eye_classifier.load(eye_classifier_file.string())};
+    // const fs::path classifiers_dir          {"/usr/share/opencv/haarcascades/"};
+    const fs::path CURR_DIR                 {fs::path{__FILE__}.parent_path()};
+    const fs::path classifiers_dir          {CURR_DIR / "classifiers"};
+    const fs::path facial_classifier_file   {classifiers_dir / "haarcascade_frontalface.xml"};
+    const fs::path eye_classifier_file      {classifiers_dir / "haarcascade_eye_tree_eyeglasses.xml"};
+    const bool face_rtn                     {facial_classifier.load(facial_classifier_file.string())};
+    const bool eye_rtn                      {eye_classifier.load(eye_classifier_file.string())};
+
+    // print some debug info
+    if (is_verbose) {
+        cout << std::boolalpha << "face classifier: " << facial_classifier_file 
+             << " (loaded " << !facial_classifier.empty() << ")" << endl;
+
+        cout << std::boolalpha << "eye classifier: " << eye_classifier_file
+             << " (loaded " << !eye_classifier.empty() << ")" << endl;
+    }
 
     // check rtn codes
     if(!face_rtn) {
