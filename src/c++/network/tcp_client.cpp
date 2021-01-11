@@ -13,9 +13,10 @@ TcpClient::TcpClient(
     const std::string& ip_addr,
     const int ctrl_port_num,
     const int cam_port_num,
-    const bool should_init
+    const bool should_init,
+    const bool verbosity
 )
-    : TcpBase{}
+    : TcpBase{verbosity}
     , ctrl_data_sock_fd{-1}                 // init to invalid
     , server_ip{ip_addr}                    // ip address to try to reach server
     , ctrl_data_port{ctrl_port_num}         // port the client tries to reach the server at for sending control pkts

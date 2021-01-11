@@ -30,11 +30,13 @@ class TcpServer : public TcpBase {
          * @param ctrl_data_port The port number for the server to listen for control packets from client
          * @param cam_send_port The port number for the camera data to be sent to client
          * @param should_init False: do not init (most likely bc should run client)
+         * @param verbosity If true, will print more information that is strictly necessary
          */
         TcpServer(
             const int ctrl_data_port,
             const int cam_send_port,
-            const bool should_init
+            const bool should_init,
+            const bool verbosity=false
         );
         virtual ~TcpServer();
 

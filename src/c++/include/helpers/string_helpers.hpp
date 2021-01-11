@@ -124,6 +124,18 @@ inline std::string findPathAfter(const std::string& str, const std::string& pref
     return str.substr(suf_start_idx);
 }
 
+/**
+ * @brief Converts a stringified bool into a bool
+ * @param stringified_bool The string to convert
+ * @return true If string represents true (false if otherwise)
+ */
+inline bool toBool(const std::string_view stringified_bool) {
+    // there are different ways string can represent a bool
+    const bool is_one {stringified_bool == "1"};
+    const bool is_true {stringified_bool == "true"};
+    return is_one || is_true;
+}
+
 }; // end of Helpers namespace
 
 #endif

@@ -41,6 +41,10 @@ int main(int argc, char* argv[]) {
     } catch (std::runtime_error& e) {
         return EXIT_FAILURE;
     }
+
+    // get results
+    static const bool is_verbose { Helpers::toBool(parse_res[RPI::CLI::Results::ParseKeys::VERBOSITY]) };
+
     // determine if dealing with server or client
     // need to be static to be captured by ctrl+c lambda
     static const bool is_client { parse_res[RPI::CLI::Results::ParseKeys::MODE] == "client" };
@@ -69,13 +73,15 @@ int main(int argc, char* argv[]) {
                 parse_res[RPI::CLI::Results::ParseKeys::IP],
                 ctrl_port,
                 cam_port,
-                is_client
+                is_client,
+                is_verbose
             } 
             :
             (RPI::Network::TcpBase*) new RPI::Network::TcpServer{
                 ctrl_port,
                 cam_port,
-                is_server
+                is_server,
+                is_verbose
             }
     };
 
@@ -165,7 +171,7 @@ int main(int argc, char* argv[]) {
 
     // startup client or server in a thread
     if (is_net) {
-        net_agent->runNetAgent(false);
+        net_agent->runNetAgent(is_verbose);
     }
 
     /* =============================================== Cleanup =============================================== */

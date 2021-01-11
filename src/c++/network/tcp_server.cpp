@@ -10,8 +10,13 @@ namespace Network {
 
 /********************************************** Constructors **********************************************/
 
-TcpServer::TcpServer(const int ctrl_data_port, const int cam_send_port, const bool should_init)
-    : TcpBase{}
+TcpServer::TcpServer(
+    const int ctrl_data_port,
+    const int cam_send_port,
+    const bool should_init,
+    const bool verbosity
+)
+    : TcpBase{verbosity}
     , close_conns{false}                    // set true if one socket gets closed, set back to false on restart
     , ctrl_listen_sock_fd{-1}               // init to invalid
     , ctrl_data_sock_fd{-1}                 // init to invalid
@@ -137,7 +142,6 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                 // check if the data_size is smaller than 0
                 // (if so, print message bc might have been fluke)
                 if (ctrl_recv.RtnCode == RecvSendRtnCodes::Error) {
-                    // TODO: print only with --verbose
                     cout << "Error - client control socket recv error" << endl;
                 }
 

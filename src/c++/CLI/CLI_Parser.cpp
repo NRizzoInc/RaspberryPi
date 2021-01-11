@@ -137,6 +137,13 @@ ReturnCodes CLI_Parser::addFlags() {
         ->default_val("-1")
         ;
 
+    /*************************************** Miscellaneous Flags *************************************/
+    add_flag("-v,--verbose", cli_res[CLI::Results::ParseKeys::VERBOSITY])
+        ->description("Use this flag to increase verbosity (more prints)")
+        ->required(false)
+        ->default_val(false)
+        ;
+
     return ReturnCodes::Success;
 }
 
