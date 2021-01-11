@@ -51,7 +51,7 @@ namespace CLI::Results {
         CTRL_PORT,
         CAM_PORT,
         WEB_PORT,
-        MOTOR_ADDR,
+        I2C_ADDR,
         VID_FRAMES,
         FACEXML,
         EYEXML,

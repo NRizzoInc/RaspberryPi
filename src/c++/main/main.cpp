@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     static RPI::gpio::GPIOController gpio_handler{
         // motor i2c addr (convert hex string to int using base 16)
         static_cast<std::uint8_t>(
-            std::stoi(parse_res[RPI::CLI::Results::ParseKeys::MOTOR_ADDR], 0, 16)
+            std::stoi(parse_res[RPI::CLI::Results::ParseKeys::I2C_ADDR], 0, 16)
         )
     };
 
