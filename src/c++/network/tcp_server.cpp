@@ -156,7 +156,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
 
                 // convert stringified json to json so it can be parsed into struct
                 try {
-                    const CommonPkt pkt {readPkt(data.c_str())};
+                    const CommonPkt pkt {readPkt(data.c_str(), data.size(), true)};
                     if(updatePkt(pkt) != ReturnCodes::Success) {
                         cerr << "Failed to update from client info" << endl;
                     }

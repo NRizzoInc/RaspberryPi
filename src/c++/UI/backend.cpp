@@ -231,7 +231,8 @@ void WebApp::recvMainData(
     Pistache::Http::ResponseWriter res
 ) {
     try {
-        const RPI::Network::CommonPkt updated_pkt {client_ptr->readPkt(req.body().c_str())};
+        const std::string& req_str {req.body()}; 
+        const RPI::Network::CommonPkt updated_pkt {client_ptr->readPkt(req_str.c_str(), req_str.size(), false)};
         client_ptr->updatePkt(updated_pkt);
         res.send(Pistache::Http::Code::Ok, "Successfully received data!\n");
     } catch (std::exception& err) {

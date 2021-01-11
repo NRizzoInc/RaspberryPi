@@ -130,15 +130,16 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
 
 /*************************************** Packet Read/Write Functions ***************************************/
 
-CommonPkt Packet::readPkt(const char* pkt_buf) const {
+CommonPkt Packet::readPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
     // see pkt_sample.json for format
     // if no data sent, just use current packet
     if (std::strlen(pkt_buf) == 0) {
         return getCurrentPkt();
     }
 
-    // if valid str, parse and convert stringified json to json
-    const json& data = json::parse(pkt_buf);
+    // if valid str, parse and convert stringified bson to json covnert to standard pkt
+    // (use bson for faster/concise pkt transfers)
+    const json& data = is_bson ? json::from_bson(std::string(pkt_buf, size)) : json::parse(pkt_buf);
     CommonPkt translated_pkt;
 
     translated_pkt.cntrl.led.red        = findIfExists<bool>(data, {"control",  "led",      "red"       });
@@ -156,12 +157,6 @@ CommonPkt Packet::readPkt(const char* pkt_buf) const {
 
     return translated_pkt;
 }
-
-/// wraps to char buffer version of function
-CommonPkt Packet::readPkt(json pkt_json) const {
-    return readPkt(pkt_json.dump().c_str());
-}
-
 
 json Packet::convertPktToJson(const CommonPkt& pkt) const {
     // https://github.com/nlohmann/json#json-as-first-class-data-type
@@ -192,16 +187,17 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
         {"ACK", pkt.ACK}
     };
     return json_pkt;
-
-    // TODO: use cbor or bson for faster/concise pkt transfers
-    // std::vector<std::uint8_t> vec_char {json::to_cbor(json_pkt)};
-    // return std::string(vec_char.begin(), vec_char.end());
 }
 
 
 std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
+    // note: when using copy constructor cannot use {} because stores original json into an array
     // see pkt_sample.json for format
-    return convertPktToJson(pkt_to_send).dump();
+    // use bson for faster/concise pkt transfers
+    const json& pkt_json = convertPktToJson(pkt_to_send);
+    const bson& pkt_bson = json::to_bson(pkt_json);
+    const std::string& pkt_bson_str = std::string{pkt_bson.begin(), pkt_bson.end()};
+    return pkt_bson_str;
 }
 
 
