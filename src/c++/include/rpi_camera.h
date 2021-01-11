@@ -43,12 +43,17 @@ class CamHandler : public raspicam::RaspiCam_Cv {
 
         /**
          * @brief Construct a new camera handler object
+         * @param verbosity If true, will print more information that is strictly necessary
          * @param max_frame_count (defualts to -1 = infinite) If set, only this number of frames will be taken
          * @param should_init (default=true) Initialize obj in constructor 
          * (If false, you will have to call SetupCam() manually).
          * Needed if running client code on non-rpi w/o camera to open 
          */
-        CamHandler(const int max_frame_count=-1, const bool should_init=true);
+        CamHandler(
+            const bool verbosity=false,
+            const int max_frame_count=-1,
+            const bool should_init=true
+        );
         virtual ~CamHandler();
 
         /********************************************* Getters/Setters *********************************************/
@@ -106,6 +111,7 @@ class CamHandler : public raspicam::RaspiCam_Cv {
     private:
         /******************************************** Private Variables ********************************************/
 
+        const bool                  is_verbose;    // false if should only print errors/important info
         int                         frame_count;   // current number of grabbed frames
         const int                   max_frames;    // the max # frames to grab (-1 = infinite)
         std::atomic_bool            stop_thread;   // if true, the grabbing thread will stop

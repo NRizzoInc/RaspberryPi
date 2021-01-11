@@ -11,8 +11,9 @@ using std::endl;
 
 /********************************************** Constructors **********************************************/
 
-CamHandler::CamHandler(const int max_frame_count, const bool should_init)
+CamHandler::CamHandler(const bool verbosity, const int max_frame_count, const bool should_init)
     : raspicam::RaspiCam_Cv{}
+    , is_verbose{verbosity}
     , frame_count{0}
     , max_frames{max_frame_count}       // defaults to infinite = -1
     , stop_thread{false}
