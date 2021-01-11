@@ -16,12 +16,14 @@
 #include "tcp_base.h"
 #include "backend.h"
 #include "rpi_camera.h"
+#include "version.h"
 
 using std::cout;
 using std::cerr;
 using std::endl;
 
 int main(int argc, char* argv[]) {
+    cout << "Version: " << RPI::Version::GIT_SHA1 << endl;
     /* ============================================ Parse CLI Flags =========================================== */
     // object that parses the command line inputs
     RPI::gpio::CLI_Parser cli_parser(

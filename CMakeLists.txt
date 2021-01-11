@@ -22,6 +22,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/c++/
 
 # Find the packages
 # find_package(BoostLib REQUIRED) # (really just finds Boost_* but causes an infinite loop since script searches for Boost)
+find_package(Git REQUIRED) # predfined package included in system
 find_package(JSON REQUIRED) # using https://github.com/nlohmann/json
 find_package(CLI11 REQUIRED) # using https://cliutils.gitlab.io/CLI11Tutorial/
 find_package(WiringPi REQUIRED) # using https://github.com/WiringPi/WiringPi
@@ -51,6 +52,7 @@ endif(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
 # add more folders here as needed (order matters, executable last with most independent first)
 # these trigger the CMakeLists.txt file to be called in the listed dirs
+add_subdirectory(src/c++/version) # Get Git Commit/Revision Info: https://stackoverflow.com/a/21028226/13933174
 add_subdirectory(src/c++/camera)
 add_subdirectory(src/c++/network)
 add_subdirectory(src/c++/gpio)
