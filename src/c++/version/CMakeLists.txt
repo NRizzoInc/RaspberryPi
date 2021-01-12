@@ -8,6 +8,7 @@ git_describe_working_tree(GIT_DESC) # define GIT_DESC
 
 #################### some additional git defines not included in package
 
+# git commit hash
 execute_process(COMMAND
     "${GIT_EXECUTABLE}" describe --match=NeVeRmAtCh --always --abbrev=40 --dirty
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
@@ -15,6 +16,13 @@ execute_process(COMMAND
     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# the commit's branch
+execute_process(COMMAND
+    "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUTPUT_VARIABLE GIT_BRANCH
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 # the date of the commit
 execute_process(COMMAND

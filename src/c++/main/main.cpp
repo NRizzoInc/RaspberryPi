@@ -58,9 +58,10 @@ int main(int argc, char* argv[]) {
 
     if(show_version || is_verbose) {
         cout << "Git Build SHA1: "      << RPI::Version::GIT_SHA1 << endl;
-        cout << "Git Describe: "        << RPI::Version::GIT_DESCRIBE << endl;
+        cout << "Git Build Branch: "    << RPI::Version::GIT_BRANCH << endl;
         cout << "Git Commit Date: "     << RPI::Version::GIT_DATE << endl;
         cout << "Git Commit Subject: "  << RPI::Version::GIT_COMMIT_SUBJECT << endl;
+        cout << "Git Describe: "        << RPI::Version::GIT_DESCRIBE << endl;
         if (show_version) return EXIT_SUCCESS; // exit if just showing version
     }
 
