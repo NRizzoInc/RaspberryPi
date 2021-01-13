@@ -22,7 +22,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/src/c++/
 
 # Find the packages
 # find_package(BoostLib REQUIRED) # (really just finds Boost_* but causes an infinite loop since script searches for Boost)
-find_package(Git REQUIRED) # predfined package included in system
 find_package(JSON REQUIRED) # using https://github.com/nlohmann/json
 find_package(CLI11 REQUIRED) # using https://cliutils.gitlab.io/CLI11Tutorial/
 find_package(WiringPi REQUIRED) # using https://github.com/WiringPi/WiringPi
