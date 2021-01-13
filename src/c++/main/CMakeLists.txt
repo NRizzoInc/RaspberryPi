@@ -6,6 +6,7 @@ add_executable(rpi_driver
 
 # include created libs from other dirs -- comes after add executable
 target_link_libraries(rpi_driver
+    RPI_Version
     GPIO_Controller
     GPIO_CLI_Parser
     RPI_Network

@@ -51,6 +51,7 @@ endif(NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
 # add more folders here as needed (order matters, executable last with most independent first)
 # these trigger the CMakeLists.txt file to be called in the listed dirs
+add_subdirectory(src/c++/version) # Get Git Commit/Revision Info: https://stackoverflow.com/a/21028226/13933174
 add_subdirectory(src/c++/camera)
 add_subdirectory(src/c++/network)
 add_subdirectory(src/c++/gpio)
