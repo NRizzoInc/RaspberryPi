@@ -76,7 +76,7 @@ class TcpBase : public Packet {
          * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
          * @return ReturnCodes 
          */
-        void setRecvCallback(const RecvPktCallback& recv_callback);
+        void setRecvCallback(const RecvCmnPktCallback& recv_callback);
 
         /**
          * @brief Sets the exit code. 
@@ -181,7 +181,7 @@ class TcpBase : public Packet {
 
         /***************************** Protected Variables (Both Client/Server Can Use) *****************************/
     protected:
-        RecvPktCallback             recv_cb;            // callback for when a packet is received
+        RecvCmnPktCallback             recv_cb;            // callback for when a packet is received
 
         /**
          * @brief Helper function that closes and sets a socket file descriptor to -1 if it is open

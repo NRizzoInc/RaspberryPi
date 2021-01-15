@@ -144,7 +144,7 @@ std::uint16_t CalcChecksum(const void* data_buf, std::size_t size);
  * @brief Type for a callback function that accepts a reference to the received pkt
  * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
  */
-using RecvPktCallback = std::function<ReturnCodes(const CommonPkt&)>;
+using RecvCmnPktCallback = std::function<ReturnCodes(const CommonPkt&)>;
 
 
 /*************************************************** Packet Class **************************************************/
