@@ -170,6 +170,10 @@ void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save
         // increment frame count
         ++frame_count;
 
+        if(is_verbose) {
+            cout << "Grabbed Frame: " + timecode << endl;
+        }
+
         // use grab callback if provided
         if (grab_cb) {
             // cv::Mat stored as std::vector<uchar (aka unsigned char)> but needed as std::vector<unsigned char>
