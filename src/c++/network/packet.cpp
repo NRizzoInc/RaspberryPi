@@ -209,7 +209,6 @@ ServerData_t Packet::readServerPkt(const json& pkt_json) const {
     ServerData_t pkt;
 
     const PktType type {PktType::ServerData};
-    pkt.cam.img_size    = findIfExists<bool>(type, pkt_json, {"cam", "img_size" });
     pkt.cam.img         = findIfExists<std::vector<unsigned char>> (type, pkt_json, {"cam", "img" });
 
     return pkt;
@@ -253,7 +252,6 @@ json Packet::convertPktToJson(const ServerData_t& pkt) const {
     // key-values are seperated by commas not ':'
     json json_pkt = {{
         "cam", {
-            {"img_size",    pkt.cam.img_size},
             {"img",         pkt.cam.img},
         }}
     };
