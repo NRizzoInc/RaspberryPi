@@ -272,8 +272,6 @@ class Packet {
         // camera pkt variables
         ServerData_t                    latest_server_pkt;  // holds the most up to date information from server
         mutable std::mutex              server_pkt_mutex;   // controls access to the `latest_server_pkt` data
-        std::vector<unsigned char>      latest_frame;       // contains the most up to date camera frame
-        mutable std::mutex              frame_mutex;        // controls access to the `latest_frame` data
 
 
         /********************************************* Helper Functions ********************************************/

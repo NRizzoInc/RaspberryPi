@@ -89,7 +89,6 @@ std::uint16_t CalcChecksum(const void* data_buf, std::size_t size) {
 
 /********************************************** Constructors **********************************************/
 Packet::Packet()
-    : latest_frame(Constants::Camera::FRAME_SIZE, '0') // init to black frame (0s) to make sure size != 0
 {
     // stub
 }
@@ -130,15 +129,15 @@ ReturnCodes Packet::updatePkt(const ServerData_t& updated_pkt) {
 
 const std::vector<unsigned char>& Packet::getLatestCamFrame() const {
     // lock to make sure data can be gotten without new data being written
-    std::unique_lock<std::mutex> lk{frame_mutex};
-    return latest_frame;
+    std::unique_lock<std::mutex> lk{server_pkt_mutex};
+    return latest_server_pkt.cam.img;
 }
 
 
 ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
     // lock to make sure data can be written without it trying to be read simultaneously
-    std::unique_lock<std::mutex> lk{frame_mutex};
-    latest_frame = new_frame;
+    std::unique_lock<std::mutex> lk{server_pkt_mutex};
+    latest_server_pkt.cam.img = new_frame;
     return ReturnCodes::Success;
 }
 
