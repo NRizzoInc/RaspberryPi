@@ -92,6 +92,22 @@ struct CommonPkt {
 }; // end of CommonPkt
 
 
+/********************************************** ServerData Packet Material ****************************************/
+
+// contains all data relevant to the camera
+struct CamData_t {
+    // TODO: add fps, height, width
+    PktSize_t img_size;
+    std::vector<unsigned char> img;
+}; // end of CamData_t
+
+
+/// contains all data produced by server to send to client
+struct ServerData_t {
+    // TODO: add battery, curr servo pos, ultrasonic, etc
+    CamData_t cam;
+}; // end of ServerData_t
+
 
 /************************************************ Header Packet Material ******************************************/
 
