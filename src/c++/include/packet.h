@@ -92,6 +92,9 @@ struct CommonPkt {
 }; // end of CommonPkt
 
 
+
+/************************************************ Header Packet Material ******************************************/
+
 // struct to be sent prior to sending an actual data packet so its size & checksum can be known
 // https://en.wikipedia.org/wiki/IPv4#Header
 // mostly only checking/using total_length & checksum
