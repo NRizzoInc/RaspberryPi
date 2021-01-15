@@ -96,8 +96,10 @@ struct CommonPkt {
 
 // contains all data relevant to the camera
 struct CamData_t {
-    // TODO: add fps, height, width
     std::vector<unsigned char> img;
+    int fps;
+    int width;
+    int height;
 }; // end of CamData_t
 
 

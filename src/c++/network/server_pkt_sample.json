@@ -1,5 +1,8 @@
 {
     "cam": {
-        "img":          "<std::vector<unsigned char>"
+        "img":          "<std::vector<unsigned char>",
+        "fps":          "<int>",
+        "width":        "<int>",
+        "height":       "<int>"
     }
 }

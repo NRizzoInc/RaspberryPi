@@ -210,6 +210,9 @@ ServerData_t Packet::readServerPkt(const json& pkt_json) const {
 
     const PktType type {PktType::ServerData};
     pkt.cam.img         = findIfExists<std::vector<unsigned char>> (type, pkt_json, {"cam", "img" });
+    pkt.cam.fps         = findIfExists<int>(type, pkt_json, {"cam", "fps" });
+    pkt.cam.width       = findIfExists<int>(type, pkt_json, {"cam", "width" });
+    pkt.cam.height      = findIfExists<int>(type, pkt_json, {"cam", "height" });
 
     return pkt;
 }
@@ -253,6 +256,9 @@ json Packet::convertPktToJson(const ServerData_t& pkt) const {
     json json_pkt = {{
         "cam", {
             {"img",         pkt.cam.img},
+            {"fps",         pkt.cam.fps},
+            {"width",       pkt.cam.width},
+            {"height",      pkt.cam.height},
         }}
     };
     return json_pkt;
