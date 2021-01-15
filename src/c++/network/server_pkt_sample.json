@@ -1,0 +1,6 @@
+{
+    "cam": {
+        "img_size":     "<int>",
+        "img":          "<std::vector<unsigned char>"
+    }
+}

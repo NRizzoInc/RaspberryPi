@@ -94,7 +94,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
         // client starts by sending data to other endpoint
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
-        const CommonPkt&    curr_pkt    {getCurrentPkt()};
+        const CommonPkt&    curr_pkt    {getCurrCmnPkt()};
         data_lock.unlock();             // unlock after leaving critical region
         const json&         pkt_json    {convertPktToJson(curr_pkt)};
         const std::string   bson_str    {writePkt(pkt_json)};

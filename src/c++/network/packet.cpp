@@ -100,11 +100,18 @@ Packet::~Packet() {
 
 /********************************************* Getters/Setters *********************************************/
 
-const CommonPkt& Packet::getCurrentPkt() const {
+const CommonPkt& Packet::getCurrCmnPkt() const {
     // lock to make sure data can be gotten without new data being written
     std::unique_lock<std::mutex> lk{reg_pkt_mutex};
     return latest_ctrl_pkt;
 }
+
+const ServerData_t& Packet::getCurrServerPkt() const {
+        // lock to make sure data can be gotten without new data being written
+    std::unique_lock<std::mutex> lk{server_pkt_mutex};
+    return latest_server_pkt;
+}
+
 
 ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
@@ -112,6 +119,14 @@ ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     latest_ctrl_pkt = updated_pkt;
     return ReturnCodes::Success;
 }
+
+ReturnCodes Packet::updatePkt(const ServerData_t& updated_pkt) {
+    // lock to make sure data can be written without it trying to be read simultaneously
+    std::unique_lock<std::mutex> lk{server_pkt_mutex};
+    latest_server_pkt = updated_pkt;
+    return ReturnCodes::Success;
+}
+
 
 const std::vector<unsigned char>& Packet::getLatestCamFrame() const {
     // lock to make sure data can be gotten without new data being written
@@ -131,42 +146,72 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
 /*************************************** Packet Read/Write Functions ***************************************/
 // note: when using copy constructor cannot use {} because stores original json into an array
 
-json Packet::readPkt(const char* pkt_buf, const std::size_t size) const {
+json Packet::readCmnPkt(const char* pkt_buf, const std::size_t size) const {
     // if empty, will just be empty json
     return json::from_bson(std::string(pkt_buf, size));
 }
 
 
-CommonPkt Packet::readPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
+CommonPkt Packet::readCmnPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
     // if no data sent, just use current packet
     if (std::strlen(pkt_buf) == 0 || size == 0) {
-        return getCurrentPkt();
+        return getCurrCmnPkt();
     }
 
     // if valid str, parse and convert stringified bson to json covnert to standard pkt
     // (use bson for faster/concise pkt transfers)
-    const json& pkt_json = is_bson ? readPkt(pkt_buf, size) : json::parse(pkt_buf);
-    return readPkt(pkt_json);
+    const json& pkt_json = is_bson ? readCmnPkt(pkt_buf, size) : json::parse(pkt_buf);
+    return readCmnPkt(pkt_json);
 }
 
 
-CommonPkt Packet::readPkt(const json& pkt_json) const {
-    // see pkt_sample.json for format
+CommonPkt Packet::readCmnPkt(const json& pkt_json) const {
+    // see ctrl_pkt_sample.json for format
     // actually parse packet and save into struct
     CommonPkt pkt;
 
-    pkt.cntrl.led.red        = findIfExists<bool>(pkt_json, {"control",  "led",      "red"       });
-    pkt.cntrl.led.yellow     = findIfExists<bool>(pkt_json, {"control",  "led",      "yellow"    });
-    pkt.cntrl.led.green      = findIfExists<bool>(pkt_json, {"control",  "led",      "green"     });
-    pkt.cntrl.led.blue       = findIfExists<bool>(pkt_json, {"control",  "led",      "blue"      });
-    pkt.cntrl.motor.forward  = findIfExists<bool>(pkt_json, {"control",  "motor",    "forward"   });
-    pkt.cntrl.motor.backward = findIfExists<bool>(pkt_json, {"control",  "motor",    "backward"  });
-    pkt.cntrl.motor.right    = findIfExists<bool>(pkt_json, {"control",  "motor",    "right"     });
-    pkt.cntrl.motor.left     = findIfExists<bool>(pkt_json, {"control",  "motor",    "left"      });
-    pkt.cntrl.servo.horiz    = findIfExists<int> (pkt_json, {"control",  "servo",    "horiz"     });
-    pkt.cntrl.servo.vert     = findIfExists<int> (pkt_json, {"control",  "servo",    "vert"      });
-    pkt.cntrl.camera.is_on   = findIfExists<bool>(pkt_json, {"control",  "camera",   "is_on"     });
-    pkt.ACK                  = findIfExists<bool>(pkt_json, {"ACK"});
+    const PktType type {PktType::Common};
+    pkt.cntrl.led.red        = findIfExists<bool>(type, pkt_json, {"control",  "led",      "red"       });
+    pkt.cntrl.led.yellow     = findIfExists<bool>(type, pkt_json, {"control",  "led",      "yellow"    });
+    pkt.cntrl.led.green      = findIfExists<bool>(type, pkt_json, {"control",  "led",      "green"     });
+    pkt.cntrl.led.blue       = findIfExists<bool>(type, pkt_json, {"control",  "led",      "blue"      });
+    pkt.cntrl.motor.forward  = findIfExists<bool>(type, pkt_json, {"control",  "motor",    "forward"   });
+    pkt.cntrl.motor.backward = findIfExists<bool>(type, pkt_json, {"control",  "motor",    "backward"  });
+    pkt.cntrl.motor.right    = findIfExists<bool>(type, pkt_json, {"control",  "motor",    "right"     });
+    pkt.cntrl.motor.left     = findIfExists<bool>(type, pkt_json, {"control",  "motor",    "left"      });
+    pkt.cntrl.servo.horiz    = findIfExists<int> (type, pkt_json, {"control",  "servo",    "horiz"     });
+    pkt.cntrl.servo.vert     = findIfExists<int> (type, pkt_json, {"control",  "servo",    "vert"      });
+    pkt.cntrl.camera.is_on   = findIfExists<bool>(type, pkt_json, {"control",  "camera",   "is_on"     });
+    pkt.ACK                  = findIfExists<bool>(type, pkt_json, {"ACK"});
+
+    return pkt;
+}
+
+json Packet::readServerPkt(const char* pkt_buf, const std::size_t size) const {
+    // if empty, will just be empty json
+    return json::from_bson(std::string(pkt_buf, size));
+}
+
+ServerData_t Packet::readServerPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
+    // if no data sent, just use current packet
+    if (std::strlen(pkt_buf) == 0 || size == 0) {
+        return getCurrServerPkt();
+    }
+
+    // if valid str, parse and convert stringified bson to json covnert to standard pkt
+    // (use bson for faster/concise pkt transfers)
+    const json& pkt_json = is_bson ? readServerPkt(pkt_buf, size) : json::parse(pkt_buf);
+    return readServerPkt(pkt_json);
+}
+
+ServerData_t Packet::readServerPkt(const json& pkt_json) const {
+    // see server_pkt_sample.json for format
+    // actually parse packet and save into struct
+    ServerData_t pkt;
+
+    const PktType type {PktType::ServerData};
+    pkt.cam.img_size    = findIfExists<bool>(type, pkt_json, {"cam", "img_size" });
+    pkt.cam.img         = findIfExists<std::vector<unsigned char>> (type, pkt_json, {"cam", "img" });
 
     return pkt;
 }
@@ -203,6 +248,20 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
     return json_pkt;
 }
 
+json Packet::convertPktToJson(const ServerData_t& pkt) const {
+    // https://github.com/nlohmann/json#json-as-first-class-data-type
+    // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
+    // key-values are seperated by commas not ':'
+    json json_pkt = {{
+        "cam", {
+            {"img_size",    pkt.cam.img_size},
+            {"img",         pkt.cam.img},
+        }}
+    };
+    return json_pkt;
+}
+
+
 std::string Packet::writePkt(const json& pkt_to_send) const {
     // see pkt_sample.json for format
     // use bson for faster/concise pkt transfers
@@ -217,19 +276,34 @@ std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
     return writePkt(pkt_json);
 }
 
+std::string Packet::writePkt(const ServerData_t& pkt_to_send) const {
+    const json& pkt_json = convertPktToJson(pkt_to_send);
+    return writePkt(pkt_json);
+}
+
+
 
 /********************************************* Helper Functions ********************************************/
 
 template<typename rtnType>
-rtnType Packet::findIfExists(const json& json_to_check, const std::vector<std::string>& keys) const {
+rtnType Packet::findIfExists(
+    const PktType type,
+    const json& json_to_check,
+    const std::vector<std::string>& keys
+) const {
     // use current packet to fill in missing values
     // make copies of jsons to recur through
     // as parse thru keys, move deeper into the jsons so researching not needed
 
     // note: when using copy constructor cannot use {} because stores original json into an array
     // see: https://github.com/nlohmann/json/issues/1359
-    json recv_curr = json_to_check;                        // the received packet to parse through
-    json curr_pkt  = convertPktToJson(getCurrentPkt());    // valid json of current stored pkt (source of truth)
+
+    // the received packet to parse through
+    json recv_curr = json_to_check;
+
+    // valid json of current stored pkt (source of truth)
+    json curr_pkt = type == PktType::Common ? 
+        convertPktToJson(getCurrCmnPkt()) : convertPktToJson(getCurrServerPkt());
 
     // loop condition checkers
     const std::size_t len_keys {keys.size()};

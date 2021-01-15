@@ -139,6 +139,11 @@ struct HeaderPkt_t {
 std::uint16_t CalcChecksum(const void* data_buf, std::size_t size);
 
 
+// defines what type of packet is being used
+enum class PktType {
+    Common,
+    ServerData
+}; // end of PktType
 
 /**
  * @brief Type for a callback function that accepts a reference to the received pkt
@@ -167,9 +172,11 @@ class Packet {
 
         /********************************************* Getters/Setters *********************************************/
 
-        virtual const CommonPkt& getCurrentPkt() const;
+        virtual const CommonPkt& getCurrCmnPkt() const;
+        virtual const ServerData_t& getCurrServerPkt() const;
 
         virtual ReturnCodes updatePkt(const CommonPkt& updated_pkt);
+        virtual ReturnCodes updatePkt(const ServerData_t& updated_pkt);
 
         /**
          * @brief Get the latest frame from the camera video stream
@@ -189,11 +196,11 @@ class Packet {
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
 
         /**
-         * @brief Final endpoint for readPkt -- can just call this one directly if have correct material
+         * @brief Final endpoint for readCmnPkt -- can just call this one directly if have correct material
          * @param pkt_json The jsonified packet to parse
          * @return The parsed json packet in struct form
          */
-        CommonPkt readPkt(const json& pkt_json) const;
+        CommonPkt readCmnPkt(const json& pkt_json) const;
 
         /**
          * @brief Interprets a received packet and translates it to an easier type to deal with
@@ -202,7 +209,7 @@ class Packet {
          * @param is_bson false is just a stringified/charified json. True if is a bson
          * @return The packet translated into the struct
          */
-        CommonPkt readPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const;
+        CommonPkt readCmnPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const;
 
         /**
          * @brief Inbetween function that will just convert a buffered bson packet into a regular json
@@ -210,7 +217,31 @@ class Packet {
          * @param size The size of the buffer
          * @return The jsonified packet buffer
          */
-        json readPkt(const char* pkt_buf, const std::size_t size) const;
+        json readCmnPkt(const char* pkt_buf, const std::size_t size) const;
+
+        /**
+         * @brief Final endpoint for readServerPkt -- can just call this one directly if have correct material
+         * @param pkt_json The jsonified packet to parse
+         * @return The parsed json packet in struct form
+         */
+        ServerData_t readServerPkt(const json& pkt_json) const;
+
+        /**
+         * @brief Interprets a received packet and translates it to an easier type to deal with
+         * @param pkt_buf A char array containing a stringified json/bson
+         * @param size The size of the packet buffer
+         * @param is_bson false is just a stringified/charified json. True if is a bson
+         * @return The packet translated into the struct
+         */
+        ServerData_t readServerPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const;
+
+        /**
+         * @brief Inbetween function that will just convert a buffered bson packet into a regular json
+         * @param pkt_buf The bson packet buffer
+         * @param size The size of the buffer
+         * @return The jsonified packet buffer
+         */
+        json readServerPkt(const char* pkt_buf, const std::size_t size) const;
 
 
         /**
@@ -220,6 +251,7 @@ class Packet {
          * @return json The jsonified packet 
          */
         json convertPktToJson(const CommonPkt& pkt) const;
+        json convertPktToJson(const ServerData_t& pkt) const;
 
         /**
          * @brief Construct & serialize a json (and then bson) packet to easily send over network
@@ -227,6 +259,7 @@ class Packet {
          * @return The serialized bson string to send
          */
         std::string writePkt(const CommonPkt& pkt_to_send) const;
+        std::string writePkt(const ServerData_t& pkt_to_send) const;
         std::string writePkt(const json& pkt_to_send) const;
 
     private:
@@ -237,6 +270,8 @@ class Packet {
         mutable std::mutex              reg_pkt_mutex;      // controls access to the `latest_ctrl_pkt` data
 
         // camera pkt variables
+        ServerData_t                    latest_server_pkt;  // holds the most up to date information from server
+        mutable std::mutex              server_pkt_mutex;   // controls access to the `latest_server_pkt` data
         std::vector<unsigned char>      latest_frame;       // contains the most up to date camera frame
         mutable std::mutex              frame_mutex;        // controls access to the `latest_frame` data
 
@@ -246,13 +281,18 @@ class Packet {
         /**
          * @brief Helper function that returns the values if the key exists 
          * (if dne, sets field to current packet's values)
+         * @param type The type of packet being parsed
          * @param json_to_check The json to check if the key exists 
          * @param keys List of keys needed to access element (in order from root to branch of json)
          * @return The found element
          * @tparam rtnType The desired type for the return to be
          */
         template<typename rtnType>
-        rtnType findIfExists(const json& json_to_check, const std::vector<std::string>& keys) const;
+        rtnType findIfExists(
+            const PktType type,
+            const json& json_to_check,
+            const std::vector<std::string>& keys
+        ) const;
 
 }; // end of packet class
 
