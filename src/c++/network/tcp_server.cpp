@@ -25,7 +25,6 @@ TcpServer::TcpServer(
     , cam_listen_sock_fd{-1}                // init to invalid
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
-    , has_new_cam_data{true}                // will be set false immediately after sending first message
 {
     // first check if should not init
     if (!should_init) return;
@@ -101,18 +100,6 @@ ReturnCodes TcpServer::acceptClient(
     // tell sockets they can start
     close_conns.store(false);
     return ReturnCodes::Success;
-}
-
-ReturnCodes TcpServer::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
-    Packet::setLatestCamFrame(new_frame);
-    has_new_cam_data.store(true);
-    cam_data_cv.notify_one();
-    return ReturnCodes::Success;
-}
-
-const std::vector<unsigned char>& TcpServer::getLatestCamFrame() const {
-    has_new_cam_data.store(false);
-    return Packet::getLatestCamFrame();
 }
 
 ReturnCodes TcpServer::sendResetPkt() {
@@ -212,11 +199,17 @@ void TcpServer::VideoStreamHandler() {
                 cam_data_cv.wait_for(
                     data_lock,
                     timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
-                    [&](){return has_new_cam_data.load();}
+                    [&](){ return getHasNewSendData(); }
                 );
 
                 /********************************* Sending Camera Data to Client ********************************/
+                // make sure program know most recent data was taken to be send
+                // note: this should come BEFORE actually sending 
+                // in case other thread updates data mid send and thus would override it
                 const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
+                setHasNewSendData(false);
+
+                // actually send data
                 const SendRtn send_rtn {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
 
                 if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {

@@ -89,6 +89,7 @@ std::uint16_t CalcChecksum(const void* data_buf, std::size_t size) {
 
 /********************************************** Constructors **********************************************/
 Packet::Packet()
+    : has_new_send_data{true}                // will be set false immediately after sending first message
 {
     // stub
 }
@@ -98,6 +99,18 @@ Packet::~Packet() {
 }
 
 /********************************************* Getters/Setters *********************************************/
+
+// atomics
+
+bool Packet::getHasNewSendData() const {
+    return has_new_send_data.load();
+}
+
+void Packet::setHasNewSendData(const bool new_state) const {
+    has_new_send_data.store(new_state);
+}
+
+
 
 const CommonPkt& Packet::getCurrCmnPkt() const {
     // lock to make sure data can be gotten without new data being written
@@ -126,6 +139,19 @@ ReturnCodes Packet::updatePkt(const ServerData_t& updated_pkt) {
     return ReturnCodes::Success;
 }
 
+const CamData_t& Packet::getLatestCamData() const {
+    std::unique_lock<std::mutex> lk{server_pkt_mutex};
+    return latest_server_pkt.cam;
+}
+
+ReturnCodes Packet::setLatestCamData(const CamData_t& new_cam_data) {
+    std::unique_lock<std::mutex> lk{server_pkt_mutex};
+    latest_server_pkt.cam = new_cam_data;
+    // notify and set bool so send loop knows to send
+    cam_data_cv.notify_all();
+    setHasNewSendData(true);
+    return ReturnCodes::Success;
+}
 
 const std::vector<unsigned char>& Packet::getLatestCamFrame() const {
     // lock to make sure data can be gotten without new data being written
@@ -138,6 +164,8 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
     // lock to make sure data can be written without it trying to be read simultaneously
     std::unique_lock<std::mutex> lk{server_pkt_mutex};
     latest_server_pkt.cam.img = new_frame;
+    cam_data_cv.notify_all();
+    setHasNewSendData(true);
     return ReturnCodes::Success;
 }
 

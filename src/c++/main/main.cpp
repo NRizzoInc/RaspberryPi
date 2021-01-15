@@ -162,10 +162,18 @@ int main(int argc, char* argv[]) {
             return rtn_code ? RPI::ReturnCodes::Success : RPI::ReturnCodes::Error;
         });
 
-        if(Camera.setGrabCallback([&](const std::vector<unsigned char>& grabbed_frame) {
-                net_agent->setLatestCamFrame(grabbed_frame);
-            }
-        ) != RPI::ReturnCodes::Success) {
+        // on grab, send updated camera frame to client
+        const RPI::ReturnCodes set_grab_rtn {
+            Camera.setGrabCallback([&](
+                const std::vector<unsigned char>& frame,
+                const int fps,
+                const int width,
+                const int height
+            ) {
+                return net_agent->setLatestCamData({frame, fps, width, height});
+            })
+        };
+        if(set_grab_rtn != RPI::ReturnCodes::Success) {
             cerr << "Error: Failed to set camera grab callback" << endl;
         }
 

@@ -10,6 +10,8 @@
 #include <mutex>
 #include <netinet/in.h> // for ntons
 #include <sstream> // for converting packets to strings
+#include <atomic>
+#include <condition_variable>
 
 // Our Includes
 #include "constants.h"
@@ -79,7 +81,7 @@ struct camera_pkt_t {
 
 }; // end of camera_pkt_t
 
-struct control_t {
+struct CtrlData_t {
     led_pkt_t led;
     motor_pkt_t motor;
     servo_pkt_t servo;
@@ -87,8 +89,16 @@ struct control_t {
 }; // end of control_t
 
 struct CommonPkt {
-    control_t cntrl;
+    CtrlData_t cntrl;
     bool ACK;
+
+    CommonPkt(
+        const CtrlData_t& ctrl_data={},
+        const bool ack={false}
+    )
+        : cntrl{ctrl_data}
+        , ACK{ack}
+        {}
 }; // end of CommonPkt
 
 
@@ -100,6 +110,19 @@ struct CamData_t {
     int fps;
     int width;
     int height;
+
+    // default to constant values
+    CamData_t(
+        const std::vector<unsigned char>& img={},
+        int fps=Constants::Camera::VID_FRAMERATE,
+        int width=Constants::Camera::FRAME_WIDTH,
+        int height=Constants::Camera::FRAME_HEIGHT
+    )
+        : img{img}
+        , fps{fps}
+        , width{width}
+        , height{height}
+        {}
 }; // end of CamData_t
 
 
@@ -107,6 +130,11 @@ struct CamData_t {
 struct ServerData_t {
     // TODO: add battery, curr servo pos, ultrasonic, etc
     CamData_t cam;
+
+    ServerData_t(const CamData_t& cam_data={})
+        // default to defaults
+        : cam{cam_data}
+        {}
 }; // end of ServerData_t
 
 
@@ -173,11 +201,30 @@ class Packet {
 
         /********************************************* Getters/Setters *********************************************/
 
+        // atomics
+        bool getHasNewSendData() const;
+        void setHasNewSendData(const bool new_state) const;
+
         virtual const CommonPkt& getCurrCmnPkt() const;
         virtual const ServerData_t& getCurrServerPkt() const;
 
         virtual ReturnCodes updatePkt(const CommonPkt& updated_pkt);
         virtual ReturnCodes updatePkt(const ServerData_t& updated_pkt);
+
+        /**
+         * @brief Get reference to the most recent camera data
+         * @return Reference to the camera data struct
+         * @note Needs to use a mutex bc of read/write race condition with server
+         */
+        virtual const CamData_t& getLatestCamData() const;
+
+        /**
+         * @brief Set the most recent camera data in memory
+         * @param new_cam_data Reference to the new camera data
+         * @return Success if no issues
+         * @note Needs to use a mutex bc of read/write race condition with server
+         */
+        virtual ReturnCodes setLatestCamData(const CamData_t& new_cam_data);
 
         /**
          * @brief Get the latest frame from the camera video stream
@@ -263,8 +310,14 @@ class Packet {
         std::string writePkt(const ServerData_t& pkt_to_send) const;
         std::string writePkt(const json& pkt_to_send) const;
 
+    protected:
+        // cv vars needed by derived classes in send loops
+        std::condition_variable         cam_data_cv;        // notify in order for server to send camera data to client
+
     private:
         /******************************************** Private Variables ********************************************/
+
+        mutable std::atomic_bool        has_new_send_data;  // true if there is new data to send
 
         // regular data packet variables
         CommonPkt                       latest_ctrl_pkt;    // holds the most up to date information from client

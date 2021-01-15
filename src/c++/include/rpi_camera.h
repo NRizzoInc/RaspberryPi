@@ -29,7 +29,14 @@ namespace fs = std::experimental::filesystem;
 // for convenience within this namesapce bc super long
 using time_point = std::chrono::_V2::system_clock::time_point;
 
-using GrabFrameCb = std::function<void(const std::vector<unsigned char>& frame)>;
+using GrabFrameCb = std::function<
+    void(
+        const std::vector<unsigned char>& frame,
+        const int fps,
+        const int width,
+        const int height
+    )
+>;
 
 using Classifier = std::pair<const fs::path, cv::CascadeClassifier>;
 
@@ -94,7 +101,10 @@ class CamHandler : public raspicam::RaspiCam_Cv {
          * @brief Sets the Grab Callback function to use when a camera frame is grabbed
          * @param grab_cb The callback to use
          * @param grab_cb Returns: callback should be void return
-         * @param grab_cb param: char vector containing the frames pixels (aka const std::vector<unsigned char>& frame)
+         * @param grab_cb param: frame  = char vector containing the frames pixels (aka const std::vector<unsigned char>& frame)
+         * @param grab_cb param: fps    = the fps of the video
+         * @param grab_cb param: width  = the width of a video frame
+         * @param grab_cb param: height = the height of a video frame
          * @return ReturnCodes Success if set correctly
          */
         ReturnCodes setGrabCallback(GrabFrameCb grab_cb);
