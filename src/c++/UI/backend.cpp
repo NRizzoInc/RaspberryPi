@@ -277,10 +277,11 @@ void WebApp::handleCamSettingReq(
         // https://github.com/nlohmann/json#json-as-first-class-data-type
         // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
         // key-values are seperated by commas not ':'
+        const auto& curr_cam_data {client_ptr->getCurrServerPkt().cam};
         json cam_settings {
-            {"fps", Constants::Camera::VID_FRAMERATE},
-            {"height", Constants::Camera::FRAME_HEIGHT},
-            {"width", Constants::Camera::FRAME_WIDTH},
+            {"fps",         curr_cam_data.fps},
+            {"height",      curr_cam_data.height},
+            {"width",       curr_cam_data.width},
         };
 
         // actually send the pixel data back to GET request
