@@ -12,8 +12,6 @@
 #include <cstring> // for memset
 #include <chrono> // send packet every right before server timeout
 #include <mutex>
-#include <condition_variable> // block with mutex until new data set
-#include <atomic>
 
 // Our Includes
 #include "constants.h"
@@ -47,14 +45,6 @@ class TcpClient : public TcpBase {
 
         /********************************************* Getters/Setters *********************************************/
 
-        /**
-         * @brief Wraps the base updater with a lock & notifies client to send it
-         * @param updated_pkt The up to date packet to send
-         * @return ReturnCodes Success if it worked
-         * @note Get the current pkt with getCurrCmnPkt()
-         */
-        ReturnCodes updatePkt(const CommonPkt& updated_pkt) override;
-
 
         /********************************************* Client Functions ********************************************/
 
@@ -84,9 +74,7 @@ class TcpClient : public TcpBase {
         int                         ctrl_data_sock_fd;  // tcp socket file descriptor that sends control data to server
         std::string                 server_ip;          // ip address of the server
         int                         ctrl_data_port;     // port number to send control data to the server
-        std::atomic_bool            pkt_ready;          // alert send cv to unlock
         std::mutex                  data_mutex;
-        std::condition_variable     has_new_msg;        // true if client needs to tell the server something
 
         // camera vars
         int                         server_data_sock_fd;// tcp file descriptor for camera data from server

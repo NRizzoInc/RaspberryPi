@@ -286,7 +286,7 @@ class Packet {
 
     protected:
         // cv vars needed by derived classes in send loops
-        std::condition_variable         cam_data_cv;        // notify in order for server to send camera data to client
+        std::condition_variable         new_send_data_cv;   // notify in order for one endpoint to send data to other
 
     private:
         /******************************************** Private Variables ********************************************/
@@ -295,7 +295,7 @@ class Packet {
 
         // regular data packet variables
         CommonPkt                       latest_ctrl_pkt;    // holds the most up to date information from client
-        mutable std::mutex              reg_pkt_mutex;      // controls access to the `latest_ctrl_pkt` data
+        mutable std::mutex              ctrl_pkt_mutex;     // controls access to the `latest_ctrl_pkt` data
 
         // camera pkt variables
         ServerData_t                    latest_server_pkt;  // holds the most up to date information from server

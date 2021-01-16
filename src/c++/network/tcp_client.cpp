@@ -20,7 +20,6 @@ TcpClient::TcpClient(
     , ctrl_data_sock_fd{-1}                 // init to invalid
     , server_ip{ip_addr}                    // ip address to try to reach server
     , ctrl_data_port{ctrl_port_num}         // port the client tries to reach the server at for sending control pkts
-    , pkt_ready{true}                       // will be set false immediately after sending first message
     , server_data_sock_fd{-1}               // init to invalid
     , server_data_port{cam_port_num}        // port to attempt to connect to client to send camera data
 {
@@ -44,18 +43,6 @@ TcpClient::~TcpClient() {
 
 /********************************************* Getters/Setters *********************************************/
 
-
-ReturnCodes TcpClient::updatePkt(const CommonPkt& updated_pkt) {
-    // inform client that pkt has been updated and needs to be sent
-    std::unique_lock<std::mutex> lk(data_mutex);
-    ReturnCodes rtn_code = Packet::updatePkt(updated_pkt);
-    lk.unlock();
-    pkt_ready.store(true); // atomic should be done outside of lock
-    has_new_msg.notify_all();
-
-    // can return now that packet was sent
-    return rtn_code;
-}
 
 /********************************************* Client Functions ********************************************/
 
@@ -82,13 +69,13 @@ void TcpClient::ControlLoopFn(const bool print_data) {
         // or until server is about to timeout
         const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
         std::unique_lock<std::mutex> data_lock(data_mutex);
-        has_new_msg.wait_for(
+        new_send_data_cv.wait_for(
             data_lock,
             timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
-            [&](){return pkt_ready.load();}
+            [&](){return getHasNewSendData();}
         );
         // prevent predicate from being triggered in future iterations w/o being set by another thread
-        pkt_ready.store(false);
+        setHasNewSendData(false);
 
         /********************************* Sending To Server ********************************/
         // client starts by sending data to other endpoint
@@ -114,8 +101,6 @@ void TcpClient::ControlLoopFn(const bool print_data) {
             break;
         }
 
-        // inform updatePkt function that packet has been sent
-        has_new_msg.notify_one();
     }
     cout << "Exiting Client Control Sender" << endl;
 }

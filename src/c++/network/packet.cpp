@@ -114,12 +114,12 @@ void Packet::setHasNewSendData(const bool new_state) const {
 
 const CommonPkt& Packet::getCurrCmnPkt() const {
     // lock to make sure data can be gotten without new data being written
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
+    std::unique_lock<std::mutex> lk{ctrl_pkt_mutex};
     return latest_ctrl_pkt;
 }
 
 const ServerData_t& Packet::getCurrServerPkt() const {
-        // lock to make sure data can be gotten without new data being written
+    // lock to make sure data can be gotten without new data being written
     std::unique_lock<std::mutex> lk{server_pkt_mutex};
     return latest_server_pkt;
 }
@@ -127,8 +127,12 @@ const ServerData_t& Packet::getCurrServerPkt() const {
 
 ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
+    std::unique_lock<std::mutex> lk{ctrl_pkt_mutex};
     latest_ctrl_pkt = updated_pkt;
+
+    // notify and set bool so send loop knows to send
+    new_send_data_cv.notify_all();
+    setHasNewSendData(true);
     return ReturnCodes::Success;
 }
 
@@ -136,6 +140,10 @@ ReturnCodes Packet::updatePkt(const ServerData_t& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
     std::unique_lock<std::mutex> lk{server_pkt_mutex};
     latest_server_pkt = updated_pkt;
+
+    // notify and set bool so send loop knows to send
+    new_send_data_cv.notify_all();
+    setHasNewSendData(true);
     return ReturnCodes::Success;
 }
 
@@ -147,8 +155,9 @@ const CamData_t& Packet::getLatestCamData() const {
 ReturnCodes Packet::setLatestCamData(const CamData_t& new_cam_data) {
     std::unique_lock<std::mutex> lk{server_pkt_mutex};
     latest_server_pkt.cam = new_cam_data;
+
     // notify and set bool so send loop knows to send
-    cam_data_cv.notify_all();
+    new_send_data_cv.notify_all();
     setHasNewSendData(true);
     return ReturnCodes::Success;
 }

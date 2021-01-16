@@ -202,7 +202,7 @@ void TcpServer::ServerDataHandler(const bool print_data) {
                 // or until server is about to timeout
                 const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
                 std::unique_lock<std::mutex> data_lock(server_data_mutex);
-                cam_data_cv.wait_for(
+                new_send_data_cv.wait_for(
                     data_lock,
                     timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
                     [&](){ return getHasNewSendData(); }
