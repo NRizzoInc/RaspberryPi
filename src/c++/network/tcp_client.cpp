@@ -153,7 +153,7 @@ void TcpClient::ServerDataHandler(const bool print_data) {
         */
 
         // convert stringified json to json so it can be parsed into struct
-        constexpr auto save_frame_err {"Failed to update data from server"};
+        constexpr auto save_server_data_err {"Failed to update data from server"};
         try {
             // note: data is transmitted as bson so have to interpret & parse pkt first
             const json& recv_json = readServerPkt(server_data.c_str(), server_data.size());
@@ -172,7 +172,7 @@ void TcpClient::ServerDataHandler(const bool print_data) {
 
             // error check
             if(Packet::updatePkt(pkt) != ReturnCodes::Success) {
-                cerr << save_frame_err << endl;
+                cerr << save_server_data_err << endl;
             }
 
             if (recv_srv_cb) {
@@ -182,7 +182,7 @@ void TcpClient::ServerDataHandler(const bool print_data) {
             }
 
         } catch (std::exception& err) {
-            cerr << save_frame_err << endl;
+            cerr << save_server_data_err << endl;
             cerr << err.what() << endl;
         }
     }
