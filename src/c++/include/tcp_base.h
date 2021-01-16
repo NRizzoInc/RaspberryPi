@@ -32,7 +32,7 @@ namespace Network {
 enum class RecvSendRtnCodes {
     Error,
     ClosedConn,
-    Sucess,
+    Success,
     ChecksumMismatch
 };
 struct RecvRtn {
@@ -168,10 +168,11 @@ class TcpBase : public Packet {
         virtual void ControlLoopFn(const bool print_data) = 0;
 
         /**
-         * @brief The function to run regarding video frames when starting up the TCP server/client
+         * @brief The function to run regarding any data that comes from the server and needs to be send to the client
+         * - i.e. video frames that client needs.
          * (override so that it can be called by runNetAgent() in a thread)
          */
-        virtual void VideoStreamHandler() = 0;
+        virtual void ServerDataHandler(const bool print_data) = 0;
 
         /**
          * @brief Function called by the destructor to close the sockets
@@ -196,7 +197,7 @@ class TcpBase : public Packet {
         const bool                  is_verbose;         // false if should only print errors/important info
         std::atomic_bool            should_exit;        // true if should exit/stop connection
         std::thread                 control_thread;     // holds the thread proc for ControlLoopFn()
-        std::thread                 cam_vid_thread;     // holds the thread proc for VideoStreamHandler()
+        std::thread                 server_data_thread; // holds the thread proc for ServerDataHandler()
         std::atomic_bool            started_threads;    // need to send an initization message for first packet
         std::mutex                  thread_mutex;       // mutex controlling access to the classes threads (start/join)
         std::condition_variable     thread_cv;          // true if client needs to tell the server something

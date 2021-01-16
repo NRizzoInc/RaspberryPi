@@ -153,23 +153,6 @@ ReturnCodes Packet::setLatestCamData(const CamData_t& new_cam_data) {
     return ReturnCodes::Success;
 }
 
-const std::vector<unsigned char>& Packet::getLatestCamFrame() const {
-    // lock to make sure data can be gotten without new data being written
-    std::unique_lock<std::mutex> lk{server_pkt_mutex};
-    return latest_server_pkt.cam.img;
-}
-
-
-ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
-    // lock to make sure data can be written without it trying to be read simultaneously
-    std::unique_lock<std::mutex> lk{server_pkt_mutex};
-    latest_server_pkt.cam.img = new_frame;
-    cam_data_cv.notify_all();
-    setHasNewSendData(true);
-    return ReturnCodes::Success;
-}
-
-
 /*************************************** Packet Read/Write Functions ***************************************/
 // note: when using copy constructor cannot use {} because stores original json into an array
 
@@ -237,7 +220,10 @@ ServerData_t Packet::readServerPkt(const json& pkt_json) const {
     ServerData_t pkt;
 
     const PktType type {PktType::ServerData};
-    pkt.cam.img         = findIfExists<std::vector<unsigned char>> (type, pkt_json, {"cam", "img" });
+
+    // had to transfer image data as a string, so convert back to vector
+    const std::string&  img_buf_str(findIfExists<std::string>(type, pkt_json, {"cam", "img" }));
+    pkt.cam.img         = std::vector<unsigned char>(img_buf_str.begin(), img_buf_str.end());
     pkt.cam.fps         = findIfExists<int>(type, pkt_json, {"cam", "fps" });
     pkt.cam.width       = findIfExists<int>(type, pkt_json, {"cam", "width" });
     pkt.cam.height      = findIfExists<int>(type, pkt_json, {"cam", "height" });
@@ -281,9 +267,11 @@ json Packet::convertPktToJson(const ServerData_t& pkt) const {
     // https://github.com/nlohmann/json#json-as-first-class-data-type
     // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
     // key-values are seperated by commas not ':'
+
     json json_pkt = {{
         "cam", {
-            {"img",         pkt.cam.img},
+            // cannot straight up send frame as a vector (encapsulate as string)
+            {"img",         std::string{pkt.cam.img.begin(), pkt.cam.img.end()}},
             {"fps",         pkt.cam.fps},
             {"width",       pkt.cam.width},
             {"height",      pkt.cam.height},

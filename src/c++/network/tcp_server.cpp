@@ -105,7 +105,7 @@ ReturnCodes TcpServer::acceptClient(
 ReturnCodes TcpServer::sendResetPkt() {
     // make sure client receives last cam frame before shutdown
     // setting a new packet triggers video thread to send this new packet
-    return setLatestCamFrame(getLatestCamFrame());
+    return updatePkt(getLatestCamData());
 }
 
 void TcpServer::ControlLoopFn(const bool print_data) {
@@ -179,7 +179,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
     }
 }
 
-void TcpServer::VideoStreamHandler() {
+void TcpServer::ServerDataHandler(const bool print_data) {
     // server has to send the most up to date video frame to the client
     // keep sending until told to stop
 
@@ -203,17 +203,30 @@ void TcpServer::VideoStreamHandler() {
                 );
 
                 /********************************* Sending Camera Data to Client ********************************/
+                const ServerData_t&     curr_pkt    {getLatestCamData()};
+                const json&             pkt_json    {convertPktToJson(curr_pkt)};
+                const std::string       bson_str    {writePkt(pkt_json)};
+                const unsigned char*    send_pkt    {reinterpret_cast<const unsigned char*>(bson_str.c_str())};
+                const std::size_t       pkt_size    {bson_str.size()};
+
                 // make sure program know most recent data was taken to be send
                 // note: this should come BEFORE actually sending 
                 // in case other thread updates data mid send and thus would override it
-                const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
                 setHasNewSendData(false);
 
-                // actually send data
-                const SendRtn send_rtn {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
+                // print the stringified json if told to
+                if (print_data) {
+                    // might contain non-ascii/non-utf8 chars from cam data
+                    // so handle errors by replacing img buffer with printable string
+                    json printable_json = pkt_json;
+                    printable_json["cam"]["img"] = "[Image Buffer]";
+                    cout << "Sending (" << pkt_size << "Bytes): " << printable_json.dump() << endl;
+                }
 
-                if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
-                    cout << "Error: Send camera data to client (suggests closed endpoint)" << endl;
+                // actually send data
+                const SendRtn send_rtn {sendData(cam_data_sock_fd, send_pkt, pkt_size)};
+                if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
+                    cout << "Error: Send server data to client (suggests closed endpoint)" << endl;
                     close_conns.store(true); // tell control socket to stop
                     break; // try to wait for new connection (dont end program bc client may reconnect)
                 }

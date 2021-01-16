@@ -226,20 +226,6 @@ class Packet {
          */
         virtual ReturnCodes setLatestCamData(const CamData_t& new_cam_data);
 
-        /**
-         * @brief Get the latest frame from the camera video stream
-         * @return Reference to the char buffer in the form of a char vector
-         * @note Needs to use a mutex bc of read/write race condition with server
-         */
-        virtual const std::vector<unsigned char>& getLatestCamFrame() const;
-
-        /**
-         * @brief Set the latest frame from the camera video stream
-         * @return Success if no issues
-         * @note Needs to use a mutex bc of read/write race condition with server
-         */
-        virtual ReturnCodes setLatestCamFrame(const std::vector<unsigned char>& new_frame);
-
         /*************************************** Packet Read/Write Functions ***************************************/
         // see https://github.com/nlohmann/json#binary-formats-bson-cbor-messagepack-and-ubjson
 

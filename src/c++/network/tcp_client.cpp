@@ -108,7 +108,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
 
         // send the stringified json to the server
         const SendRtn send_rtn {sendData(ctrl_data_sock_fd, send_pkt, pkt_size)};
-        if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
+        if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
             cout << "Terminate - the server's control endpoint has closed the socket" << endl;
             setExitCode(true); // end program
             break;
@@ -120,7 +120,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
     cout << "Exiting Client Control Sender" << endl;
 }
 
-void TcpClient::VideoStreamHandler() {
+void TcpClient::ServerDataHandler(const bool print_data) {
     // connect to camera server (if failed to connect, just stop)
     // add space at end of "camera" to make prints even
     if(connectToServer(cam_data_sock_fd, server_ip, cam_data_port, "camera ") != ReturnCodes::Success) {
@@ -131,13 +131,14 @@ void TcpClient::VideoStreamHandler() {
     /********************************* Receiving From Server ********************************/
     while(!getExitCode()) {
 
-        // recv image/frame in the form of a string container (to also store size)
-        const RecvRtn img_recv { recvData(cam_data_sock_fd) };
+        // call recvData and save result in str container to get size
+        const RecvRtn      server_recv  { recvData(cam_data_sock_fd) };
+        const std::string& server_data  { std::string{server_recv.buf.begin(), server_recv.buf.end()} };
 
         // check if the data_size is smaller than 0
         // (if so, print message bc might have been fluke)
-        if (img_recv.RtnCode == RecvSendRtnCodes::Error) {
-            cout << "Error: Failed to recv camera data" << endl;
+        if (server_recv.RtnCode == RecvSendRtnCodes::Error) {
+            cout << "Error: Failed to recv server data" << endl;
             continue; // dont try to save a bad frame
         }
 
@@ -151,13 +152,31 @@ void TcpClient::VideoStreamHandler() {
         }
         */
 
-        // if no issues, save the new video frame
-        constexpr auto save_frame_err {"Failed to update camera data from server"};
+        // convert stringified json to json so it can be parsed into struct
+        constexpr auto save_frame_err {"Failed to update data from server"};
         try {
-            // convert string -> std::vector<unsigned char> by providing the start ptr and end
-            if(setLatestCamFrame(img_recv.buf) != ReturnCodes::Success) {
+            // note: data is transmitted as bson so have to interpret & parse pkt first
+            const json& recv_json = readServerPkt(server_data.c_str(), server_data.size());
+
+            // parse & print the buf to the terminal(if told to)
+            if (print_data) {
+                // might contain non-ascii/non-utf8 chars from cam data
+                // so handle errors by replacing img buffer with printable string
+                json printable_json = recv_json;
+                printable_json["cam"]["img"] = "[Image Buffer]";
+                cout << "Recv Server Data: " + printable_json.dump() << endl;
+            }
+
+            // actually try to parse recv packet into the struct
+            const ServerData_t& pkt {readServerPkt(recv_json)};
+
+            // error check
+            if(Packet::updatePkt(pkt) != ReturnCodes::Success) {
                 cerr << save_frame_err << endl;
             }
+
+            // TODO: add recv callback
+
         } catch (std::exception& err) {
             cerr << save_frame_err << endl;
             cerr << err.what() << endl;

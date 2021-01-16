@@ -80,7 +80,7 @@ class TcpServer : public TcpBase {
         /**
          * @brief Starts up a non-blocking function to send video frames from camera to client
          */
-        virtual void VideoStreamHandler() override;
+        virtual void ServerDataHandler(const bool print_data) override;
 
     private:
         /******************************************** Private Variables ********************************************/

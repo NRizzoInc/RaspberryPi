@@ -45,8 +45,8 @@ ReturnCodes TcpBase::cleanup() {
         control_thread.join();
     }
 
-    if(cam_vid_thread.joinable()) {
-        cam_vid_thread.join();
+    if(server_data_thread.joinable()) {
+        server_data_thread.join();
     }
 
     // call quit once thread for derived client/server is over
@@ -103,9 +103,9 @@ void TcpBase::runNetAgent(const bool print_data) {
         ControlLoopFn(print_data);
     }};
 
-    cam_vid_thread = std::thread{[this]() {
+    server_data_thread = std::thread{[this, print_data]() {
         // dont pin fn to TcpBase since it should be overridden by derived classes
-        VideoStreamHandler();
+        ServerDataHandler(print_data);
     }};
 
     // unlock & notify so joiner can continue
@@ -139,7 +139,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, max_stream_left, 0);
         if (header_rx_partial < 0) {
             if(is_verbose) {
-                cerr << "Error: receiving header packet" << endl;
+                cerr << "Error: receiving header packet (" << header_rx_size << "/" << max_header_size << ")" << endl;
             }
             return RecvRtn{{}, RecvSendRtnCodes::Error};
         }
@@ -163,7 +163,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
     // prepare bufs for receiving
     PktSize_t total_recv_size {0};
     char recv_buf[header.total_length];
-    RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Sucess}; // default to success
+    RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Success}; // default to success
     while (total_recv_size < header.total_length) {
         // append new data to top of buf (new start = start + curr size)
         const PktSize_t max_stream_size {std::min(
@@ -227,7 +227,6 @@ SendRtn TcpBase::sendData(
 
     /*************************************** send data pkt header *************************************/
     // send the header for the packet so recv can know size (send with no special props)
-    // const std::string str_pkt {header_pkt.toString()};
     std::string str_pkt {header_pkt.toString()};
 
     const int max_header_size {sizeof(HeaderPkt_t)};
@@ -247,7 +246,7 @@ SendRtn TcpBase::sendData(
     }
 
     // iff successful, sent_size >= 0 so can safely cast to uint
-    return SendRtn{static_cast<PktSize_t>(sent_size), RecvSendRtnCodes::Sucess};
+    return SendRtn{static_cast<PktSize_t>(sent_size), RecvSendRtnCodes::Success};
 }
 
 

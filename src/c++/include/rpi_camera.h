@@ -151,7 +151,7 @@ class CamHandler : public raspicam::RaspiCam_Cv {
 
         /**
          * @brief Loads the classifier files for facial detection
-         * @return ReturnCodes Sucess if no issues
+         * @return ReturnCodes Success if no issues
          */
         ReturnCodes LoadClassifiers();
 
