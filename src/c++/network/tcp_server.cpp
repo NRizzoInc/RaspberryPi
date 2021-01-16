@@ -22,9 +22,9 @@ TcpServer::TcpServer(
     , ctrl_data_sock_fd{-1}                 // init to invalid
     , client_ip{}                           // empty string bc no client yet
     , ctrl_data_port{ctrl_data_port}        // wait to accept connections at this port for regular pkts
-    , cam_listen_sock_fd{-1}                // init to invalid
-    , cam_data_sock_fd{-1}                  // init to invalid
-    , cam_data_port{cam_send_port}          // port for the camera data connection
+    , server_listen_sock_fd{-1}             // init to invalid
+    , server_data_sock_fd{-1}               // init to invalid
+    , server_data_port{cam_send_port}       // port for the camera data connection
 {
     // first check if should not init
     if (!should_init) return;
@@ -187,7 +187,13 @@ void TcpServer::ServerDataHandler(const bool print_data) {
     while(!getExitCode()) {
 
         // wait for a client to connect
-        if(acceptClient(cam_listen_sock_fd, cam_data_sock_fd, "camera", cam_data_port) == ReturnCodes::Success) {
+        const ReturnCodes acpt_rtn {acceptClient(
+            server_listen_sock_fd,
+            server_data_sock_fd,
+            "camera",
+            server_data_port
+        )};
+        if(acpt_rtn == ReturnCodes::Success) {
 
             // loop to receive data and send data with client
             while(!getExitCode() && !close_conns.load()) {
@@ -195,7 +201,7 @@ void TcpServer::ServerDataHandler(const bool print_data) {
                 // wait until there is a new message (or first message)
                 // or until server is about to timeout
                 const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
-                std::unique_lock<std::mutex> data_lock(cam_data_mutex);
+                std::unique_lock<std::mutex> data_lock(server_data_mutex);
                 cam_data_cv.wait_for(
                     data_lock,
                     timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
@@ -224,7 +230,7 @@ void TcpServer::ServerDataHandler(const bool print_data) {
                 }
 
                 // actually send data
-                const SendRtn send_rtn {sendData(cam_data_sock_fd, send_pkt, pkt_size)};
+                const SendRtn send_rtn {sendData(server_data_sock_fd, send_pkt, pkt_size)};
                 if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
                     cout << "Error: Send server data to client (suggests closed endpoint)" << endl;
                     close_conns.store(true); // tell control socket to stop
@@ -234,7 +240,7 @@ void TcpServer::ServerDataHandler(const bool print_data) {
             }
 
             // at end of while, reset data socket to attempt to make new connection with same listener
-            cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+            server_data_sock_fd = CloseOpenSock(server_data_sock_fd);
         }
     }
 }
@@ -242,14 +248,14 @@ void TcpServer::ServerDataHandler(const bool print_data) {
 ReturnCodes TcpServer::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     ctrl_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-    cam_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    server_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     // check if the socket creation was successful
     if (ctrl_listen_sock_fd < 0){ 
         cout << "ERROR: Opening control listen socket" << endl;
         return ReturnCodes::Error;
     }
-    if (cam_listen_sock_fd < 0){ 
+    if (server_listen_sock_fd < 0){ 
         cout << "ERROR: Opening camera listen socket" << endl;
         return ReturnCodes::Error;
     }
@@ -258,7 +264,7 @@ ReturnCodes TcpServer::initSock() {
     // set the options for the socket
     int option(1);
     setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
-    setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+    setsockopt(server_listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
@@ -267,8 +273,8 @@ ReturnCodes TcpServer::initSock() {
     timeout.tv_usec = 0;
     setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
     setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
-    setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-    setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(server_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(server_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // init struct for address to bind socket
     sockaddr_in ctrl_addr {};   // holds data on the control conn address
@@ -279,7 +285,7 @@ ReturnCodes TcpServer::initSock() {
     cam_addr.sin_family         = AF_INET;
     // convert ctrl_data_port to network number format
     ctrl_addr.sin_port          = htons(ctrl_data_port);
-    cam_addr.sin_port           = htons(cam_data_port);
+    cam_addr.sin_port           = htons(server_data_port);
     // accept conn from all Network Interface Cards (NIC)
     ctrl_addr.sin_addr.s_addr   = htonl(INADDR_ANY);
     cam_addr.sin_addr.s_addr    = htonl(INADDR_ANY);
@@ -290,9 +296,9 @@ ReturnCodes TcpServer::initSock() {
         ctrl_listen_sock_fd = CloseOpenSock(ctrl_listen_sock_fd);
         return ReturnCodes::Error;
     }
-    if (bind(cam_listen_sock_fd, (struct sockaddr*)&cam_addr, sizeof(cam_addr)) < 0) { 
+    if (bind(server_listen_sock_fd, (struct sockaddr*)&cam_addr, sizeof(cam_addr)) < 0) { 
         cout << "ERROR: Failed to bind camera socket" << endl;
-        cam_listen_sock_fd = CloseOpenSock(cam_listen_sock_fd);
+        server_listen_sock_fd = CloseOpenSock(server_listen_sock_fd);
         return ReturnCodes::Error;
     }
 
@@ -303,9 +309,9 @@ ReturnCodes TcpServer::initSock() {
         close(ctrl_listen_sock_fd);
         return ReturnCodes::Error;
     }
-    if (listen(cam_listen_sock_fd, max_num_conns) < 0) { 
+    if (listen(server_listen_sock_fd, max_num_conns) < 0) { 
         cout << "ERROR: Failed to listen to control socket" << endl;
-        close(cam_listen_sock_fd);
+        close(server_listen_sock_fd);
         return ReturnCodes::Error;
     }
 
@@ -325,8 +331,8 @@ void TcpServer::quit() {
     ctrl_data_sock_fd   = CloseOpenSock(ctrl_data_sock_fd);
 
     cout << "Cleanup: closing camera sockets" << endl;
-    cam_listen_sock_fd  = CloseOpenSock(cam_listen_sock_fd);
-    cam_data_sock_fd    = CloseOpenSock(cam_data_sock_fd);
+    server_listen_sock_fd  = CloseOpenSock(server_listen_sock_fd);
+    server_data_sock_fd    = CloseOpenSock(server_data_sock_fd);
 }
 
 

@@ -21,8 +21,8 @@ TcpClient::TcpClient(
     , server_ip{ip_addr}                    // ip address to try to reach server
     , ctrl_data_port{ctrl_port_num}         // port the client tries to reach the server at for sending control pkts
     , pkt_ready{true}                       // will be set false immediately after sending first message
-    , cam_data_sock_fd{-1}                  // init to invalid
-    , cam_data_port{cam_port_num}           // port to attempt to connect to client to send camera data
+    , server_data_sock_fd{-1}               // init to invalid
+    , server_data_port{cam_port_num}        // port to attempt to connect to client to send camera data
 {
     // first check if should not init
     if (!should_init) return;
@@ -123,7 +123,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
 void TcpClient::ServerDataHandler(const bool print_data) {
     // connect to camera server (if failed to connect, just stop)
     // add space at end of "camera" to make prints even
-    if(connectToServer(cam_data_sock_fd, server_ip, cam_data_port, "camera ") != ReturnCodes::Success) {
+    if(connectToServer(server_data_sock_fd, server_ip, server_data_port, "camera ") != ReturnCodes::Success) {
         // if issue, return immediately to prevent further errors
         return;
     }
@@ -132,7 +132,7 @@ void TcpClient::ServerDataHandler(const bool print_data) {
     while(!getExitCode()) {
 
         // call recvData and save result in str container to get size
-        const RecvRtn      server_recv  { recvData(cam_data_sock_fd) };
+        const RecvRtn      server_recv  { recvData(server_data_sock_fd) };
         const std::string& server_data  { std::string{server_recv.buf.begin(), server_recv.buf.end()} };
 
         // check if the data_size is smaller than 0
@@ -185,21 +185,21 @@ void TcpClient::ServerDataHandler(const bool print_data) {
 
     // at end of while, reset data socket to attempt to make new connection with same listener
     cout << "Exiting Client Camera Receiver" << endl;
-    cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+    server_data_sock_fd = CloseOpenSock(server_data_sock_fd);
 }
 
 
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     ctrl_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
-    cam_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    server_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     // check if the socket creation was successful
     if (ctrl_data_sock_fd < 0){ 
         cout << "ERROR: Opening Client Control Socket" << endl;
         return ReturnCodes::Error;
     }
-    if (cam_data_sock_fd < 0){ 
+    if (server_data_sock_fd < 0){ 
         cout << "ERROR: Opening Client Camera Socket" << endl;
         return ReturnCodes::Error;
     }
@@ -207,7 +207,7 @@ ReturnCodes TcpClient::initSock() {
     // set the options for the socket
     int option(1);
     setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
-    setsockopt(cam_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+    setsockopt(server_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
@@ -215,7 +215,7 @@ ReturnCodes TcpClient::initSock() {
     timeout.tv_sec = Constants::Network::ACPT_TIMEOUT;
     timeout.tv_usec = 0;
     setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-    setsockopt(cam_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(server_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     return ReturnCodes::Success;
 }
@@ -231,7 +231,7 @@ void TcpClient::quit() {
     cout << "Cleanup: closing control sockets" << endl;
     ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
     cout << "Cleanup: closing camera sockets" << endl;
-    cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+    server_data_sock_fd = CloseOpenSock(server_data_sock_fd);
 }
 
 ReturnCodes TcpClient::connectToServer(

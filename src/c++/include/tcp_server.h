@@ -95,10 +95,10 @@ class TcpServer : public TcpBase {
         int                      ctrl_data_port;      // port number for socket receiving control data from client
 
         // camera vars
-        int                      cam_listen_sock_fd;  // tcp file descriptor to wait for camera conn
-        int                      cam_data_sock_fd;    // tcp file descriptor to transfer camera data
-        int                      cam_data_port;       // port number for camera data transfer to client
-        std::mutex               cam_data_mutex;      // mutex to lock when accessing the camera data
+        int                      server_listen_sock_fd;// tcp file descriptor to wait for camera conn
+        int                      server_data_sock_fd;  // tcp file descriptor to transfer camera data
+        int                      server_data_port;     // port number for camera data transfer to client
+        std::mutex               server_data_mutex;    // mutex to lock when accessing the camera data
 
         /********************************************* Helper Functions ********************************************/
 
