@@ -69,7 +69,11 @@ bool TcpBase::getExitCode() const {
 }
 
 void TcpBase::setRecvCallback(const RecvCmnPktCallback& recv_callback) {
-    recv_cb = recv_callback;
+    recv_cmn_cb = recv_callback;
+}
+
+void TcpBase::setRecvCallback(const RecvServerPktCallback& recv_callback) {
+    recv_srv_cb = recv_callback;
 }
 
 bool TcpBase::getIsInit() const {

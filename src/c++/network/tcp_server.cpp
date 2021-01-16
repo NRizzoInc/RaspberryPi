@@ -159,8 +159,8 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                     }
 
                     // call receive callback if set
-                    if (recv_cb) {
-                        if (recv_cb(pkt) != ReturnCodes::Success) {
+                    if (recv_cmn_cb) {
+                        if (recv_cmn_cb(pkt) != ReturnCodes::Success) {
                             cerr << "ERROR: Failed to process received packet from client" << endl;
                         }
                     }

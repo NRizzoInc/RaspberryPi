@@ -175,7 +175,11 @@ void TcpClient::ServerDataHandler(const bool print_data) {
                 cerr << save_frame_err << endl;
             }
 
-            // TODO: add recv callback
+            if (recv_srv_cb) {
+                if (recv_srv_cb(pkt) != ReturnCodes::Success) {
+                    cerr << "ERROR: Failed to process received packet from server" << endl;
+                }
+            }
 
         } catch (std::exception& err) {
             cerr << save_frame_err << endl;

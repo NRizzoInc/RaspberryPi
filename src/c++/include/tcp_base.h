@@ -82,12 +82,18 @@ class TcpBase : public Packet {
         /********************************************* Getters/Setters *********************************************/
 
         /**
-         * @brief Set the callback function for when a packet is received
+         * @brief Set the callback function for when a common packet is received from client
          * @param recv_callback The function that accepts a reference to the received pkt
          * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
-         * @return ReturnCodes 
          */
         void setRecvCallback(const RecvCmnPktCallback& recv_callback);
+
+        /**
+         * @brief Set the callback function for when a server data packet is received
+         * @param recv_callback The function that accepts a reference to the received pkt
+         * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
+         */
+        void setRecvCallback(const RecvServerPktCallback& recv_callback);
 
         /**
          * @brief Sets the exit code. 
@@ -193,7 +199,8 @@ class TcpBase : public Packet {
 
         /***************************** Protected Variables (Both Client/Server Can Use) *****************************/
     protected:
-        RecvCmnPktCallback             recv_cb;            // callback for when a packet is received
+        RecvCmnPktCallback              recv_cmn_cb;            // callback for when a common packet is received
+        RecvServerPktCallback           recv_srv_cb;            // callback for when a server packet is received 
 
         /**
          * @brief Helper function that closes and sets a socket file descriptor to -1 if it is open
