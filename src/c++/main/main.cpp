@@ -177,7 +177,15 @@ int main(int argc, char* argv[]) {
             cerr << "Error: Failed to set camera grab callback" << endl;
         }
 
-    } else {
+    } else { // is client
+
+        // set client recv cb to handle when getting data packets from server
+        // TODO: when more data starts being sent that needs to be handled, add here
+        net_agent->setRecvCallback([&](__attribute__((unused)) const RPI::Network::ServerData_t& pkt) {
+            bool rtn_code {true};
+            return rtn_code ? RPI::ReturnCodes::Success : RPI::ReturnCodes::Error;
+        });
+
         // is client (startup web app interface for receiving commands)
         thread_list.push_back(std::thread{
             [&](){
