@@ -174,18 +174,6 @@ enum class PktType {
     ServerData
 }; // end of PktType
 
-/**
- * @brief Type for a callback function that accepts a reference to the received pkt
- * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
- */
-using RecvCmnPktCallback = std::function<ReturnCodes(const CommonPkt&)>;
-
-/**
- * @brief Type for a callback function that accepts a reference to the received server data pkt
- * @returns ReturnCodes::Success for no issues or ReturnCodes::Error if there was a problem
- */
-using RecvServerPktCallback = std::function<ReturnCodes(const ServerData_t&)>;
-
 
 /*************************************************** Packet Class **************************************************/
 
