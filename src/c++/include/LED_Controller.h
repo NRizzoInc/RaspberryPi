@@ -40,7 +40,7 @@ class LEDController : public GPIOBase {
          * @brief Helps intialize the leds
          * @return ReturnCodes
          */
-        virtual ReturnCodes init() const;
+        virtual ReturnCodes init() const override;
 
         /********************************************* Getters/Setters *********************************************/
         /**
