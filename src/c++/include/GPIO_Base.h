@@ -3,13 +3,17 @@
 
 // Standard Includes
 #include <iostream>
+#include <fstream> // needed to open file to check if valid pi
 #include <string>
 #include <atomic>
+#include <optional>
 
 // Our Includes
 #include "constants.h"
+#include "string_helpers.hpp"
 
 // 3rd Party Includes
+#include <wiringPi.h>
 
 namespace RPI {
 namespace gpio {
@@ -25,6 +29,8 @@ class GPIOBase {
         /********************************************** Constructors **********************************************/
         GPIOBase();
         virtual ~GPIOBase();
+
+        virtual ReturnCodes init() const;
 
         /********************************************* Getters/Setters *********************************************/
 
@@ -45,6 +51,16 @@ class GPIOBase {
          */
         virtual bool getShouldThreadExit() const;
 
+        /****************************************** Basic Board Functions ******************************************/
+
+        /**
+         * @brief Determines if the device running this code is compatible with this RPI code
+         * (Enables programs to selectively not enable gpio code if running on non-rpi)
+         * @return true Is a valid rpi that can run the gpio code
+         * @return false Is an invalid rpi (aka not a pi) and it shouldnt try to init gpio classes
+         */
+        virtual bool isValidRPI() const;
+
     private:
         mutable bool isInit;
         /**
@@ -52,7 +68,7 @@ class GPIOBase {
          * @note Is mutable so that it can be modified in const functions safely
          */
         mutable std::atomic_bool stop_thread;
-
+        static std::optional<bool> is_valid_pi; // for all derived classes, should only check validity once
 
 }; // end of GPIOBase
 
