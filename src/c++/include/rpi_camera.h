@@ -64,6 +64,8 @@ class CamHandler : public raspicam::RaspiCam_Cv {
 
         /********************************************* Getters/Setters *********************************************/
 
+        bool getIsInit() const;
+
         /**
          * @brief Checks if grabbing loop should end/stop
          * @return true Should stop
@@ -117,6 +119,7 @@ class CamHandler : public raspicam::RaspiCam_Cv {
     private:
         /******************************************** Private Variables ********************************************/
 
+        bool                        is_init;       // true if cam is open and init properly
         const bool                  is_verbose;    // false if should only print errors/important info
         int                         frame_count;   // current number of grabbed frames
         const int                   max_frames;    // the max # frames to grab (-1 = infinite)
@@ -136,6 +139,7 @@ class CamHandler : public raspicam::RaspiCam_Cv {
          * @return ReturnCodes Success if no issues
          */
         ReturnCodes SetupCam();
+        void setIsInit(const bool new_state);
 
         /*************************************** Facial Recognition Functions **************************************/
 

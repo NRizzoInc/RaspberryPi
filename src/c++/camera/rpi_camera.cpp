@@ -24,6 +24,7 @@ CamHandler::CamHandler(
     const std::string eye_xml
 )
     : raspicam::RaspiCam_Cv{}
+    , is_init{false}
     , is_verbose{verbosity}
     , frame_count{0}
     , max_frames{max_frame_count}       // defaults to infinite = -1
@@ -50,6 +51,14 @@ CamHandler::~CamHandler() {
 }
 
 /********************************************* Getters/Setters *********************************************/
+
+bool CamHandler::getIsInit() const {
+    return is_init;
+}
+
+void CamHandler::setIsInit(const bool new_state) {
+    is_init = new_state;
+}
 
 bool CamHandler::getShouldStop() const {
     return stop_thread.load();
@@ -82,7 +91,11 @@ ReturnCodes CamHandler::setGrabCallback(GrabFrameCb _grab_cb) {
 /********************************************* Camera Functions ********************************************/
 
 ReturnCodes CamHandler::OpenCam() {
-    if(!RaspiCam_Cv::open()) {
+    if (RaspiCam_Cv::getId() == "") {
+        cerr << "ERROR: Camera does not exist" << endl;
+        return ReturnCodes::Error;
+    }
+    else if(!RaspiCam_Cv::open()) {
         cerr << "ERROR: Failed to open raspicam" << endl;
         return ReturnCodes::Error;
     }
@@ -96,6 +109,12 @@ ReturnCodes CamHandler::OpenCam() {
 
 // note: have to concat strings (not stream it) bc of threading cout overlaps
 void CamHandler::RunFrameGrabber(const bool record_immed, const bool should_save) {
+
+    // only record if is init
+    if(!getIsInit()) {
+        cerr << "Error: failed to start camera because improperly setup" << endl;
+        return;
+    }
 
     // if should start recording immediately, set accordingly
     if(setShouldRecord(record_immed) != ReturnCodes::Success) {
@@ -203,7 +222,7 @@ ReturnCodes CamHandler::SetupCam() {
 
     // open camera after setting correct settings
     if(OpenCam() != ReturnCodes::Success) {
-        cerr << "Failed to open camera" << endl;
+        cerr << "Error: Failed to open camera" << endl;
         return ReturnCodes::Error;
     }
 
@@ -213,6 +232,7 @@ ReturnCodes CamHandler::SetupCam() {
         return ReturnCodes::Error;
     }
 
+    setIsInit(true);
     return ReturnCodes::Success;
 }
 
