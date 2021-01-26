@@ -105,6 +105,10 @@ ReturnCodes PCA9685::WriteReg(const PCA9685_Reg_Addr reg_addr, const std::uint8_
 }
 
 ReturnCodes PCA9685::WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const {
+
+    // if fd not open, dont try to write
+    if (PCA9685_i2c_fd == -1) return ReturnCodes::Success;
+
     ReturnCodes rtn {wiringPiI2CWriteReg8(
         PCA9685_i2c_fd,
         reg_addr,
