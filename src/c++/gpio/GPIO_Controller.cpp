@@ -79,22 +79,23 @@ ReturnCodes GPIOController::init() const {
     if (getIsInit()) return ReturnCodes::Success;
 
     // otherwise init sub-components
-    if (LEDController::init() != ReturnCodes::Success) {
-        cerr << "Failed to properly init LEDs" << endl;
-        return ReturnCodes::Error;
-    }
-    if (ButtonController::init() != ReturnCodes::Success) {
-        cerr << "Failed to properly init buttons" << endl;
-        return ReturnCodes::Error;
-    }
-    if (MotorController::init() != ReturnCodes::Success) {
-        cerr << "Failed to properly init motors" << endl;
-        return ReturnCodes::Error;
-    }
-    if (ServoController::init() != ReturnCodes::Success) {
-        cerr << "Failed to properly init servos" << endl;
-        return ReturnCodes::Error;
-    }
+    bool rtn {true}; // set to false if error
+
+    const bool led_rtn { LEDController::init() == ReturnCodes::Success };
+    rtn &= led_rtn;
+    if (!led_rtn) cerr << "Failed to properly init LEDs" << endl;
+
+    const bool btn_rtn { ButtonController::init() == ReturnCodes::Success };
+    rtn &= btn_rtn;
+    if (!btn_rtn) cerr << "Failed to properly init buttons" << endl;
+
+    const bool motor_rtn { MotorController::init() == ReturnCodes::Success };
+    rtn &= motor_rtn;
+    if (!motor_rtn) cerr << "Failed to properly init motors" << endl;
+
+    const bool servo_rtn { ServoController::init() == ReturnCodes::Success };
+    rtn &= servo_rtn;
+    if (!servo_rtn) cerr << "Failed to properly init servos" << endl;
 
     // set callback so that when the button is pressed, the LED's state changes
     ButtonController::setBtnCallback([&](const std::string& color, const bool btn_state){
@@ -103,7 +104,7 @@ ReturnCodes GPIOController::init() const {
         }
     });
 
-    return ReturnCodes::Success;
+    return rtn ? ReturnCodes::Success: ReturnCodes::Error;
 }
 
 ReturnCodes GPIOController::setShouldThreadExit(const bool new_status) const {

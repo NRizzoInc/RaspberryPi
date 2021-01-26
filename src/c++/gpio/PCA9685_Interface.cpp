@@ -54,6 +54,11 @@ ReturnCodes PCA9685::init() const {
     // if already init, stop now (have to specify whose getIsInit to call otherwise always true)
     if (PCA9685::getIsInit()) return ReturnCodes::Success;
 
+    // check if valid rpi first
+    if(GPIOBase::init() != ReturnCodes::Success) {
+        return ReturnCodes::Error;
+    }
+
     // setup pins for their purpose
     PCA9685_i2c_fd = wiringPiI2CSetup(*PCA9685_i2c_addr);
     if (PCA9685_i2c_fd == -1) {
