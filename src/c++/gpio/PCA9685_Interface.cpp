@@ -197,7 +197,7 @@ ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) cons
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel), on >> 8) != ReturnCodes::Success) {
+    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_HIGH_BASE, channel), on >> 8) != ReturnCodes::Success) {
         cerr << "Failed to update ON HIGH PWM" << endl;
         return ReturnCodes::Error;
     }
