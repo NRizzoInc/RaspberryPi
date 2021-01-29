@@ -3,13 +3,17 @@
 
 // Standard Includes
 #include <iostream>
+#include <fstream> // needed to open file to check if valid pi
 #include <string>
 #include <atomic>
+#include <optional>
 
 // Our Includes
 #include "constants.h"
+#include "string_helpers.hpp"
 
 // 3rd Party Includes
+#include <wiringPi.h>
 
 namespace RPI {
 namespace gpio {
@@ -23,13 +27,23 @@ class GPIOBase {
 
     public:
         /********************************************** Constructors **********************************************/
-        GPIOBase();
+
+        /**
+         * @brief gpio base object that should be the base class for any class that deals with gpio functionality.
+         * (i.e. buttons, leds, motors, etc...)
+         * @param verbosity If true, will print more information that is strictly necessary
+         */
+        GPIOBase(const bool verbosity=false);
         virtual ~GPIOBase();
+
+        virtual ReturnCodes init() const;
 
         /********************************************* Getters/Setters *********************************************/
 
         virtual bool getIsInit() const;
         virtual ReturnCodes setIsInit(const bool new_state) const;
+
+        virtual bool isVerbose() const;
 
         /**
          * @brief Set whether the thread should stop
@@ -45,14 +59,25 @@ class GPIOBase {
          */
         virtual bool getShouldThreadExit() const;
 
+        /****************************************** Basic Board Functions ******************************************/
+
+        /**
+         * @brief Determines if the device running this code is compatible with this RPI code
+         * (Enables programs to selectively not enable gpio code if running on non-rpi)
+         * @return true Is a valid rpi that can run the gpio code
+         * @return false Is an invalid rpi (aka not a pi) and it shouldnt try to init gpio classes
+         */
+        virtual bool isValidRPI() const;
+
     private:
+        const bool is_verbose; // false if should only print errors/important info
         mutable bool isInit;
         /**
          * @brief Controls whether or not to stop blocking functions (i.e. blink)
          * @note Is mutable so that it can be modified in const functions safely
          */
         mutable std::atomic_bool stop_thread;
-
+        static std::optional<bool> is_valid_pi; // for all derived classes, should only check validity once
 
 }; // end of GPIOBase
 

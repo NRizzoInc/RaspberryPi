@@ -26,8 +26,8 @@ std::optional<std::uint8_t>     PCA9685::PCA9685_i2c_addr{std::nullopt};    // d
 int                             PCA9685::PCA9685_i2c_fd{-1};                // invalid
 std::optional<float>            PCA9685::pwm_freq{std::nullopt};            // unset/invalid
 
-PCA9685::PCA9685(const std::optional<std::uint8_t> PCA9685_i2c_addr)
-    : GPIOBase{}
+PCA9685::PCA9685(const std::optional<std::uint8_t> PCA9685_i2c_addr, const bool verbosity)
+    : GPIOBase{verbosity}
 {
     if (!PCA9685::PCA9685_i2c_addr.has_value()) {
         if (PCA9685_i2c_addr.has_value()) {
@@ -53,6 +53,11 @@ PCA9685::~PCA9685() {
 ReturnCodes PCA9685::init() const {
     // if already init, stop now (have to specify whose getIsInit to call otherwise always true)
     if (PCA9685::getIsInit()) return ReturnCodes::Success;
+
+    // check if valid rpi first
+    if(GPIOBase::init() != ReturnCodes::Success) {
+        return ReturnCodes::Error;
+    }
 
     // setup pins for their purpose
     PCA9685_i2c_fd = wiringPiI2CSetup(*PCA9685_i2c_addr);
@@ -100,6 +105,10 @@ ReturnCodes PCA9685::WriteReg(const PCA9685_Reg_Addr reg_addr, const std::uint8_
 }
 
 ReturnCodes PCA9685::WriteReg(const std::uint8_t reg_addr, const std::uint8_t data) const {
+
+    // if fd not open, dont try to write
+    if (PCA9685_i2c_fd == -1) return ReturnCodes::Success;
+
     ReturnCodes rtn {wiringPiI2CWriteReg8(
         PCA9685_i2c_fd,
         reg_addr,
@@ -193,22 +202,22 @@ ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) cons
     // have to update all pwm registers
 
     if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel),  on & 0xFF) != ReturnCodes::Success) {
-        cerr << "Failed to update ON LOW PWM" << endl;
+        if(isVerbose()) cerr << "Failed to update ON LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
-    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel), on >> 8) != ReturnCodes::Success) {
-        cerr << "Failed to update ON HIGH PWM" << endl;
+    if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_HIGH_BASE, channel), on >> 8) != ReturnCodes::Success) {
+        if(isVerbose()) cerr << "Failed to update ON HIGH PWM" << endl;
         return ReturnCodes::Error;
     }
 
     if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::OFF_LOW_BASE, channel), off & 0xFF) != ReturnCodes::Success) {
-        cerr << "Failed to update OFF LOW PWM" << endl;
+        if(isVerbose()) cerr << "Failed to update OFF LOW PWM" << endl;
         return ReturnCodes::Error;
     }
 
     if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::OFF_HIGH_BASE, channel), off >> 8) != ReturnCodes::Success) {
-        cerr << "Failed to update OFF HIGH PWM" << endl;
+        if(isVerbose()) cerr << "Failed to update OFF HIGH PWM" << endl;
         return ReturnCodes::Error;
     }
 

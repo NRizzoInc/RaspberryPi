@@ -22,8 +22,8 @@ BtnMap ButtonController::color_to_btns {
 };
 
 /********************************************** Constructors **********************************************/
-ButtonController::ButtonController()
-    : GPIOBase{}
+ButtonController::ButtonController(const bool verbosity)
+    : GPIOBase{verbosity}
 {
     // stub
 }
@@ -39,8 +39,7 @@ ReturnCodes ButtonController::init() const {
     // if already init, stop now
     if (getIsInit()) return ReturnCodes::Success;
 
-    // setup pins for their purpose
-    if (wiringPiSetup() == -1) {
+    if(GPIOBase::init() != ReturnCodes::Success) {
         return ReturnCodes::Error;
     }
 

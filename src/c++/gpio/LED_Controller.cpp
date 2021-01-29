@@ -21,10 +21,10 @@ const LEDMap LEDController::color_to_leds {
 
 
 /********************************************** Constructors **********************************************/
-LEDController::LEDController()
+LEDController::LEDController(const bool verbosity)
     // pin mappings -- http://wiringpi.com/pins/
     // gpio readall -- care about WPi column
-    : GPIOBase{}
+    : GPIOBase{verbosity}
 {
     // stub
 }
@@ -46,8 +46,7 @@ ReturnCodes LEDController::init() const {
     // if already init, stop now
     if (getIsInit()) return ReturnCodes::Success;
 
-    // setup pins for their purpose
-    if (wiringPiSetup() == -1) {
+    if(GPIOBase::init() != ReturnCodes::Success) {
         return ReturnCodes::Error;
     }
 

@@ -70,9 +70,8 @@ int main(int argc, char* argv[]) {
     // static needed so it can be accessed in ctrl+c lambda
     static RPI::gpio::GPIOController gpio_handler{
         // motor i2c addr (convert hex string to int using base 16)
-        static_cast<std::uint8_t>(
-            std::stoi(parse_res[RPI::CLI::Results::ParseKeys::I2C_ADDR], 0, 16)
-        )
+        static_cast<std::uint8_t>(std::stoi(parse_res[RPI::CLI::Results::ParseKeys::I2C_ADDR], 0, 16)),
+        is_verbose
     };
 
     /* ======================================== Create Server OR Client ======================================= */
