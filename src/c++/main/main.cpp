@@ -81,20 +81,20 @@ int main(int argc, char* argv[]) {
     const int cam_port  {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CAM_PORT])};
     static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
-            (RPI::Network::TcpBase*) new RPI::Network::TcpClient{
+            static_cast<RPI::Network::TcpBase*>(new RPI::Network::TcpClient{
                 parse_res[RPI::CLI::Results::ParseKeys::IP],
                 ctrl_port,
                 cam_port,
                 is_client,
                 is_verbose
-            } 
+            }) 
             :
-            (RPI::Network::TcpBase*) new RPI::Network::TcpServer{
+            static_cast<RPI::Network::TcpBase*>(new RPI::Network::TcpServer{
                 ctrl_port,
                 cam_port,
                 is_server,
                 is_verbose
-            }
+            })
     };
 
     // Create UI Event Listener to interact with client
