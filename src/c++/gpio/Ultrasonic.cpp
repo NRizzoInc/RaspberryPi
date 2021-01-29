@@ -75,6 +75,31 @@ float DistSensor::GetDistance() const {
 
 }
 
+void DistSensor::testDistSensor(
+    // not needed, but need to follow call guidlines for fn-mapping to work
+    __attribute__((unused)) const std::vector<std::string>& colors,
+    const unsigned int& interval,
+    const int& duration,
+    __attribute__((unused)) const unsigned int& rate
+) const {
+    cout << "Interval: " << interval << "ms" << endl;
+    cout << "Duration: " << duration << "ms" << endl;
+
+    // keep track of time/duration
+    const auto start_time = std::chrono::steady_clock::now();
+
+    // helps keep track if duration is up (needed bc loop may take awhilem but can be split & stopped in piecemeal)
+    auto isDurationUp = [&]()->bool {
+        // if duration == -1 : run forever
+        return
+            duration != -1 &&
+            Helpers::Timing::hasTimeElapsed(start_time, std::chrono::milliseconds(duration));
+    };
+
+    while (!DistSensor::getShouldThreadExit() && !isDurationUp()) {
+        cout << "Distance: " << GetDistance() << "cm" << endl;
+    }
+}
 
 /********************************************* Helper Functions ********************************************/
 

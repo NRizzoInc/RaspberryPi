@@ -219,6 +219,7 @@ ModeMap GPIOController::createFnMap() {
     to_rtn["btns"]        = reinterpret_cast<void(ButtonController::*)()>(&ButtonController::detectBtnPress);
     to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testMotorsLoop);
     to_rtn["servos"]      = reinterpret_cast<void(GPIOController::*)()>(&ServoController::testServos);
+    to_rtn["ultrasonic"]  = reinterpret_cast<void(GPIOController::*)()>(&DistSensor::testDistSensor);
     to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["client"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["camera"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);

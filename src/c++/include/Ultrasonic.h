@@ -65,6 +65,18 @@ class DistSensor : public GPIOBase {
          */
         float GetDistance() const;
 
+        /**
+         * @brief Test the ultrasonic distance sensor in a loop while it gets the distance
+         * @note Have to pass everything by reference do to function mapping requirements
+         */
+        void testDistSensor(
+            // not needed, but need to follow call guidlines for fn-mapping to work
+            __attribute__((unused)) const std::vector<std::string>& colors={},
+            const unsigned int& interval=1000,
+            const int& duration=-1,
+            __attribute__((unused)) const unsigned int& rate=1
+        ) const;
+
 
     private:
         /******************************************** Private Variables ********************************************/
