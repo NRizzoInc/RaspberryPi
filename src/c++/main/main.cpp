@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     // Create UI Event Listener to interact with client
     static RPI::UI::WebApp net_ui{net_agent, std::stoi(parse_res[RPI::CLI::Results::ParseKeys::WEB_PORT])};
 
-    /* ======================================== Create Server OR Client ======================================= */
+    /* ========================================= Create Camera Object ========================================= */
 
     // TODO: remove & add to server
     const int max_frames {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::VID_FRAMES])};
