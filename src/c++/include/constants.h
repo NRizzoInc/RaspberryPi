@@ -10,6 +10,7 @@ enum class ReturnCodes {
     Success,
     Error,
     TryAgain,
+    Timeout
 };
 
 namespace Constants {

@@ -7,6 +7,7 @@
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <optional>
 
 // Our Includes
 #include "map_helpers.hpp"
@@ -29,6 +30,12 @@ enum PinType {
     TRIGGER     = 27,       // used to get current distance (output)
 };
 
+// querries to ultrasonic sensor should follow this pattern
+// hence, sent and recv signals should be in this order
+enum DistPulseOrder {
+    First=true,
+    Second=false,
+};
 
 class DistSensor : public GPIOBase {
     public:
@@ -52,12 +59,43 @@ class DistSensor : public GPIOBase {
 
         /****************************************** Ultrasonic Functions *******************************************/
 
+        /**
+         * @brief Get the distance from the ultrasonic sensor
+         * @return The distance of the robot from the nearest surface (relative to camera/ultrasonic sensor mount)
+         */
+        float GetDistance() const;
+
 
     private:
         /******************************************** Private Variables ********************************************/
 
 
         /********************************************* Helper Functions ********************************************/
+
+        /**
+         * @brief Waits until sensor detects the edge of the signal 
+         * (Blocking until edge is seen or timeout is reached)
+         * @param timeout How much time should pass before timing out on each edge
+         * @returns Success if no issues, Timeout if timed out
+         */
+        ReturnCodes WaitForEdge(const bool edge_val, const std::chrono::steady_clock::duration timeout) const;
+
+        /**
+         * @brief Responsible for sending signal to trigger sensor to perform distance check
+         * (Call WaitForEcho() afterwards)
+         * @note Expected pulse
+         */
+        void SendTriggerPulse() const;
+
+        /**
+         * @brief Waits for data to be received by distance sensor
+         * (Blocking until data received or timeout is reached)
+         * @param timeout How much time should pass before timing out on each rising/falling edge (default to 1 second)
+         * @returns The length of time it took ultrasonic signal to travel two-ways (std::nullopt if timeout)
+         */
+        std::optional<std::chrono::steady_clock::duration> WaitForEcho(
+            const std::chrono::steady_clock::duration timeout=std::chrono::seconds(1)
+        ) const;
 
 }; // end of DistSensor
 
