@@ -35,7 +35,10 @@ ReturnCodes DistSensor::init() const {
         return ReturnCodes::Error;
     }
 
-    // TODO: setup pins
+    // setup ultrasonic pins
+    pinMode(Ultrasonic::PinType::ECHO, INPUT);
+    pinMode(Ultrasonic::PinType::TRIGGER, OUTPUT);
+    pullUpDnControl(Ultrasonic::PinType::ECHO, PUD_UP);
 
     setIsInit(true);
     return ReturnCodes::Success;

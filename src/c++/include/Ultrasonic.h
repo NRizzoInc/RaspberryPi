@@ -23,6 +23,13 @@ namespace RPI {
 namespace gpio {
 namespace Ultrasonic {
 
+// these pins are defined by physical layout of robot
+enum PinType {
+    ECHO        = 22,       // returns current distance (input)
+    TRIGGER     = 27,       // used to get current distance (output)
+};
+
+
 class DistSensor : public GPIOBase {
     public:
         /********************************************** Constructors ***********************************************/
