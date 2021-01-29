@@ -27,7 +27,7 @@ GPIOBase::~GPIOBase() {
 
 ReturnCodes GPIOBase::init() const {
     if (!isValidRPI()) {
-        cerr << "Error: Not a valid RPI... forgoing setup" << endl;
+        if(isVerbose()) cerr << "Error: Not a valid RPI... forgoing setup" << endl;
         return ReturnCodes::Error;
     }
 
