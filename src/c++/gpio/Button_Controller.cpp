@@ -87,7 +87,7 @@ void ButtonController::detectBtnPress(
     while (
         !ButtonController::getShouldThreadExit() &&
         // if duration == -1 : run forever
-        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
+        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, std::chrono::milliseconds(duration)))
     ) {
         for (auto& btn_color : colors) {
             // get last state and compare with current state

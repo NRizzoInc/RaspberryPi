@@ -239,7 +239,7 @@ void ServoController::testServos(
         // if duration == -1 : run forever
         return
             duration != -1 &&
-            Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1));
+            Helpers::Timing::hasTimeElapsed(start_time, std::chrono::milliseconds(duration));
     };
 
     while (!ServoController::getShouldThreadExit() && !isDurationUp()) {
