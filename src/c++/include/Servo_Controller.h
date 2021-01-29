@@ -130,8 +130,9 @@ class ServoController : public gpio::Interface::PCA9685 {
         /**
          * @brief Construct a servo controller object responsible for handling servo interactions
          * @param servo_i2c_addr The address of the servo controller i2c board
+         * @param verbosity If true, will print more information that is strictly necessary
          */
-        ServoController(const std::uint8_t servo_i2c_addr);
+        ServoController(const std::uint8_t servo_i2c_addr, const bool verbosity=false);
         virtual ~ServoController();
 
         /**

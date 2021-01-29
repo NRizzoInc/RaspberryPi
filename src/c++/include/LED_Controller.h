@@ -33,7 +33,12 @@ using LEDMap = std::unordered_map<std::string, LEDMapVal>;
 class LEDController : public GPIOBase {
     public:
         /********************************************** Constructors **********************************************/
-        LEDController();
+
+        /**
+         * @brief LedController object that manages the RPI's LEDs.
+         * @param verbosity If true, will print more information that is strictly necessary
+         */
+        LEDController(const bool verbosity=false);
         virtual ~LEDController();
 
         /**

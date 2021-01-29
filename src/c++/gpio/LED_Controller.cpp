@@ -21,10 +21,10 @@ const LEDMap LEDController::color_to_leds {
 
 
 /********************************************** Constructors **********************************************/
-LEDController::LEDController()
+LEDController::LEDController(const bool verbosity)
     // pin mappings -- http://wiringpi.com/pins/
     // gpio readall -- care about WPi column
-    : GPIOBase{}
+    : GPIOBase{verbosity}
 {
     // stub
 }

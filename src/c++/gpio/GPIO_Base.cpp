@@ -13,8 +13,9 @@ namespace gpio {
 std::optional<bool> GPIOBase::is_valid_pi {std::nullopt};
 
 /********************************************** Constructors **********************************************/
-GPIOBase::GPIOBase()
-    : isInit{false}
+GPIOBase::GPIOBase(const bool verbosity)
+    : is_verbose{verbosity}
+    , isInit{false}
     , stop_thread{false}
 {
     // stub
@@ -40,6 +41,9 @@ ReturnCodes GPIOBase::init() const {
 
 /********************************************* Getters/Setters *********************************************/
 
+bool GPIOBase::isVerbose() const {
+    return is_verbose;
+}
 
 ReturnCodes GPIOBase::setShouldThreadExit(const bool new_status) const {
     stop_thread.store(new_status);

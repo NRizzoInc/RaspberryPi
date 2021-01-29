@@ -14,12 +14,12 @@ namespace gpio {
 const ModeMap GPIOController::mode_to_action {GPIOController::createFnMap()};
 
 /********************************************** Constructors **********************************************/
-GPIOController::GPIOController(const std::uint8_t i2c_addr)
+GPIOController::GPIOController(const std::uint8_t i2c_addr, const bool verbosity)
     // call constructors for parents
-    : LED::LEDController()
-    , Button::ButtonController()
-    , Motor::MotorController(i2c_addr)
-    , Servo::ServoController(i2c_addr)
+    : LED::LEDController(verbosity)
+    , Button::ButtonController(verbosity)
+    , Motor::MotorController(i2c_addr, verbosity)
+    , Servo::ServoController(i2c_addr, verbosity)
 
     // init vars
     , run_thread{}

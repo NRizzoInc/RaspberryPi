@@ -55,8 +55,9 @@ class GPIOController :
          * @brief Construct a gpio controller responsible for managing all things relating to the gpio
          * (i.e. buttons, leds, motors, etc...)
          * @param i2c_addr The address of the i2c PCA9685 device
+         * @param verbosity If true, will print more information that is strictly necessary
          */
-        GPIOController(const std::uint8_t i2c_addr);
+        GPIOController(const std::uint8_t i2c_addr, const bool verbosity=false);
         virtual ~GPIOController();
 
         /********************************************* Getters/Setters *********************************************/

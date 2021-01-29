@@ -30,8 +30,8 @@ std::unordered_map<I2C_ServoAddr, ServoData> ServoController::servos{
 /********************************************** Constructors **********************************************/
 
 
-ServoController::ServoController(const std::uint8_t servo_i2c_addr)
-    : PCA9685{servo_i2c_addr}
+ServoController::ServoController(const std::uint8_t servo_i2c_addr, const bool verbosity)
+    : PCA9685{servo_i2c_addr, verbosity}
 {
     // stub
 }

@@ -22,8 +22,8 @@ BtnMap ButtonController::color_to_btns {
 };
 
 /********************************************** Constructors **********************************************/
-ButtonController::ButtonController()
-    : GPIOBase{}
+ButtonController::ButtonController(const bool verbosity)
+    : GPIOBase{verbosity}
 {
     // stub
 }

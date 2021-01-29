@@ -50,8 +50,9 @@ class MotorController : public gpio::Interface::PCA9685 {
         /**
          * @brief Construct a motor controller object responsible for handling motor interactions
          * @param motor_i2c_addr The address of the motor controller i2c board
+         * @param verbosity If true, will print more information that is strictly necessary
          */
-        MotorController(const std::uint8_t motor_i2c_addr);
+        MotorController(const std::uint8_t motor_i2c_addr, const bool verbosity=false);
         virtual ~MotorController();
 
         /**

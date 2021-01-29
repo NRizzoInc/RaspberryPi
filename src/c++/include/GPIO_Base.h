@@ -27,7 +27,13 @@ class GPIOBase {
 
     public:
         /********************************************** Constructors **********************************************/
-        GPIOBase();
+
+        /**
+         * @brief gpio base object that should be the base class for any class that deals with gpio functionality.
+         * (i.e. buttons, leds, motors, etc...)
+         * @param verbosity If true, will print more information that is strictly necessary
+         */
+        GPIOBase(const bool verbosity=false);
         virtual ~GPIOBase();
 
         virtual ReturnCodes init() const;
@@ -36,6 +42,8 @@ class GPIOBase {
 
         virtual bool getIsInit() const;
         virtual ReturnCodes setIsInit(const bool new_state) const;
+
+        virtual bool isVerbose() const;
 
         /**
          * @brief Set whether the thread should stop
@@ -62,6 +70,7 @@ class GPIOBase {
         virtual bool isValidRPI() const;
 
     private:
+        const bool is_verbose; // false if should only print errors/important info
         mutable bool isInit;
         /**
          * @brief Controls whether or not to stop blocking functions (i.e. blink)

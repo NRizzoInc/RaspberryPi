@@ -9,8 +9,8 @@ using std::cerr;
 using std::endl;
 
 /********************************************** Constructors **********************************************/
-MotorController::MotorController(const std::uint8_t motor_i2c_addr)
-    : PCA9685{motor_i2c_addr}
+MotorController::MotorController(const std::uint8_t motor_i2c_addr, const bool verbosity)
+    : PCA9685{motor_i2c_addr, verbosity}
 {
     // stub
 }

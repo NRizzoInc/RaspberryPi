@@ -26,8 +26,8 @@ std::optional<std::uint8_t>     PCA9685::PCA9685_i2c_addr{std::nullopt};    // d
 int                             PCA9685::PCA9685_i2c_fd{-1};                // invalid
 std::optional<float>            PCA9685::pwm_freq{std::nullopt};            // unset/invalid
 
-PCA9685::PCA9685(const std::optional<std::uint8_t> PCA9685_i2c_addr)
-    : GPIOBase{}
+PCA9685::PCA9685(const std::optional<std::uint8_t> PCA9685_i2c_addr, const bool verbosity)
+    : GPIOBase{verbosity}
 {
     if (!PCA9685::PCA9685_i2c_addr.has_value()) {
         if (PCA9685_i2c_addr.has_value()) {
@@ -202,6 +202,7 @@ ReturnCodes PCA9685::SetPwm(const int channel, const int on, const int off) cons
     // have to update all pwm registers
 
     if (WriteReg(CalcChBaseAddr(PCA9685_Reg_Addr::ON_LOW_BASE, channel),  on & 0xFF) != ReturnCodes::Success) {
+        
         cerr << "Failed to update ON LOW PWM" << endl;
         return ReturnCodes::Error;
     }

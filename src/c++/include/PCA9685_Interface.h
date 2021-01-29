@@ -73,9 +73,11 @@ class PCA9685 : public GPIOBase {
          * @brief Construct the interface dealing with the i2c PCA9685 device
          * responsible for handling motor/servo interactions
          * @param PCA9685_i2c_addr The address of the PCA9685 i2c device on the gpio board
+         * @param verbosity If true, will print more information that is strictly necessary
          */
         PCA9685(
-            const std::optional<std::uint8_t> PCA9685_i2c_addr=std::nullopt
+            const std::optional<std::uint8_t> PCA9685_i2c_addr=std::nullopt,
+            const bool verbosity=false
         );
         virtual ~PCA9685();
 

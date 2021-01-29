@@ -37,7 +37,12 @@ using BtnCallback = std::function<void(const std::string& color, const bool btn_
 class ButtonController : public GPIOBase {
     public:
         /********************************************** Constructors **********************************************/
-        ButtonController();
+
+        /**
+         * @brief LedController object that manages the RPI's Buttons.
+         * @param verbosity If true, will print more information that is strictly necessary
+         */
+        ButtonController(const bool verbosity=false);
         virtual ~ButtonController();
 
         /**
