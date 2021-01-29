@@ -21,6 +21,7 @@
 #include "Button_Controller.h"
 #include "Motor_Controller.h"
 #include "Servo_Controller.h"
+#include "Ultrasonic.h"
 #include "packet.h"
 
 // 3rd Party Includes
@@ -46,7 +47,8 @@ class GPIOController :
     public LED::LEDController,
     public Button::ButtonController,
     public Motor::MotorController, 
-    public Servo::ServoController
+    public Servo::ServoController,
+    public Ultrasonic::DistSensor
 {
     public:
         /********************************************** Constructors **********************************************/

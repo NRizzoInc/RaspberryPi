@@ -6,6 +6,7 @@ add_library(GPIO_Controller
 target_link_libraries(GPIO_Controller
     LedBtn_Controller
     MotorServo_Controller
+    RPI_GPIO_Sensors
 )
 
 target_compile_options(GPIO_Controller
@@ -43,5 +44,20 @@ target_link_libraries(LedBtn_Controller
 )
 
 target_compile_options(LedBtn_Controller
+    PRIVATE
+)
+
+
+#################### sub libraries for gpio sensors (inputs) ####################
+add_library(RPI_GPIO_Sensors
+    GPIO_Base.cpp
+    Ultrasonic.cpp
+)
+
+target_link_libraries(RPI_GPIO_Sensors
+    ${WiringPi_LIBRARIES}
+)
+
+target_compile_options(RPI_GPIO_Sensors
     PRIVATE
 )

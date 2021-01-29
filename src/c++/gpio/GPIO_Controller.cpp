@@ -20,6 +20,7 @@ GPIOController::GPIOController(const std::uint8_t i2c_addr, const bool verbosity
     , Button::ButtonController(verbosity)
     , Motor::MotorController(i2c_addr, verbosity)
     , Servo::ServoController(i2c_addr, verbosity)
+    , Ultrasonic::DistSensor{verbosity}
 
     // init vars
     , run_thread{}
@@ -68,6 +69,7 @@ bool GPIOController::getIsInit() const {
         && ButtonController::getIsInit()
         && MotorController::getIsInit()
         && ServoController::getIsInit()
+        && DistSensor::getIsInit()
         ;
 }
 
@@ -97,6 +99,11 @@ ReturnCodes GPIOController::init() const {
     rtn &= servo_rtn;
     if (!servo_rtn) cerr << "Failed to properly init servos" << endl;
 
+    const bool dist_rtn { DistSensor::init() == ReturnCodes::Success };
+    rtn &= dist_rtn;
+    if (!dist_rtn) cerr << "Failed to properly init ultrasonic distance sensor" << endl;
+
+
     // set callback so that when the button is pressed, the LED's state changes
     ButtonController::setBtnCallback([&](const std::string& color, const bool btn_state){
         if(setLED(color, btn_state) != ReturnCodes::Success) {
@@ -114,6 +121,7 @@ ReturnCodes GPIOController::setShouldThreadExit(const bool new_status) const {
     rtn &= ButtonController::setShouldThreadExit(new_status)    == ReturnCodes::Success;
     rtn &= MotorController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
     rtn &= ServoController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
+    rtn &= DistSensor::setShouldThreadExit(new_status)          == ReturnCodes::Success;
     return rtn ? ReturnCodes::Success : ReturnCodes::Error;
 
 }
