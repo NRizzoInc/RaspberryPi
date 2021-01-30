@@ -5,9 +5,9 @@
 Server & Client communicate via two TCP network sockets.
 
 1. `Control Packets` (client -> server): Literally controls the robot and tells it what to do based on input from web app
-    * See [`ctrl_pkt_samples.json`](ctrl_pkt_samples.json) to inspect what the packet looks like
-2. `Server Packets` (server -> client): Contains data obtained from the robot (i.e. camera frames) that client needs to relay to web app
-    * See [`server_pkt_samples.json`](./server_pkt_samples.json) to inspect what the packet looks like
+2. `Server Packets` (server -> client): Contains data obtained from the robot's sensors (i.e. ultrasonic sensor's distance) that client needs to relay to web app
+
+See [`pkt_samples.json`](pkt_samples.json) to inspect what the packets really look like
 
 ## Protocols
 
