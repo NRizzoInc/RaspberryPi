@@ -26,17 +26,19 @@ namespace Ultrasonic {
 
 // these pins are defined by physical layout of robot
 enum PinType {
-    TRIGGER     = 2,       // used to get current distance (output)
-    ECHO        = 3,       // returns current distance (input)
+    TRIG    = 2,    // used to get current distance (output)
+    ECHO    = 3,    // returns current distance (input)
 };
 
 // querries to ultrasonic sensor should follow this pattern
 // hence, sent and recv signals should be in this order
 enum DistPulseOrder {
-    First=true,
-    Second=false,
+    First=HIGH,
+    Second=LOW,
 };
 
+// class that deals with the ultrasonic sensor to get distances
+// http://www.piprojects.xyz/ultrasonic-distance-sensor/
 class DistSensor : public GPIOBase {
     public:
         /********************************************** Constructors ***********************************************/
@@ -60,11 +62,11 @@ class DistSensor : public GPIOBase {
         /****************************************** Ultrasonic Functions *******************************************/
 
         /**
-         * @brief Get the distance from the ultrasonic sensor
+         * @brief Get the distance from the ultrasonic sensor (in cm)
          * @return The distance of the robot from the nearest surface (relative to camera/ultrasonic sensor mount)
          * (std::nullopt if error)
          */
-        std::optional<float> GetDistance() const;
+        std::optional<float> GetDistanceCm() const;
 
         /**
          * @brief Test the ultrasonic distance sensor in a loop while it gets the distance

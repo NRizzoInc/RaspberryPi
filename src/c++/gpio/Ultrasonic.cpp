@@ -37,8 +37,10 @@ ReturnCodes DistSensor::init() const {
 
     // setup ultrasonic pins
     pinMode(Ultrasonic::PinType::ECHO, INPUT);
-    pinMode(Ultrasonic::PinType::TRIGGER, OUTPUT);
-    pullUpDnControl(Ultrasonic::PinType::ECHO, PUD_UP);
+    pinMode(Ultrasonic::PinType::TRIG, OUTPUT);
+
+    // TRIG pin must start LOW
+    digitalWrite(Ultrasonic::PinType::TRIG, LOW);
 
     setIsInit(true);
     return ReturnCodes::Success;
@@ -49,11 +51,13 @@ ReturnCodes DistSensor::init() const {
 
 /****************************************** Ultrasonic Functions *******************************************/
 
-std::optional<float> DistSensor::GetDistance() const {
+std::optional<float> DistSensor::GetDistanceCm() const {
     // perform distance check 5 times and get median value
     std::vector<float> distances_cm;
     for (int i = 0; i < 5; i++) {
+        // check to see how long it takes for pulse to reach destination and come back
         auto pulse_duration {WaitForEcho()};
+
         // if invalid reading, discard the entry
         if (!pulse_duration.has_value()) {
             continue; // dont try to set value
@@ -103,7 +107,7 @@ void DistSensor::testDistSensor(
 
     while (!DistSensor::getShouldThreadExit() && !isDurationUp()) {
         // bc of threading, have to get distance before printing or else stream will disjoin print strings
-        const auto dist {GetDistance()};
+        const auto dist {GetDistanceCm()};
         if (dist.has_value()) {
             cout << "Distance: " << *dist << "cm" << endl;
         } else {
@@ -117,9 +121,9 @@ void DistSensor::testDistSensor(
 
 void DistSensor::SendTriggerPulse() const {
     // send pulse in order (pause in between to allow update)
-    digitalWrite(Ultrasonic::PinType::TRIGGER, Ultrasonic::DistPulseOrder::First);
-    std::this_thread::sleep_for(std::chrono::microseconds(150));
-    digitalWrite(Ultrasonic::PinType::TRIGGER, Ultrasonic::DistPulseOrder::Second);
+    digitalWrite(Ultrasonic::PinType::TRIG, Ultrasonic::DistPulseOrder::First);
+    std::this_thread::sleep_for(std::chrono::microseconds(20));
+    digitalWrite(Ultrasonic::PinType::TRIG, Ultrasonic::DistPulseOrder::Second);
 }
 
 ReturnCodes DistSensor::WaitForEdge(
@@ -141,9 +145,13 @@ ReturnCodes DistSensor::WaitForEdge(
 std::optional<std::chrono::steady_clock::duration> DistSensor::WaitForEcho(
     const std::chrono::steady_clock::duration timeout
 ) const {
-    // assume SendTriggerPulse() was called and map time between First & Second signal
-    // (if not, it'll just timeout)
+    // send out pulse
+    // start time = rising edge
+    // end time = falling edge
+    // duration = end - start 
+    SendTriggerPulse();
 
+    // wait for echo to start
     if (WaitForEdge(Ultrasonic::DistPulseOrder::First, timeout) == ReturnCodes::Timeout) {
         // stop if timeout
         if(isVerbose()) cerr << "Error: Ultrasonic sensor timeout (start)" << endl;
@@ -153,6 +161,7 @@ std::optional<std::chrono::steady_clock::duration> DistSensor::WaitForEcho(
     // pulse has acutally been sent out at this point and should start tracking time diff
     auto pulse_start {std::chrono::steady_clock::now()};
 
+    // wait for echo to end
     if (WaitForEdge(Ultrasonic::DistPulseOrder::Second, timeout) == ReturnCodes::Timeout) {
         // stop if timeout
         if(isVerbose()) cerr << "Error: Ultrasonic sensor timeout (end)" << endl;
