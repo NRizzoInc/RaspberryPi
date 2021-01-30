@@ -234,6 +234,9 @@ void GPIOController::ObstacleAvoidanceTest(
         }
         
         // found obstacle & need to find new direction
+        // in meantime, stop motors
+        MotorController::ChangeMotorDir(Interface::YDirection::NONE, Interface::XDirection::NONE);
+
         // sweep servos left (0) -> middle (90) -> right (180)
         // (define local enum to make easy)
         enum AnglePos {
