@@ -21,6 +21,7 @@
 #include "Button_Controller.h"
 #include "Motor_Controller.h"
 #include "Servo_Controller.h"
+#include "Ultrasonic.h"
 #include "packet.h"
 
 // 3rd Party Includes
@@ -46,7 +47,8 @@ class GPIOController :
     public LED::LEDController,
     public Button::ButtonController,
     public Motor::MotorController, 
-    public Servo::ServoController
+    public Servo::ServoController,
+    public Ultrasonic::DistSensor
 {
     public:
         /********************************************** Constructors **********************************************/
@@ -94,6 +96,7 @@ class GPIOController :
          * @note can be const because underlying bool is mutable
          */
         ReturnCodes setShouldThreadExit(const bool new_status) const override;
+        virtual bool getShouldThreadExit() const override;
 
         /**
          * @brief Handles the execution of the selected function in a thread
@@ -112,6 +115,19 @@ class GPIOController :
         virtual ReturnCodes cleanup();
 
         ReturnCodes gpioHandlePkt(const Network::CommonPkt& pkt) const;
+
+        /**
+         * @brief Test the ultrasonic distance sensor combined with servos/motors
+         * to see if car can detect and avoid obstacles
+         * @note Have to pass everything by reference do to function mapping requirements
+         */
+        void ObstacleAvoidanceTest(
+            // not needed, but need to follow call guidlines for fn-mapping to work
+            __attribute__((unused)) const std::vector<std::string>& colors={},
+            const unsigned int& interval=1000,
+            const int& duration=-1,
+            __attribute__((unused)) const unsigned int& rate=1
+        ) const;
 
     private:
         /******************************************** Private Variables ********************************************/

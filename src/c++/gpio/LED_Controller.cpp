@@ -103,7 +103,7 @@ void LEDController::blinkLEDs(
     while (
         !LEDController::getShouldThreadExit() &&
         // if duration == -1 : run forever
-        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
+        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, std::chrono::milliseconds(duration)))
     ) {
         // on
         for (auto& to_blink : colors) {
@@ -141,7 +141,7 @@ void LEDController::LEDIntensity(
     while (
         !LEDController::getShouldThreadExit() &&
         // if duration == -1 : run forever
-        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, duration, std::chrono::milliseconds(1)))
+        (duration == -1 || Helpers::Timing::hasTimeElapsed(start_time, std::chrono::milliseconds(duration)))
     ) {
         curr_brightness = (curr_brightness+1) % (Constants::GPIO::LED_SOFT_PWM_MAX+1); // +1 to reach max
 

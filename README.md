@@ -34,7 +34,9 @@ It is much simpler to actually run **both** the client & server on the RPI witho
 3. Control the LEDs using their corresponding buttons: `--mode btns`
 4. Test the robots capability to move in each direction: `--mode motors`
 5. Test the robots capability to move the camera's servos: `--mode servos`
-6. Test the camera and save the latest frame to disk: `--mode camera`
+6. Test the robots capability to detect distances with the ultrasonic sensor: `--mode ultrasonic`
+7. Test the robots capability to combine the ultrasonic sensor with the servos/motors to perform obstacle avoidance: `--mode obstacle`
+8. Test the camera and save the latest frame to disk: `--mode camera`
 
 Use `./main.py --help` or `./bin/rpi_driver --help` to learn how to use it.
 
