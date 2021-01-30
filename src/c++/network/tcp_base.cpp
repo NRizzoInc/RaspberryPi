@@ -112,8 +112,8 @@ void TcpBase::runNetAgent(const bool print_data) {
         VideoStreamHandler();
     }};
 
-    srv_data_thread = std::thread{[this]() {
-        ServerDataHandler();
+    srv_data_thread = std::thread{[this, print_data]() {
+        ServerDataHandler(print_data);
     }};
 
     // unlock & notify so joiner can continue

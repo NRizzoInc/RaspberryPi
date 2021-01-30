@@ -83,21 +83,25 @@ class TcpClient : public TcpBase {
         /**
          * @brief Starts up a non-blocking function to recv data from the server (not-camera related) 
          */
-        virtual void ServerDataHandler() override;
+        virtual void ServerDataHandler(const bool print_data) override;
 
     private:
         /******************************************** Private Variables ********************************************/
 
         int                         ctrl_data_sock_fd;  // tcp socket file descriptor that sends control data to server
         std::string                 server_ip;          // ip address of the server
-        int                         ctrl_data_port;     // port number to send control data to the server
+        const int                   ctrl_data_port;     // port number to send control data to the server
         std::atomic_bool            pkt_ready;          // alert send cv to unlock
         std::mutex                  data_mutex;
         std::condition_variable     has_new_msg;        // true if client needs to tell the server something
 
         // camera vars
         int                         cam_data_sock_fd;   // tcp file descriptor for camera data from server
-        int                         cam_data_port;      // port number for getting camera from server
+        const int                   cam_data_port;      // port number for getting camera from server
+
+        // server data vars
+        int                         srv_data_sock_fd;   // tcp file descriptor for server data from server
+        const int                   srv_data_port;      // port number for getting "server data" from server
 
         /********************************************* Helper Functions ********************************************/
 

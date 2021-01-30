@@ -176,7 +176,7 @@ class TcpBase : public Packet {
          * @brief The function to run when starting up the TCP server/client that handles server -> client data
          * @param print_data Should received data be printed?
          */
-        virtual void ServerDataHandler() = 0;
+        virtual void ServerDataHandler(const bool print_data) = 0;
 
         /**
          * @brief Function called by the destructor to close the sockets

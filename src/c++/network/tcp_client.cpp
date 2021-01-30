@@ -23,7 +23,9 @@ TcpClient::TcpClient(
     , ctrl_data_port{ctrl_port_num}         // port the client tries to reach the server at for sending control pkts
     , pkt_ready{true}                       // will be set false immediately after sending first message
     , cam_data_sock_fd{-1}                  // init to invalid
-    , cam_data_port{cam_port_num}           // port to attempt to connect to client to send camera data
+    , cam_data_port{cam_port_num}           // port to attempt to connect to server to recv camera data
+    , srv_data_sock_fd{-1}                  // init to invalid
+    , srv_data_port{srv_data_port_num}      // port to attempt to connect to server to recv server data
 {
     // first check if should not init
     if (!should_init) return;
@@ -170,14 +172,63 @@ void TcpClient::VideoStreamHandler() {
     cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
 }
 
-void TcpClient::ServerDataHandler() {
-    // stub
+void TcpClient::ServerDataHandler(const bool print_data) {
+    // connect to server's listener trying to send out server data (if failed to connect, just stop)
+    if(connectToServer(srv_data_sock_fd, server_ip, srv_data_port, "srv data") != ReturnCodes::Success) {
+        // if issue, return immediately to prevent further errors
+        return;
+    }
+
+    /********************************* Receiving From Server ********************************/
+    while(!getExitCode()) {
+
+        // recv image/frame in the form of a string container (to also store size)
+        const RecvRtn       srv_data_recv { recvData(srv_data_sock_fd) };
+        const std::string&  data          { std::string{srv_data_recv.buf.begin(), srv_data_recv.buf.end()} };
+
+        // check if the data_size is smaller than 0
+        // (if so, print message bc might have been fluke)
+        if (srv_data_recv.RtnCode == RecvSendRtnCodes::Error) {
+            cout << "Error: Failed to recv server data" << endl;
+            continue; // dont try to save a bad frame
+        }
+
+        // if no issues, save the packet
+        constexpr auto save_srv_data_err {"Failed to update server data pkt from server"};
+        try {
+                // note: data is transmitted as bson so have to interpret & parse pkt first
+            const json& recv_json = readPkt(data.c_str(), data.size());
+
+            // parse & print the buf to the terminal(if told to)
+            if (print_data) {
+                cout << "Recv Server Data: " + recv_json.dump() << endl;
+            }
+
+            // actually try to parse recv packet into the struct
+            // TODO: change to new pkt type!!
+            const CommonPkt pkt {readPkt(recv_json)};
+
+            // actually update the saved most recent packet in memory
+            if(updatePkt(pkt) != ReturnCodes::Success) {
+                cerr << "Failed to update from client info" << endl;
+            }
+
+        } catch (std::exception& err) {
+            cerr << save_srv_data_err << endl;
+            cerr << err.what() << endl;
+        }
+    }
+
+    // at end of while, reset data socket to attempt to make new connection with same listener
+    cout << "Exiting Client Server Data Receiver" << endl;
+    srv_data_sock_fd = CloseOpenSock(srv_data_sock_fd);
 }
 
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     ctrl_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     cam_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    srv_data_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     // check if the socket creation was successful
     if (ctrl_data_sock_fd < 0){ 
@@ -188,11 +239,16 @@ ReturnCodes TcpClient::initSock() {
         cout << "ERROR: Opening Client Camera Socket" << endl;
         return ReturnCodes::Error;
     }
+    if (srv_data_sock_fd < 0){ 
+        cout << "ERROR: Opening Client 'Server Data' Socket" << endl;
+        return ReturnCodes::Error;
+    }
 
     // set the options for the socket
     int option(1);
     setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
     setsockopt(cam_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+    setsockopt(srv_data_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
@@ -201,6 +257,7 @@ ReturnCodes TcpClient::initSock() {
     timeout.tv_usec = 0;
     setsockopt(ctrl_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
     setsockopt(cam_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(srv_data_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
 
     return ReturnCodes::Success;
 }
@@ -217,6 +274,8 @@ void TcpClient::quit() {
     ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
     cout << "Cleanup: closing camera sockets" << endl;
     cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+    cout << "Cleanup: closing server data sockets" << endl;
+    srv_data_sock_fd = CloseOpenSock(srv_data_sock_fd);
 }
 
 ReturnCodes TcpClient::connectToServer(
