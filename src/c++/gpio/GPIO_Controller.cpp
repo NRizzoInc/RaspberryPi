@@ -276,9 +276,12 @@ void GPIOController::ObstacleAvoidanceTest(
                 while(!shouldStop() && turn_dist_cm.has_value() && *turn_dist_cm < TargetDist) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     turn_dist_cm = DistSensor::GetDistanceCm();
-                    if(DistSensor::isVerbose()) cout << "turning w/ dist = " << *turn_dist_cm << "cm" << endl;
+
+                    if(DistSensor::isVerbose())
+                        cout << "turning (" << ang << "°) w/ dist = " << *turn_dist_cm << "cm" << endl;
                 }
 
+                if(DistSensor::isVerbose()) cout << "Finished Turning (" << ang << "°)" << endl;
                 break; // break out of servo sweep for-loop
             }
         } // end of servo sweep for loop
