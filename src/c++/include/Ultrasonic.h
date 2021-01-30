@@ -26,8 +26,8 @@ namespace Ultrasonic {
 
 // these pins are defined by physical layout of robot
 enum PinType {
-    ECHO        = 22,       // returns current distance (input)
-    TRIGGER     = 27,       // used to get current distance (output)
+    TRIGGER     = 2,       // used to get current distance (output)
+    ECHO        = 3,       // returns current distance (input)
 };
 
 // querries to ultrasonic sensor should follow this pattern
