@@ -62,8 +62,9 @@ class DistSensor : public GPIOBase {
         /**
          * @brief Get the distance from the ultrasonic sensor
          * @return The distance of the robot from the nearest surface (relative to camera/ultrasonic sensor mount)
+         * (std::nullopt if error)
          */
-        float GetDistance() const;
+        std::optional<float> GetDistance() const;
 
         /**
          * @brief Test the ultrasonic distance sensor in a loop while it gets the distance

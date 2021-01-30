@@ -49,23 +49,28 @@ ReturnCodes DistSensor::init() const {
 
 /****************************************** Ultrasonic Functions *******************************************/
 
-float DistSensor::GetDistance() const {
+std::optional<float> DistSensor::GetDistance() const {
     // perform distance check 5 times and get median value
-    std::vector<float> distances_cm(5);
-    for (auto dist_cm_el = distances_cm.begin(); dist_cm_el != distances_cm.end(); dist_cm_el++) {
+    std::vector<float> distances_cm;
+    for (int i = 0; i < 5; i++) {
         auto pulse_duration {WaitForEcho()};
         // if invalid reading, discard the entry
         if (!pulse_duration.has_value()) {
-            dist_cm_el = distances_cm.erase(dist_cm_el);
             continue; // dont try to set value
         }
 
         // math is being done in microseconds
-        *dist_cm_el = std::chrono::duration_cast<std::chrono::microseconds>(*pulse_duration).count() / 58;
+        const auto pulse_dur_us {std::chrono::duration_cast<std::chrono::microseconds>(*pulse_duration)};
+        const float dist_cm { static_cast<float>(pulse_dur_us.count() / 58) };
+        distances_cm.push_back(dist_cm);
     }
 
     // compute median
     const std::size_t size {distances_cm.size()};
+    if (size == 0) {
+        // if no elements, none of the readings were successful so stop
+        return std::nullopt;
+    }
     std::sort(distances_cm.begin(), distances_cm.end());
 
     // odd (easy, just middle element)
@@ -97,7 +102,13 @@ void DistSensor::testDistSensor(
     };
 
     while (!DistSensor::getShouldThreadExit() && !isDurationUp()) {
-        cout << "Distance: " << GetDistance() << "cm" << endl;
+        // bc of threading, have to get distance before printing or else stream will disjoin print strings
+        const auto dist {GetDistance()};
+        if (dist.has_value()) {
+            cout << "Distance: " << *dist << "cm" << endl;
+        } else {
+            cerr << "Error: Failed to get distance" << endl;
+        }
     }
 }
 
