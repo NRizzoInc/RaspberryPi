@@ -153,6 +153,11 @@ int main(int argc, char* argv[]) {
         // start up gpio handler now that we have parse results
         gpio_handler.init();
 
+        // update server's data whenever the gpio sensors have something new
+        gpio_handler.setSensorDataCb([&](const RPI::Network::SrvDataPkt& srv_data_pkt) {
+            net_agent->updatePkt(srv_data_pkt);
+        });
+
         // run the selected gpio functionality (non-blocking thread handled by class)
         gpio_handler.run(parse_res);
 
