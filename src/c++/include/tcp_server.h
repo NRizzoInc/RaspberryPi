@@ -89,20 +89,6 @@ class TcpServer : public TcpBase {
          */
         virtual void ServerDataHandler(const bool print_data) override;
 
-        /**
-         * @brief Set the latest frame from the camera video stream (and set bool saying there is new data)
-         * @return Success if no issues
-         * @note Bool is used to prevent over sending of the same traffic over and over again
-         */
-        virtual ReturnCodes setLatestCamFrame(const std::vector<unsigned char>& new_frame) override;
-
-        /**
-         * @brief Get the latest frame from the camera video stream (and set new atomic flag to false)
-         * @return Reference to the char buffer in the form of a char vector
-         */
-        virtual const std::vector<unsigned char>& getLatestCamFrame() const override;
-
-
     private:
         /******************************************** Private Variables ********************************************/
 
@@ -119,17 +105,11 @@ class TcpServer : public TcpBase {
         int                      cam_listen_sock_fd;  // tcp file descriptor to wait for camera conn
         int                      cam_data_sock_fd;    // tcp file descriptor to transfer camera data
         const int                cam_data_port;       // port number for camera data transfer to client
-        std::condition_variable  cam_data_cv;         // notify in order for server to send camera data to client
-        std::mutex               cam_data_mutex;      // mutex to lock when accessing the camera data
-        mutable std::atomic_bool has_new_cam_data;    // true if there is new data to send
 
         // server data vars
         int                      srv_data_listen_sock_fd;   // tcp file descriptor to wait for server data conn
         int                      srv_data_sock_fd;          // tcp file descriptor to transfer server data to client
         const int                srv_data_port;             // port number for server data transfer to client
-        std::condition_variable  srv_data_cv;               // notify in order for server to send server data to client
-        std::mutex               srv_data_mutex;            // mutex to lock when accessing the server data
-        mutable std::atomic_bool has_new_srv_data;          // true if there is new data to send
 
         /********************************************* Helper Functions ********************************************/
 

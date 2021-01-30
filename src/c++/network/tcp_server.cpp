@@ -26,7 +26,6 @@ TcpServer::TcpServer(
     , cam_listen_sock_fd{-1}                // init to invalid
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
-    , has_new_cam_data{true}                // will be set false immediately after sending first message
     , srv_data_listen_sock_fd{-1}           // init to invalid
     , srv_data_sock_fd{-1}                  // init to invalid
     , srv_data_port{srv_data_port_num}      // port to send server data to client
@@ -105,18 +104,6 @@ ReturnCodes TcpServer::acceptClient(
     // tell sockets they can start
     close_conns.store(false);
     return ReturnCodes::Success;
-}
-
-ReturnCodes TcpServer::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
-    Packet::setLatestCamFrame(new_frame);
-    has_new_cam_data.store(true);
-    cam_data_cv.notify_one();
-    return ReturnCodes::Success;
-}
-
-const std::vector<unsigned char>& TcpServer::getLatestCamFrame() const {
-    has_new_cam_data.store(false);
-    return Packet::getLatestCamFrame();
 }
 
 ReturnCodes TcpServer::sendResetPkt() {
@@ -212,11 +199,11 @@ void TcpServer::VideoStreamHandler() {
                 // wait until there is a new message (or first message)
                 // or until server is about to timeout
                 const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
-                std::unique_lock<std::mutex> data_lock(cam_data_mutex);
-                cam_data_cv.wait_for(
+                std::unique_lock<std::mutex> data_lock(cam_data_pkt_mutex);
+                has_new_cam_data.wait_for(
                     data_lock,
                     timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
-                    [&](){return has_new_cam_data.load();}
+                    [&](){return cam_pkt_ready.load();}
                 );
 
                 /********************************* Sending Camera Data to Client ********************************/
@@ -253,11 +240,11 @@ void TcpServer::ServerDataHandler(const bool print_data) {
                 // wait until there is a new message (or first message)
                 // or until server is about to timeout
                 const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
-                std::unique_lock<std::mutex> data_lock(srv_data_mutex);
-                srv_data_cv.wait_for(
+                std::unique_lock<std::mutex> data_lock(srv_data_pkt_mutex);
+                has_new_srv_data.wait_for(
                     data_lock,
                     timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
-                    [&](){return has_new_srv_data.load();}
+                    [&](){return srv_pkt_ready.load();}
                 );
 
                 /********************************* Sending Server Data to Client ********************************/

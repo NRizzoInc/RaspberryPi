@@ -10,6 +10,8 @@
 #include <mutex>
 #include <netinet/in.h> // for ntons
 #include <sstream> // for converting packets to strings
+#include <condition_variable> // block with mutex until new data set
+#include <atomic>
 
 // Our Includes
 #include "constants.h"
@@ -161,6 +163,12 @@ class Packet {
         virtual const CommonPkt& getCurrentCmnPkt() const;
         virtual const SrvDataPkt& getCurrentSrvPkt() const;
 
+        /**
+         * @brief 
+         * (notifies cv ``)
+         * @param updated_pkt 
+         * @return ReturnCodes 
+         */
         virtual ReturnCodes updatePkt(const CommonPkt& updated_pkt);
         virtual ReturnCodes updatePkt(const SrvDataPkt& updated_pkt);
 
@@ -247,12 +255,23 @@ class Packet {
         std::string writePkt(const SrvDataPkt& pkt_to_send) const;
         std::string writePkt(const json& pkt_to_send) const;
 
+    protected:
+        // vars needed by both client/server for checking whether they are ready/able to send pkts
+        std::atomic_bool            cmn_pkt_ready;      // ready to send new common packet
+        std::atomic_bool            cam_pkt_ready;      // ready to send new camera data packet
+        std::atomic_bool            srv_pkt_ready;      // ready to send new server data packet
+        std::condition_variable     has_new_cmn_data;   // true if client/server needs to send new common msg
+        std::condition_variable     has_new_cam_data;   // true if client/server needs to send new camera data
+        std::condition_variable     has_new_srv_data;   // true if client/server needs to send new server data msg
+        mutable std::mutex          cmn_data_pkt_mutex; // controls access to the `latest_ctrl_pkt` data
+        mutable std::mutex          cam_data_pkt_mutex; // controls access to the `latest_frame` data
+        mutable std::mutex          srv_data_pkt_mutex; // controls access to the `latest_srv_data_pkt` data
+
     private:
         /******************************************** Private Variables ********************************************/
 
         // regular data packet variables
         CommonPkt                       latest_ctrl_pkt;    // holds the most up to date information from client
-        mutable std::mutex              reg_pkt_mutex;      // controls access to the `latest_ctrl_pkt` data
 
         // camera pkt variables
         std::vector<unsigned char>      latest_frame;       // contains the most up to date camera frame
@@ -260,7 +279,6 @@ class Packet {
 
         // server data packet variables
         SrvDataPkt                      latest_srv_data_pkt;// holds the most up to date information to send to client
-        mutable std::mutex              srv_data_pkt_mutex; // controls access to the `latest_srv_data_pkt` data
 
         /********************************************* Helper Functions ********************************************/
 

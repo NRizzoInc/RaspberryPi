@@ -89,7 +89,10 @@ std::uint16_t HeaderPkt_t::CalcChecksum(const void* data_buf, std::size_t size) 
 
 /********************************************** Constructors **********************************************/
 Packet::Packet()
-    : latest_frame(Constants::Camera::FRAME_SIZE, '0') // init to black frame (0s) to make sure size != 0
+    : cmn_pkt_ready{true}                               // will be set false immediately after sending first message
+    , cam_pkt_ready{true}                               // will be set false immediately after sending first message
+    , srv_pkt_ready{true}                               // will be set false immediately after sending first message
+    , latest_frame(Constants::Camera::FRAME_SIZE, '0')  // init to black frame (0s) to make sure size != 0
 {
     // stub
 }
@@ -102,7 +105,7 @@ Packet::~Packet() {
 
 const CommonPkt& Packet::getCurrentCmnPkt() const {
     // lock to make sure data can be gotten without new data being written
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
+    std::unique_lock<std::mutex> lk{cmn_data_pkt_mutex};
     return latest_ctrl_pkt;
 }
 
@@ -115,8 +118,11 @@ const SrvDataPkt& Packet::getCurrentSrvPkt() const {
 
 ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
+    std::unique_lock<std::mutex> lk{cmn_data_pkt_mutex};
     latest_ctrl_pkt = updated_pkt;
+    lk.unlock();
+    cmn_pkt_ready.store(true); // atomic should be done outside of lock
+    has_new_cmn_data.notify_all();
     return ReturnCodes::Success;
 }
 
@@ -124,6 +130,9 @@ ReturnCodes Packet::updatePkt(const SrvDataPkt& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
     std::unique_lock<std::mutex> lk{srv_data_pkt_mutex};
     latest_srv_data_pkt = updated_pkt;
+    lk.unlock();
+    srv_pkt_ready.store(true); // atomic should be done outside of lock
+    has_new_srv_data.notify_all();
     return ReturnCodes::Success;
 }
 
@@ -139,6 +148,9 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
     // lock to make sure data can be written without it trying to be read simultaneously
     std::unique_lock<std::mutex> lk{frame_mutex};
     latest_frame = new_frame;
+    lk.unlock();
+    cam_pkt_ready.store(true);
+    has_new_cam_data.notify_one();
     return ReturnCodes::Success;
 }
 
