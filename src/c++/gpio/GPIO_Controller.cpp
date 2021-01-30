@@ -123,8 +123,17 @@ ReturnCodes GPIOController::setShouldThreadExit(const bool new_status) const {
     rtn &= ServoController::setShouldThreadExit(new_status)     == ReturnCodes::Success;
     rtn &= DistSensor::setShouldThreadExit(new_status)          == ReturnCodes::Success;
     return rtn ? ReturnCodes::Success : ReturnCodes::Error;
-
 }
+
+bool GPIOController::getShouldThreadExit() const {
+    return LEDController::getShouldThreadExit() 
+        || ButtonController::getShouldThreadExit() 
+        || MotorController::getShouldThreadExit()  
+        || ServoController::getShouldThreadExit()  
+        || DistSensor::getShouldThreadExit()
+        ;
+}
+
 
 ReturnCodes GPIOController::gpioHandlePkt(const Network::CommonPkt& pkt) const {
     bool rtn {true}; // changes to false if any return not Success
@@ -185,6 +194,97 @@ ReturnCodes GPIOController::run(const CLI::Results::ParseResults& flags) {
     return ReturnCodes::Success;
 }
 
+void GPIOController::ObstacleAvoidanceTest(
+    // not needed, but need to follow call guidlines for fn-mapping to work
+    __attribute__((unused)) const std::vector<std::string>& colors,
+    const unsigned int& interval,
+    const int& duration,
+    __attribute__((unused)) const unsigned int& rate
+) const {
+    cout << "Interval: " << interval << "ms" << endl;
+    cout << "Duration: " << duration << "ms" << endl;
+
+    // keep track of time/duration
+    const auto start_time = std::chrono::steady_clock::now();
+
+    // helps keep track if duration is up (needed bc loop may take awhilem but can be split & stopped in piecemeal)
+    auto isDurationUp = [&]()->bool {
+        // if duration == -1 : run forever
+        return
+            duration != -1 &&
+            Helpers::Timing::hasTimeElapsed(start_time, std::chrono::milliseconds(duration));
+    };
+    auto shouldStop = [&]()->bool {
+        return GPIOController::getShouldThreadExit() || isDurationUp();
+    };
+
+    // contains target distances (in cm)
+    constexpr int TargetDist {25};
+
+    // move forward until too close to object, 
+    // use servos to sweep and find open path
+    // turn in that direction and repeat
+    while (!shouldStop()) {
+        const auto dist_cm {DistSensor::GetDistanceCm()};
+        if (dist_cm.has_value() && *dist_cm > TargetDist) {
+            // forward
+            MotorController::ChangeMotorDir(Interface::YDirection::FORWARD, Interface::XDirection::NONE);
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            continue;
+        }
+        
+        // found obstacle & need to find new direction
+        // sweep servos left (0) -> middle (90) -> right (180)
+        // (define local enum to make easy)
+        enum AnglePos {
+            Left=0,
+            Middle=90,
+            Right=180
+        };
+        const std::array<int, 3> sweep_angles = {Left, Middle, Right};
+        for (const auto& ang : sweep_angles) {
+            // move servo & pause to allow it to adjust/reach pos
+            ServoController::SetServoPos(Servo::I2C_ServoAddr::YAW, ang);
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+            // check if valid distance and far enough away
+            const auto pot_dir_dist_cm {DistSensor::GetDistanceCm()};
+            if (!pot_dir_dist_cm.has_value()) continue;
+
+            if(DistSensor::isVerbose())
+                cout << "dist = " << *pot_dir_dist_cm << " (" << ang << "°)" << endl;
+
+            if (*pot_dir_dist_cm >= TargetDist) {
+                // set servo back to middle & turn until sees clear
+                ServoController::SetServoPos(Servo::I2C_ServoAddr::YAW, Middle);
+                // pause to allow servo to reach middle before starting to turn
+                std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
+                // turn in direction that is free
+                if (ang == Left) {
+                    if(DistSensor::isVerbose()) cout << "Turning Left" << endl;
+                    MotorController::ChangeMotorDir(Interface::YDirection::FORWARD, Interface::XDirection::LEFT);
+                } else if (ang == Middle) {
+                    if(DistSensor::isVerbose()) cout << "Turning Middle" << endl;
+                    MotorController::ChangeMotorDir(Interface::YDirection::FORWARD, Interface::XDirection::NONE);
+                } else if (ang == Right) {
+                    if(DistSensor::isVerbose()) cout << "Turning Right" << endl;
+                    MotorController::ChangeMotorDir(Interface::YDirection::FORWARD, Interface::XDirection::RIGHT);
+                }
+
+                auto turn_dist_cm {DistSensor::GetDistanceCm()};
+                while(!shouldStop() && turn_dist_cm.has_value() && *turn_dist_cm < TargetDist) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    turn_dist_cm = DistSensor::GetDistanceCm();
+                    if(DistSensor::isVerbose()) cout << "turning w/ dist = " << *turn_dist_cm << "cm" << endl;
+                }
+
+                break; // break out of servo sweep for-loop
+            }
+        } // end of servo sweep for loop
+    }
+}
+
 /********************************************* Helper Functions ********************************************/
 
 void GPIOController::doNothing() const {
@@ -220,6 +320,7 @@ ModeMap GPIOController::createFnMap() {
     to_rtn["motors"]      = reinterpret_cast<void(MotorController::*)()>(&MotorController::testMotorsLoop);
     to_rtn["servos"]      = reinterpret_cast<void(GPIOController::*)()>(&ServoController::testServos);
     to_rtn["ultrasonic"]  = reinterpret_cast<void(GPIOController::*)()>(&DistSensor::testDistSensor);
+    to_rtn["obstacle"]    = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::ObstacleAvoidanceTest);
     to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["client"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["camera"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
