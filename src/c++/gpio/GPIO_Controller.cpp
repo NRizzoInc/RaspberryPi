@@ -304,7 +304,7 @@ void GPIOController::RunSensors(
     // keep sensing until told to stop
     while(!GPIOController::getShouldThreadExit()) {
         // collect all data
-        const auto dist_cm { DistSensor::GetDistanceCm() };
+        const auto dist_cm { DistSensor::GetDistanceCm(1) };
 
         // put data into struct for callback
         Network::SrvDataPkt data;
@@ -314,6 +314,9 @@ void GPIOController::RunSensors(
         if (sensor_data_cb) {
             sensor_data_cb(data);
         }
+
+        // data should be sent ~= when camera data sends (which is 1/fps)
+        std::this_thread::sleep_for(std::chrono::milliseconds(Constants::Camera::VID_FRAMEPER_MS));
     }
 }
 

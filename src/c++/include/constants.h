@@ -34,6 +34,7 @@ namespace Constants {
         constexpr int           FRAME_HEIGHT    {480};
         constexpr int           FRAME_SIZE      {FRAME_WIDTH*FRAME_HEIGHT};
         constexpr int           VID_FRAMERATE   {25};
+        constexpr int           VID_FRAMEPER_MS {1000/VID_FRAMERATE};
 
     }; //end of camera namespace
 
