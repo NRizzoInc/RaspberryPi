@@ -97,7 +97,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
         // client starts by sending data to other endpoint
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
-        const CommonPkt&    curr_pkt    {getCurrentPkt()};
+        const CommonPkt&    curr_pkt    {getCurrentCmnPkt()};
         data_lock.unlock();             // unlock after leaving critical region
         const json&         pkt_json    {convertPktToJson(curr_pkt)};
         const std::string   bson_str    {writePkt(pkt_json)};
@@ -197,7 +197,7 @@ void TcpClient::ServerDataHandler(const bool print_data) {
         constexpr auto save_srv_data_err {"Failed to update server data pkt from server"};
         try {
                 // note: data is transmitted as bson so have to interpret & parse pkt first
-            const json& recv_json = readPkt(data.c_str(), data.size());
+            const json& recv_json = readSrvPkt(data.c_str(), data.size());
 
             // parse & print the buf to the terminal(if told to)
             if (print_data) {
@@ -205,12 +205,11 @@ void TcpClient::ServerDataHandler(const bool print_data) {
             }
 
             // actually try to parse recv packet into the struct
-            // TODO: change to new pkt type!!
-            const CommonPkt pkt {readPkt(recv_json)};
+            const SrvDataPkt pkt {readSrvPkt(recv_json)};
 
             // actually update the saved most recent packet in memory
             if(updatePkt(pkt) != ReturnCodes::Success) {
-                cerr << "Failed to update from client info" << endl;
+                cerr << "Failed to update from server data pkt" << endl;
             }
 
         } catch (std::exception& err) {

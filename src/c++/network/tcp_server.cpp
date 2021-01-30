@@ -160,7 +160,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                 // convert stringified json to json so it can be parsed into struct
                 try {
                     // note: data is transmitted as bson so have to interpret & parse pkt first
-                    const json& recv_json = readPkt(data.c_str(), data.size());
+                    const json& recv_json = readCmnPkt(data.c_str(), data.size());
 
                     // parse & print the buf to the terminal(if told to)
                     if (print_data) {
@@ -168,7 +168,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                     }
 
                     // actually try to parse recv packet into the struct
-                    const CommonPkt pkt {readPkt(recv_json)};
+                    const CommonPkt pkt {readCmnPkt(recv_json)};
 
                     // actually update the saved most recent packet in memory
                     if(updatePkt(pkt) != ReturnCodes::Success) {
@@ -261,7 +261,7 @@ void TcpServer::ServerDataHandler(const bool print_data) {
                 );
 
                 /********************************* Sending Server Data to Client ********************************/
-                const CommonPkt&    curr_pkt    {getCurrentPkt()}; // TODO: should be other type of pkt!!!
+                const SrvDataPkt&   curr_pkt    {getCurrentSrvPkt()};
                 data_lock.unlock();             // unlock after leaving critical region
                 const json&         pkt_json    {convertPktToJson(curr_pkt)};
                 const std::string   bson_str    {writePkt(pkt_json)};
