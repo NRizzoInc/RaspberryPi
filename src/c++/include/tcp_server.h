@@ -83,6 +83,11 @@ class TcpServer : public TcpBase {
         virtual void VideoStreamHandler() override;
 
         /**
+         * @brief Starts up a non-blocking function to send server data to the client (not-camera related) 
+         */
+        virtual void ServerDataHandler() override;
+
+        /**
          * @brief Set the latest frame from the camera video stream (and set bool saying there is new data)
          * @return Success if no issues
          * @note Bool is used to prevent over sending of the same traffic over and over again

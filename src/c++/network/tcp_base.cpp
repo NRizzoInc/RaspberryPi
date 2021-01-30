@@ -49,6 +49,10 @@ ReturnCodes TcpBase::cleanup() {
         cam_vid_thread.join();
     }
 
+    if(srv_data_thread.joinable()) {
+        srv_data_thread.join();
+    }
+
     // call quit once thread for derived client/server is over
     // quit should be overriden by derived classes for proper cleanup
     quit();
@@ -106,6 +110,10 @@ void TcpBase::runNetAgent(const bool print_data) {
     cam_vid_thread = std::thread{[this]() {
         // dont pin fn to TcpBase since it should be overridden by derived classes
         VideoStreamHandler();
+    }};
+
+    srv_data_thread = std::thread{[this]() {
+        ServerDataHandler();
     }};
 
     // unlock & notify so joiner can continue

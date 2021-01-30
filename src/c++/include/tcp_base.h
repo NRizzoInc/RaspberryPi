@@ -173,6 +173,12 @@ class TcpBase : public Packet {
         virtual void VideoStreamHandler() = 0;
 
         /**
+         * @brief The function to run when starting up the TCP server/client that handles server -> client data
+         * @param print_data Should received data be printed?
+         */
+        virtual void ServerDataHandler() = 0;
+
+        /**
          * @brief Function called by the destructor to close the sockets
          * @note This should be called at beginining of derived quit()
          */
@@ -196,6 +202,7 @@ class TcpBase : public Packet {
         std::atomic_bool            should_exit;        // true if should exit/stop connection
         std::thread                 control_thread;     // holds the thread proc for ControlLoopFn()
         std::thread                 cam_vid_thread;     // holds the thread proc for VideoStreamHandler()
+        std::thread                 srv_data_thread;    // holds the thread proc for ServerDataHandler()
         std::atomic_bool            started_threads;    // need to send an initization message for first packet
         std::mutex                  thread_mutex;       // mutex controlling access to the classes threads (start/join)
         std::condition_variable     thread_cv;          // true if client needs to tell the server something

@@ -78,6 +78,11 @@ class TcpClient : public TcpBase {
          */
         virtual void VideoStreamHandler() override;
 
+        /**
+         * @brief Starts up a non-blocking function to recv data from the server (not-camera related) 
+         */
+        virtual void ServerDataHandler() override;
+
     private:
         /******************************************** Private Variables ********************************************/
 

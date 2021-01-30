@@ -169,6 +169,9 @@ void TcpClient::VideoStreamHandler() {
     cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
 }
 
+void TcpClient::ServerDataHandler() {
+    // stub
+}
 
 ReturnCodes TcpClient::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)

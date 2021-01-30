@@ -233,6 +233,10 @@ void TcpServer::VideoStreamHandler() {
     }
 }
 
+void TcpServer::ServerDataHandler() {
+    // stub
+}
+
 ReturnCodes TcpServer::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     ctrl_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
