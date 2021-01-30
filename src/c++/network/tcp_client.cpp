@@ -13,6 +13,7 @@ TcpClient::TcpClient(
     const std::string& ip_addr,
     const int ctrl_port_num,
     const int cam_port_num,
+    const int srv_data_port_num,
     const bool should_init,
     const bool verbosity
 )

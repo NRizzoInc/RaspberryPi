@@ -29,12 +29,14 @@ class TcpServer : public TcpBase {
          * @brief Construct a new Tcp Server object
          * @param ctrl_data_port The port number for the server to listen for control packets from client
          * @param cam_send_port The port number for the camera data to be sent to client
+         * @param srv_data_port_num The port to send server data to client on
          * @param should_init False: do not init (most likely bc should run client)
          * @param verbosity If true, will print more information that is strictly necessary
          */
         TcpServer(
             const int ctrl_data_port,
             const int cam_send_port,
+            const int srv_data_port_num,
             const bool should_init,
             const bool verbosity=false
         );

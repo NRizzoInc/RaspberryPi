@@ -51,6 +51,7 @@ namespace CLI::Results {
         IP,
         CTRL_PORT,
         CAM_PORT,
+        SRV_DATA_PORT,
         WEB_PORT,
         I2C_ADDR,
         VID_FRAMES,

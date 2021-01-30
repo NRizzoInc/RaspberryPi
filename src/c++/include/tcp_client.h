@@ -33,6 +33,7 @@ class TcpClient : public TcpBase {
          * @param ip_addr The ip address of the server
          * @param ctrl_port_num The port number the server is waiting to accept control packet connections on
          * @param cam_port_num The port for the camera data connection
+         * @param srv_data_port_num The port to recv server data on
          * @param should_init False: do not init (most likely bc should run server)
          * @param verbosity If true, will print more information that is strictly necessary
          */
@@ -40,6 +41,7 @@ class TcpClient : public TcpBase {
             const std::string& ip_addr,
             const int ctrl_port_num,
             const int cam_port_num,
+            const int srv_data_port_num,
             const bool should_init,
             const bool verbosity=false
         );

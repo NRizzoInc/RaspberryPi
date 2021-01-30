@@ -13,6 +13,7 @@ namespace Network {
 TcpServer::TcpServer(
     const int ctrl_data_port,
     const int cam_send_port,
+    const int srv_data_port_num,
     const bool should_init,
     const bool verbosity
 )
