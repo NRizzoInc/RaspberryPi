@@ -128,7 +128,8 @@ ReturnCodes DistSensor::WaitForEdge(
 ) const {
     auto start_time {std::chrono::steady_clock::now()};
     while (digitalRead(Ultrasonic::PinType::ECHO) != edge_val) {
-        if (Helpers::Timing::hasTimeElapsed(start_time, timeout)) {
+        // stop if timeout or thread told to stop
+        if (Helpers::Timing::hasTimeElapsed(start_time, timeout) || DistSensor::getShouldThreadExit()) {
             return ReturnCodes::Timeout;
         }
     }
