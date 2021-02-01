@@ -77,6 +77,11 @@ void TcpClient::ControlLoopFn(const bool print_data) {
             timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
             [&](){return cmn_pkt_ready.load();}
         );
+
+        // bc of class scope of cv, need to manually unlock
+        // or else gets stuck when mutex needed in "getCurrentCmnPkt()"
+        data_lock.unlock();
+
         // prevent predicate from being triggered in future iterations w/o being set by another thread
         cmn_pkt_ready.store(false);
 
@@ -85,7 +90,6 @@ void TcpClient::ControlLoopFn(const bool print_data) {
         // on first transfer will be sending zeroed out struct
         // the client should be continuously updating the packet so it is ready to send
         const CommonPkt&    curr_pkt    {getCurrentCmnPkt()};
-        data_lock.unlock();             // unlock after leaving critical region
         const json&         pkt_json    {convertPktToJson(curr_pkt)};
         const std::string   bson_str    {writePkt(pkt_json)};
         const char*         send_pkt    {bson_str.c_str()};
@@ -131,7 +135,6 @@ void TcpClient::VideoStreamHandler() {
             continue; // dont try to save a bad frame
         }
 
-        /*
         // check if server killed conn
         // break, but dont exit so server can wait for new client to connect
         else if (img_recv.RtnCode == RecvSendRtnCodes::ClosedConn) {
@@ -139,7 +142,6 @@ void TcpClient::VideoStreamHandler() {
             setExitCode(true); // end program (make sure control socket also ends)
             break;
         }
-        */
 
         // if no issues, save the new video frame
         constexpr auto save_frame_err {"Failed to update camera data from server"};
@@ -178,6 +180,14 @@ void TcpClient::ServerDataHandler(const bool print_data) {
         if (srv_data_recv.RtnCode == RecvSendRtnCodes::Error) {
             cout << "Error: Failed to recv server data" << endl;
             continue; // dont try to save a bad frame
+        }
+
+        // check if server killed conn
+        // break, but dont exit so server can wait for new client to connect
+        else if (srv_data_recv.RtnCode == RecvSendRtnCodes::ClosedConn) {
+            cout << "Terminate - the server data endpoint has closed the socket" << endl;
+            setExitCode(true); // end program (make sure control socket also ends)
+            break;
         }
 
         // if no issues, save the packet

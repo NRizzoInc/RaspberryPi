@@ -134,6 +134,8 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                 // (if so, print message bc might have been fluke)
                 if (ctrl_recv.RtnCode == RecvSendRtnCodes::Error) {
                     cout << "Error - client control socket recv error" << endl;
+                    close_conns.store(true); // signal to camera socket to stop
+                    continue; // dont try to process badly recv pkt
                 }
 
                 // check if the data_size is equal to 0 (time to exit bc client killed conn)
@@ -159,7 +161,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
 
                     // actually update the saved most recent packet in memory
                     if(updatePkt(pkt) != ReturnCodes::Success) {
-                        cerr << "Failed to update from client info" << endl;
+                        cerr << "Error: Failed to update from control pkt" << endl;
                     }
 
                     // call receive callback if set
@@ -169,8 +171,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                         }
                     }
                 } catch (std::exception& err) {
-                    cerr << "Failed to update from client info" << endl;
-                    cerr << err.what() << endl;
+                    cerr << "Error: Failed to update from control pkt: " << err.what() << endl;
                 }
 
                 // reset the buffer for a new read
@@ -179,6 +180,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
 
             // at end of while, reset data socket to attempt to make new connection with same listener
             ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
+            if(isVerbose()) cout << "Closing Control Data Socket" << endl;
         }
     }
 }
@@ -206,11 +208,18 @@ void TcpServer::VideoStreamHandler() {
                     [&](){return cam_pkt_ready.load();}
                 );
 
+                // bc of class scope of cv, need to manually unlock
+                // or else gets stuck when mutex needed in "getLatestCamFrame()"
+                data_lock.unlock();
+
+                // prevent predicate from being triggered in future iterations w/o being set by another thread
+                cam_pkt_ready.store(false);
+
                 /********************************* Sending Camera Data to Client ********************************/
                 const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
                 const SendRtn send_rtn {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
 
-                if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
+                if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
                     cout << "Error: Send camera data to client (suggests closed endpoint)" << endl;
                     close_conns.store(true); // tell control socket to stop
                     break; // try to wait for new connection (dont end program bc client may reconnect)
@@ -220,6 +229,7 @@ void TcpServer::VideoStreamHandler() {
 
             // at end of while, reset data socket to attempt to make new connection with same listener
             cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+            if(isVerbose()) cout << "Closing Camera Data Socket" << endl;
         }
     }
 }
@@ -247,9 +257,15 @@ void TcpServer::ServerDataHandler(const bool print_data) {
                     [&](){return srv_pkt_ready.load();}
                 );
 
+                // prevent predicate from being triggered in future iterations w/o being set by another thread
+                srv_pkt_ready.store(false);
+
+                // bc of class scope of cv, need to manually unlock
+                // or else gets stuck when mutex needed in "getCurrentSrvPkt()"
+                data_lock.unlock();
+
                 /********************************* Sending Server Data to Client ********************************/
                 const SrvDataPkt&   curr_pkt    {getCurrentSrvPkt()};
-                data_lock.unlock();             // unlock after leaving critical region
                 const json&         pkt_json    {convertPktToJson(curr_pkt)};
                 const std::string   bson_str    {writePkt(pkt_json)};
                 const char*         send_pkt    {bson_str.c_str()};
@@ -272,6 +288,7 @@ void TcpServer::ServerDataHandler(const bool print_data) {
 
             // at end of while, reset data socket to attempt to make new connection with same listener
             srv_data_sock_fd = CloseOpenSock(srv_data_sock_fd);
+            if(isVerbose()) cout << "Closing Server Data Socket" << endl;
         }
     }
 }
