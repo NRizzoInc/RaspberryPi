@@ -96,7 +96,11 @@ ReturnCodes WebApp::setupSites() {
         WebAppUrls.at(WebAppUrlsNames::CAM_SETTINGS),
         Pistache::Rest::Routes::bind(&WebApp::handleCamSettingReq, this)
     );
-
+    Pistache::Rest::Routes::Get(
+        web_app_router,
+        WebAppUrls.at(WebAppUrlsNames::SERVER_DATA),
+        Pistache::Rest::Routes::bind(&WebApp::handleServerDataReq, this)
+    );
 
     // shutdown/close page
     Pistache::Rest::Routes::Get(
@@ -299,6 +303,32 @@ void WebApp::handleCamSettingReq(
     }
 }
 
+
+void WebApp::handleServerDataReq(
+    __attribute__((unused)) const Pistache::Rest::Request& req,
+    Pistache::Http::ResponseWriter res
+) {
+    try {
+        // see pkt_sample.json for reference
+        const auto curr_srv_data {client_ptr->getCurrentSrvPkt()};
+        const json srv_data =  client_ptr->convertPktToJson(curr_srv_data);
+
+        // actually send the pixel data back to GET request
+        res.send(
+            Pistache::Http::Code::Ok,
+            srv_data.dump(),
+            Pistache::Http::Mime::MediaType(
+                Pistache::Http::Mime::Type::Application, // main type
+                Pistache::Http::Mime::Subtype::Json // sub type
+            )
+        );
+
+    } catch (std::exception& err) {
+        constexpr auto err_str {"ERROR: Sending server data"};
+        cout << err_str << ": " << err.what() << endl;
+        res.send(Pistache::Http::Code::Bad_Request, err_str);
+    }
+}
 
 /// redirect function (TODO)
 // void Redirect(
