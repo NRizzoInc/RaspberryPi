@@ -63,6 +63,10 @@ ReturnCodes TcpBase::cleanup() {
 
 /********************************************* Getters/Setters *********************************************/
 
+bool TcpBase::isVerbose() const {
+    return is_verbose;
+}
+
 ReturnCodes TcpBase::setExitCode(const bool new_exit) {
     should_exit.store(new_exit);
     return ReturnCodes::Success;
@@ -145,14 +149,14 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         )};
         const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, max_stream_left, 0);
         if (header_rx_partial < 0) {
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "Error: receiving header packet" << endl;
             }
             return RecvRtn{{}, RecvSendRtnCodes::Error};
         } 
         else if (header_rx_partial == 0) {
             // end of stream
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "Error: other host closed connection while sending header packet" << endl;
             }
             return RecvRtn{{}, RecvSendRtnCodes::ClosedConn};
@@ -183,7 +187,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
 
         // error checking
         if(rcv_size < 0) {
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "ERROR: RECV (" << total_recv_size << "/" << header.total_length << ")" << endl;
             }
             rtn_code = RecvSendRtnCodes::Error;
@@ -191,7 +195,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         }
 
         else if (rcv_size == 0) {
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "ERROR: RECV - other host closed connection" << endl;
             }
             rtn_code = RecvSendRtnCodes::ClosedConn;

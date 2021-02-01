@@ -69,6 +69,8 @@ class TcpBase : public Packet {
 
         /********************************************* Getters/Setters *********************************************/
 
+        bool isVerbose() const;
+
         /**
          * @brief Set the callback function for when a packet is received
          * @param recv_callback The function that accepts a reference to the received pkt
