@@ -12,8 +12,9 @@ set(CMAKE_CXX_COMPILER /usr/bin/g++-7 CACHE PATH "" FORCE)
 # set build type based on makefile target
 # CMAKE_BUILD_TYPE set in Makefile
 # Ignore Pi Specific Warning from JSON lib: -Wno-psabi
+message(STATUS "Building in ${CMAKE_BUILD_TYPE} Mode")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-psabi")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 # =================================== load Dependencies globally for all subdirs ===================================
