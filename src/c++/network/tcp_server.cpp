@@ -262,7 +262,7 @@ void TcpServer::ServerDataHandler(const bool print_data) {
                 
                 const SendRtn send_rtn {sendData(srv_data_sock_fd, send_pkt, pkt_size)};
 
-                if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
+                if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
                     cout << "Error: Send server data to client (suggests closed endpoint)" << endl;
                     close_conns.store(true); // tell control socket to stop
                     break; // try to wait for new connection (dont end program bc client may reconnect)

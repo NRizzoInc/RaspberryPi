@@ -32,7 +32,7 @@ namespace Network {
 enum class RecvSendRtnCodes {
     Error,
     ClosedConn,
-    Sucess
+    Success
 };
 struct RecvRtn {
     std::vector<u_char> buf;   // the data receivied via the socket (data.size() for size)

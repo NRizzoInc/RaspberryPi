@@ -170,7 +170,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
     // prepare bufs for receiving
     std::uint32_t total_recv_size {0};
     char recv_buf[header.total_length];
-    RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Sucess}; // default to success
+    RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Success}; // default to success
     while (total_recv_size < header.total_length) {
         // append new data to top of buf (new start = start + curr size)
         const std::uint32_t max_stream_size {std::min(
@@ -245,7 +245,7 @@ SendRtn TcpBase::sendData(
     }
 
     // iff successful, sent_size >= 0 so can safely cast to uint
-    return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Sucess};
+    return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Success};
 }
 
 

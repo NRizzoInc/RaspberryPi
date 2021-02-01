@@ -98,7 +98,7 @@ void TcpClient::ControlLoopFn(const bool print_data) {
 
         // send the stringified json to the server
         const SendRtn send_rtn {sendData(ctrl_data_sock_fd, send_pkt, pkt_size)};
-        if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
+        if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
             cout << "Terminate - the server's control endpoint has closed the socket" << endl;
             setExitCode(true); // end program
             break;
