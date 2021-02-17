@@ -73,6 +73,9 @@ bool GPIOController::getIsInit() const {
         ;
 }
 
+void GPIOController::setSensorDataCb(const SensorDataCb& cb) {
+    sensor_data_cb = cb;
+}
 
 /*********************************************** GPIO Helpers **********************************************/
 
@@ -291,6 +294,32 @@ void GPIOController::ObstacleAvoidanceTest(
     }
 }
 
+void GPIOController::RunSensors(
+    // not needed, but need to follow call guidlines for fn-mapping to work
+    __attribute__((unused)) const std::vector<std::string>& colors,
+    __attribute__((unused)) const unsigned int& interval,
+    __attribute__((unused)) const int& duration,
+    __attribute__((unused)) const unsigned int& rate
+) const {
+    // keep sensing until told to stop
+    while(!GPIOController::getShouldThreadExit()) {
+        // collect all data
+        const auto dist_cm { DistSensor::GetDistanceCm(1) };
+
+        // put data into struct for callback
+        Network::SrvDataPkt data;
+        data.ultrasonic.dist = dist_cm.has_value() ? *dist_cm : 0.0;
+
+        // use callback if available
+        if (sensor_data_cb) {
+            sensor_data_cb(data);
+        }
+
+        // data should be sent ~= when camera data sends (which is 1/fps)
+        std::this_thread::sleep_for(std::chrono::milliseconds(Constants::Camera::VID_FRAMEPER_MS));
+    }
+}
+
 /********************************************* Helper Functions ********************************************/
 
 void GPIOController::doNothing() const {
@@ -327,7 +356,7 @@ ModeMap GPIOController::createFnMap() {
     to_rtn["servos"]      = reinterpret_cast<void(GPIOController::*)()>(&ServoController::testServos);
     to_rtn["ultrasonic"]  = reinterpret_cast<void(GPIOController::*)()>(&DistSensor::testDistSensor);
     to_rtn["obstacle"]    = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::ObstacleAvoidanceTest);
-    to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
+    to_rtn["server"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::RunSensors);
     to_rtn["client"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["camera"]      = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);
     to_rtn["none"]        = reinterpret_cast<void(GPIOController::*)()>(&GPIOController::doNothing);

@@ -77,14 +77,16 @@ int main(int argc, char* argv[]) {
     /* ======================================== Create Server OR Client ======================================= */
     // static needed so it can be accessed in ctrl+c lambda
     // don't convert string port numbers to ints twice
-    const int ctrl_port {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CTRL_PORT])};
-    const int cam_port  {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CAM_PORT])};
+    const int ctrl_port     {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CTRL_PORT])};
+    const int cam_port      {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::CAM_PORT])};
+    const int srv_data_port {std::stoi(parse_res[RPI::CLI::Results::ParseKeys::SRV_DATA_PORT])};
     static std::shared_ptr<RPI::Network::TcpBase> net_agent {
         is_client ?
             static_cast<RPI::Network::TcpBase*>(new RPI::Network::TcpClient{
                 parse_res[RPI::CLI::Results::ParseKeys::IP],
                 ctrl_port,
                 cam_port,
+                srv_data_port,
                 is_client,
                 is_verbose
             }) 
@@ -92,6 +94,7 @@ int main(int argc, char* argv[]) {
             static_cast<RPI::Network::TcpBase*>(new RPI::Network::TcpServer{
                 ctrl_port,
                 cam_port,
+                srv_data_port,
                 is_server,
                 is_verbose
             })
@@ -149,6 +152,11 @@ int main(int argc, char* argv[]) {
     if (!is_client) {
         // start up gpio handler now that we have parse results
         gpio_handler.init();
+
+        // update server's data whenever the gpio sensors have something new
+        gpio_handler.setSensorDataCb([&](const RPI::Network::SrvDataPkt& srv_data_pkt) {
+            net_agent->updatePkt(srv_data_pkt);
+        });
 
         // run the selected gpio functionality (non-blocking thread handled by class)
         gpio_handler.run(parse_res);

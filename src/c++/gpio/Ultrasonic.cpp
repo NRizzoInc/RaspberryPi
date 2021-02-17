@@ -51,10 +51,10 @@ ReturnCodes DistSensor::init() const {
 
 /****************************************** Ultrasonic Functions *******************************************/
 
-std::optional<float> DistSensor::GetDistanceCm() const {
+std::optional<float> DistSensor::GetDistanceCm(const int num_trials) const {
     // perform distance check 5 times and get median value
     std::vector<float> distances_cm;
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < num_trials; i++) {
         // check to see how long it takes for pulse to reach destination and come back
         auto pulse_duration {WaitForEcho()};
 

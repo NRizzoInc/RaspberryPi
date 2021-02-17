@@ -1,24 +1,33 @@
 {
-    "control": {
-        "led": {
-            "red":      false,
-            "yellow":   false,
-            "green":    false,
-            "blue":     false
+    "Common Packet": {
+        "control": {
+            "led": {
+                "red": false,
+                "yellow": false,
+                "green": false,
+                "blue": false
+            },
+            "motor": {
+                "forward": false,
+                "backward": false,
+                "right": false,
+                "left": false
+            },
+            "servo": {
+                "horiz": "+/-/0 (right/left/unchanged)",
+                "vert": "+/-/0 (up/down/unchanged)"
+            },
+            "camera": {
+                "is_on": false
+            }
         },
-        "motor": {
-            "forward":  false,
-            "backward": false,
-            "right":    false,
-            "left":     false
-        },
-        "servo": {
-            "horiz":    "+/-/0 (right/left/unchanged)",
-            "vert":     "+/-/0 (up/down/unchanged)"
-        },
-        "camera": {
-            "is_on":    false
-        }
+        "ACK": true
     },
-    "ACK": true
+
+    "Server Data Packet": {
+        "ultrasonic": {
+            "dist": "float (distance in cm)"
+
+        }
+    }
 }

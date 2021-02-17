@@ -12,8 +12,6 @@
 #include <cstring> // for memset
 #include <chrono> // send packet every right before server timeout
 #include <mutex>
-#include <condition_variable> // block with mutex until new data set
-#include <atomic>
 
 // Our Includes
 #include "constants.h"
@@ -33,6 +31,7 @@ class TcpClient : public TcpBase {
          * @param ip_addr The ip address of the server
          * @param ctrl_port_num The port number the server is waiting to accept control packet connections on
          * @param cam_port_num The port for the camera data connection
+         * @param srv_data_port_num The port to recv server data on
          * @param should_init False: do not init (most likely bc should run server)
          * @param verbosity If true, will print more information that is strictly necessary
          */
@@ -40,21 +39,13 @@ class TcpClient : public TcpBase {
             const std::string& ip_addr,
             const int ctrl_port_num,
             const int cam_port_num,
+            const int srv_data_port_num,
             const bool should_init,
             const bool verbosity=false
         );
         virtual ~TcpClient();
 
         /********************************************* Getters/Setters *********************************************/
-
-        /**
-         * @brief Wraps the base updater with a lock & notifies client to send it
-         * @param updated_pkt The up to date packet to send
-         * @return ReturnCodes Success if it worked
-         * @note Get the current pkt with getCurrentPkt()
-         */
-        ReturnCodes updatePkt(const CommonPkt& updated_pkt) override;
-
 
         /********************************************* Client Functions ********************************************/
 
@@ -78,19 +69,25 @@ class TcpClient : public TcpBase {
          */
         virtual void VideoStreamHandler() override;
 
+        /**
+         * @brief Starts up a non-blocking function to recv data from the server (not-camera related) 
+         */
+        virtual void ServerDataHandler(const bool print_data) override;
+
     private:
         /******************************************** Private Variables ********************************************/
 
         int                         ctrl_data_sock_fd;  // tcp socket file descriptor that sends control data to server
         std::string                 server_ip;          // ip address of the server
-        int                         ctrl_data_port;     // port number to send control data to the server
-        std::atomic_bool            pkt_ready;          // alert send cv to unlock
-        std::mutex                  data_mutex;
-        std::condition_variable     has_new_msg;        // true if client needs to tell the server something
+        const int                   ctrl_data_port;     // port number to send control data to the server
 
         // camera vars
         int                         cam_data_sock_fd;   // tcp file descriptor for camera data from server
-        int                         cam_data_port;      // port number for getting camera from server
+        const int                   cam_data_port;      // port number for getting camera from server
+
+        // server data vars
+        int                         srv_data_sock_fd;   // tcp file descriptor for server data from server
+        const int                   srv_data_port;      // port number for getting "server data" from server
 
         /********************************************* Helper Functions ********************************************/
 

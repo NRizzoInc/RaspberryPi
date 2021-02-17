@@ -3,8 +3,8 @@
  * @file Handles the continous updating of the video stream
  */
 
-import { getJsonData, DataIfPageExists } from "./request_handler.js"
-import { sendCamPkt } from "./pkt.js"
+import { DataIfPageExists } from "./request_handler.js"
+import { sendCamPkt, getCamSettings } from "./pkt.js"
 
 
 /**
@@ -72,7 +72,7 @@ $("document").ready( async () => {
     const cam_original_src = cam_vid.src
 
     // get the camera's settings
-    const cam_settings = await getJsonData("/Camera/settings.json")
+    const cam_settings = await getCamSettings()
     const fps = cam_settings.fps // TODO: get this from get request
 
     // track/manage camera's recording status

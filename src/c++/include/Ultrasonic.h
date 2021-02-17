@@ -63,10 +63,11 @@ class DistSensor : public GPIOBase {
 
         /**
          * @brief Get the distance from the ultrasonic sensor (in cm)
+         * @param num_trials The number of trials to perform when getting the distance (returns the median)
          * @return The distance of the robot from the nearest surface (relative to camera/ultrasonic sensor mount)
          * (std::nullopt if error)
          */
-        std::optional<float> GetDistanceCm() const;
+        std::optional<float> GetDistanceCm(const int num_trials=5) const;
 
         /**
          * @brief Test the ultrasonic distance sensor in a loop while it gets the distance

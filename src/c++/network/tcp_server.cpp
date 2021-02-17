@@ -13,6 +13,7 @@ namespace Network {
 TcpServer::TcpServer(
     const int ctrl_data_port,
     const int cam_send_port,
+    const int srv_data_port_num,
     const bool should_init,
     const bool verbosity
 )
@@ -25,7 +26,9 @@ TcpServer::TcpServer(
     , cam_listen_sock_fd{-1}                // init to invalid
     , cam_data_sock_fd{-1}                  // init to invalid
     , cam_data_port{cam_send_port}          // port for the camera data connection
-    , has_new_cam_data{true}                // will be set false immediately after sending first message
+    , srv_data_listen_sock_fd{-1}           // init to invalid
+    , srv_data_sock_fd{-1}                  // init to invalid
+    , srv_data_port{srv_data_port_num}      // port to send server data to client
 {
     // first check if should not init
     if (!should_init) return;
@@ -103,18 +106,6 @@ ReturnCodes TcpServer::acceptClient(
     return ReturnCodes::Success;
 }
 
-ReturnCodes TcpServer::setLatestCamFrame(const std::vector<unsigned char>& new_frame) {
-    Packet::setLatestCamFrame(new_frame);
-    has_new_cam_data.store(true);
-    cam_data_cv.notify_one();
-    return ReturnCodes::Success;
-}
-
-const std::vector<unsigned char>& TcpServer::getLatestCamFrame() const {
-    has_new_cam_data.store(false);
-    return Packet::getLatestCamFrame();
-}
-
 ReturnCodes TcpServer::sendResetPkt() {
     // make sure client receives last cam frame before shutdown
     // setting a new packet triggers video thread to send this new packet
@@ -143,6 +134,8 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                 // (if so, print message bc might have been fluke)
                 if (ctrl_recv.RtnCode == RecvSendRtnCodes::Error) {
                     cout << "Error - client control socket recv error" << endl;
+                    close_conns.store(true); // signal to camera socket to stop
+                    continue; // dont try to process badly recv pkt
                 }
 
                 // check if the data_size is equal to 0 (time to exit bc client killed conn)
@@ -156,7 +149,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                 // convert stringified json to json so it can be parsed into struct
                 try {
                     // note: data is transmitted as bson so have to interpret & parse pkt first
-                    const json& recv_json = readPkt(data.c_str(), data.size());
+                    const json& recv_json = readCmnPkt(data.c_str(), data.size());
 
                     // parse & print the buf to the terminal(if told to)
                     if (print_data) {
@@ -164,11 +157,11 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                     }
 
                     // actually try to parse recv packet into the struct
-                    const CommonPkt pkt {readPkt(recv_json)};
+                    const CommonPkt pkt {readCmnPkt(recv_json)};
 
                     // actually update the saved most recent packet in memory
                     if(updatePkt(pkt) != ReturnCodes::Success) {
-                        cerr << "Failed to update from client info" << endl;
+                        cerr << "Error: Failed to update from control pkt" << endl;
                     }
 
                     // call receive callback if set
@@ -178,8 +171,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
                         }
                     }
                 } catch (std::exception& err) {
-                    cerr << "Failed to update from client info" << endl;
-                    cerr << err.what() << endl;
+                    cerr << "Error: Failed to update from control pkt: " << err.what() << endl;
                 }
 
                 // reset the buffer for a new read
@@ -188,6 +180,7 @@ void TcpServer::ControlLoopFn(const bool print_data) {
 
             // at end of while, reset data socket to attempt to make new connection with same listener
             ctrl_data_sock_fd = CloseOpenSock(ctrl_data_sock_fd);
+            if(isVerbose()) cout << "Closing Control Data Socket" << endl;
         }
     }
 }
@@ -208,18 +201,25 @@ void TcpServer::VideoStreamHandler() {
                 // wait until there is a new message (or first message)
                 // or until server is about to timeout
                 const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
-                std::unique_lock<std::mutex> data_lock(cam_data_mutex);
-                cam_data_cv.wait_for(
+                std::unique_lock<std::mutex> data_lock(cam_data_pkt_mutex);
+                has_new_cam_data.wait_for(
                     data_lock,
                     timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
-                    [&](){return has_new_cam_data.load();}
+                    [&](){return cam_pkt_ready.load();}
                 );
+
+                // bc of class scope of cv, need to manually unlock
+                // or else gets stuck when mutex needed in "getLatestCamFrame()"
+                data_lock.unlock();
+
+                // prevent predicate from being triggered in future iterations w/o being set by another thread
+                cam_pkt_ready.store(false);
 
                 /********************************* Sending Camera Data to Client ********************************/
                 const std::vector<unsigned char>& cam_frame {getLatestCamFrame()};
                 const SendRtn send_rtn {sendData(cam_data_sock_fd, cam_frame.data(), cam_frame.size())};
 
-                if(send_rtn.RtnCode != RecvSendRtnCodes::Sucess) {
+                if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
                     cout << "Error: Send camera data to client (suggests closed endpoint)" << endl;
                     close_conns.store(true); // tell control socket to stop
                     break; // try to wait for new connection (dont end program bc client may reconnect)
@@ -229,6 +229,66 @@ void TcpServer::VideoStreamHandler() {
 
             // at end of while, reset data socket to attempt to make new connection with same listener
             cam_data_sock_fd = CloseOpenSock(cam_data_sock_fd);
+            if(isVerbose()) cout << "Closing Camera Data Socket" << endl;
+        }
+    }
+}
+
+void TcpServer::ServerDataHandler(const bool print_data) {
+    // server has to send the most up to date pkt's regarding its collected data
+    // keep sending until told to stop
+
+    // loop to keep trying to connect to new clients until told to stop
+    while(!getExitCode()) {
+
+        // wait for a client to connect
+        if(acceptClient(srv_data_listen_sock_fd, srv_data_sock_fd, "srv data", srv_data_port) == ReturnCodes::Success) {
+
+            // loop to receive data and send data with client
+            while(!getExitCode() && !close_conns.load()) {
+            
+                // wait until there is a new message (or first message)
+                // or until server is about to timeout
+                const int timeout_sec = Constants::Network::RX_TX_TIMEOUT-1;
+                std::unique_lock<std::mutex> data_lock(srv_data_pkt_mutex);
+                has_new_srv_data.wait_for(
+                    data_lock,
+                    timeout_sec > 0 ? std::chrono::seconds(timeout_sec) : std::chrono::milliseconds(500),
+                    [&](){return srv_pkt_ready.load();}
+                );
+
+                // prevent predicate from being triggered in future iterations w/o being set by another thread
+                srv_pkt_ready.store(false);
+
+                // bc of class scope of cv, need to manually unlock
+                // or else gets stuck when mutex needed in "getCurrentSrvPkt()"
+                data_lock.unlock();
+
+                /********************************* Sending Server Data to Client ********************************/
+                const SrvDataPkt&   curr_pkt    {getCurrentSrvPkt()};
+                const json&         pkt_json    {convertPktToJson(curr_pkt)};
+                const std::string   bson_str    {writePkt(pkt_json)};
+                const char*         send_pkt    {bson_str.c_str()};
+                const std::size_t   pkt_size    {bson_str.size()};
+
+                // print the stringified json if told to
+                if (print_data) {
+                    cout << "Sending (" << pkt_size << "Bytes): " << pkt_json.dump() << endl;
+                }
+                
+                const SendRtn send_rtn {sendData(srv_data_sock_fd, send_pkt, pkt_size)};
+
+                if(send_rtn.RtnCode != RecvSendRtnCodes::Success) {
+                    cout << "Error: Send server data to client (suggests closed endpoint)" << endl;
+                    close_conns.store(true); // tell control socket to stop
+                    break; // try to wait for new connection (dont end program bc client may reconnect)
+                }
+
+            }
+
+            // at end of while, reset data socket to attempt to make new connection with same listener
+            srv_data_sock_fd = CloseOpenSock(srv_data_sock_fd);
+            if(isVerbose()) cout << "Closing Server Data Socket" << endl;
         }
     }
 }
@@ -237,6 +297,7 @@ ReturnCodes TcpServer::initSock() {
     // open the listen socket of type SOCK_STREAM (TCP)
     ctrl_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
     cam_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    srv_data_listen_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     // check if the socket creation was successful
     if (ctrl_listen_sock_fd < 0){ 
@@ -247,12 +308,16 @@ ReturnCodes TcpServer::initSock() {
         cout << "ERROR: Opening camera listen socket" << endl;
         return ReturnCodes::Error;
     }
-
+    if (srv_data_listen_sock_fd < 0){ 
+        cout << "ERROR: Opening 'server data' listen socket" << endl;
+        return ReturnCodes::Error;
+    }
 
     // set the options for the socket
     int option(1);
     setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
     setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
+    setsockopt(srv_data_listen_sock_fd, SOL_SOCKET, SO_REUSEADDR, (char*)&option, sizeof(option));
 
     // set receive timeout so that runNetAgent loop can be stopped/killed
     // without timeout accept connection might be blocking until a connection forms
@@ -263,20 +328,26 @@ ReturnCodes TcpServer::initSock() {
     setsockopt(ctrl_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
     setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
     setsockopt(cam_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(srv_data_listen_sock_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(srv_data_listen_sock_fd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
 
     // init struct for address to bind socket
-    sockaddr_in ctrl_addr {};   // holds data on the control conn address
-    sockaddr_in cam_addr  {};   // holds data on the camera  conn address
+    sockaddr_in ctrl_addr  {};   // holds data on the control conn address
+    sockaddr_in cam_addr   {};   // holds data on the camera conn address
+    sockaddr_in srv_addr   {};   // holds data on the server data conn address
     
     // address family is AF_INET (IPV4)
     ctrl_addr.sin_family        = AF_INET;
     cam_addr.sin_family         = AF_INET;
+    srv_addr.sin_family         = AF_INET;
     // convert ctrl_data_port to network number format
     ctrl_addr.sin_port          = htons(ctrl_data_port);
     cam_addr.sin_port           = htons(cam_data_port);
+    srv_addr.sin_port           = htons(srv_data_port);
     // accept conn from all Network Interface Cards (NIC)
     ctrl_addr.sin_addr.s_addr   = htonl(INADDR_ANY);
     cam_addr.sin_addr.s_addr    = htonl(INADDR_ANY);
+    srv_addr.sin_addr.s_addr    = htonl(INADDR_ANY);
 
     // bind the socket to the port
     if (bind(ctrl_listen_sock_fd, (struct sockaddr*)&ctrl_addr, sizeof(ctrl_addr)) < 0) { 
@@ -289,9 +360,14 @@ ReturnCodes TcpServer::initSock() {
         cam_listen_sock_fd = CloseOpenSock(cam_listen_sock_fd);
         return ReturnCodes::Error;
     }
+    if (bind(srv_data_listen_sock_fd, (struct sockaddr*)&srv_addr, sizeof(srv_addr)) < 0) { 
+        cout << "ERROR: Failed to bind server data socket" << endl;
+        srv_data_listen_sock_fd = CloseOpenSock(srv_data_listen_sock_fd);
+        return ReturnCodes::Error;
+    }
 
     // accept at most 1 client at a time, and set the socket in a listening state
-    const int max_num_conns {1};
+    constexpr int max_num_conns {1};
     if (listen(ctrl_listen_sock_fd, max_num_conns) < 0) { 
         cout << "ERROR: Failed to listen to control socket" << endl;
         close(ctrl_listen_sock_fd);
@@ -300,6 +376,11 @@ ReturnCodes TcpServer::initSock() {
     if (listen(cam_listen_sock_fd, max_num_conns) < 0) { 
         cout << "ERROR: Failed to listen to control socket" << endl;
         close(cam_listen_sock_fd);
+        return ReturnCodes::Error;
+    }
+    if (listen(srv_data_listen_sock_fd, srv_data_listen_sock_fd) < 0) { 
+        cout << "ERROR: Failed to listen to 'server data' socket" << endl;
+        close(srv_data_listen_sock_fd);
         return ReturnCodes::Error;
     }
 
@@ -321,6 +402,10 @@ void TcpServer::quit() {
     cout << "Cleanup: closing camera sockets" << endl;
     cam_listen_sock_fd  = CloseOpenSock(cam_listen_sock_fd);
     cam_data_sock_fd    = CloseOpenSock(cam_data_sock_fd);
+
+    cout << "Cleanup: closing server data sockets" << endl;
+    srv_data_listen_sock_fd = CloseOpenSock(srv_data_listen_sock_fd);
+    srv_data_sock_fd        = CloseOpenSock(srv_data_sock_fd);
 }
 
 

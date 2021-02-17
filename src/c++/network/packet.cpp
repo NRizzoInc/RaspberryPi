@@ -89,7 +89,10 @@ std::uint16_t HeaderPkt_t::CalcChecksum(const void* data_buf, std::size_t size) 
 
 /********************************************** Constructors **********************************************/
 Packet::Packet()
-    : latest_frame(Constants::Camera::FRAME_SIZE, '0') // init to black frame (0s) to make sure size != 0
+    : cmn_pkt_ready{true}                               // will be set false immediately after sending first message
+    , cam_pkt_ready{true}                               // will be set false immediately after sending first message
+    , srv_pkt_ready{true}                               // will be set false immediately after sending first message
+    , latest_frame(Constants::Camera::FRAME_SIZE, '0')  // init to black frame (0s) to make sure size != 0
 {
     // stub
 }
@@ -100,18 +103,39 @@ Packet::~Packet() {
 
 /********************************************* Getters/Setters *********************************************/
 
-const CommonPkt& Packet::getCurrentPkt() const {
+const CommonPkt& Packet::getCurrentCmnPkt() const {
     // lock to make sure data can be gotten without new data being written
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
+    std::unique_lock<std::mutex> lk{cmn_data_pkt_mutex};
     return latest_ctrl_pkt;
 }
 
+const SrvDataPkt& Packet::getCurrentSrvPkt() const {
+    // lock to make sure data can be gotten without new data being written
+    std::unique_lock<std::mutex> lk{srv_data_pkt_mutex};
+    return latest_srv_data_pkt;
+}
+
+
 ReturnCodes Packet::updatePkt(const CommonPkt& updated_pkt) {
     // lock to make sure data can be written without it trying to be read simultaneously
-    std::unique_lock<std::mutex> lk{reg_pkt_mutex};
+    std::unique_lock<std::mutex> lk{cmn_data_pkt_mutex};
     latest_ctrl_pkt = updated_pkt;
+    lk.unlock();
+    cmn_pkt_ready.store(true); // atomic should be done outside of lock
+    has_new_cmn_data.notify_all();
     return ReturnCodes::Success;
 }
+
+ReturnCodes Packet::updatePkt(const SrvDataPkt& updated_pkt) {
+    // lock to make sure data can be written without it trying to be read simultaneously
+    std::unique_lock<std::mutex> lk{srv_data_pkt_mutex};
+    latest_srv_data_pkt = updated_pkt;
+    lk.unlock();
+    srv_pkt_ready.store(true); // atomic should be done outside of lock
+    has_new_srv_data.notify_all();
+    return ReturnCodes::Success;
+}
+
 
 const std::vector<unsigned char>& Packet::getLatestCamFrame() const {
     // lock to make sure data can be gotten without new data being written
@@ -124,6 +148,9 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
     // lock to make sure data can be written without it trying to be read simultaneously
     std::unique_lock<std::mutex> lk{frame_mutex};
     latest_frame = new_frame;
+    lk.unlock();
+    cam_pkt_ready.store(true);
+    has_new_cam_data.notify_one();
     return ReturnCodes::Success;
 }
 
@@ -131,26 +158,28 @@ ReturnCodes Packet::setLatestCamFrame(const std::vector<unsigned char>& new_fram
 /*************************************** Packet Read/Write Functions ***************************************/
 // note: when using copy constructor cannot use {} because stores original json into an array
 
-json Packet::readPkt(const char* pkt_buf, const std::size_t size) const {
+///////////////// common packet stuff
+
+json Packet::readCmnPkt(const char* pkt_buf, const std::size_t size) const {
     // if empty, will just be empty json
     return json::from_bson(std::string(pkt_buf, size));
 }
 
 
-CommonPkt Packet::readPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
+CommonPkt Packet::readCmnPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
     // if no data sent, just use current packet
     if (std::strlen(pkt_buf) == 0 || size == 0) {
-        return getCurrentPkt();
+        return getCurrentCmnPkt();
     }
 
     // if valid str, parse and convert stringified bson to json covnert to standard pkt
     // (use bson for faster/concise pkt transfers)
-    const json& pkt_json = is_bson ? readPkt(pkt_buf, size) : json::parse(pkt_buf);
-    return readPkt(pkt_json);
+    const json& pkt_json = is_bson ? readCmnPkt(pkt_buf, size) : json::parse(pkt_buf);
+    return readCmnPkt(pkt_json);
 }
 
 
-CommonPkt Packet::readPkt(const json& pkt_json) const {
+CommonPkt Packet::readCmnPkt(const json& pkt_json) const {
     // see pkt_sample.json for format
     // actually parse packet and save into struct
     CommonPkt pkt;
@@ -170,7 +199,6 @@ CommonPkt Packet::readPkt(const json& pkt_json) const {
 
     return pkt;
 }
-
 
 json Packet::convertPktToJson(const CommonPkt& pkt) const {
     // https://github.com/nlohmann/json#json-as-first-class-data-type
@@ -203,6 +231,64 @@ json Packet::convertPktToJson(const CommonPkt& pkt) const {
     return json_pkt;
 }
 
+std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
+    const json& pkt_json = convertPktToJson(pkt_to_send);
+    return writePkt(pkt_json);
+}
+
+///////////////////////// server data pkt stuff
+
+json Packet::readSrvPkt(const char* pkt_buf, const std::size_t size) const {
+    // if empty, will just be empty json
+    return json::from_bson(std::string(pkt_buf, size));
+}
+
+
+SrvDataPkt Packet::readSrvPkt(const char* pkt_buf, const std::size_t size, const bool is_bson) const {
+    // if no data sent, just use current packet
+    if (std::strlen(pkt_buf) == 0 || size == 0) {
+        return getCurrentSrvPkt();
+    }
+
+    // if valid str, parse and convert stringified bson to json covnert to standard pkt
+    // (use bson for faster/concise pkt transfers)
+    const json& pkt_json = is_bson ? readSrvPkt(pkt_buf, size) : json::parse(pkt_buf);
+    return readSrvPkt(pkt_json);
+}
+
+
+SrvDataPkt Packet::readSrvPkt(const json& pkt_json) const {
+    // see pkt_sample.json for format
+    // actually parse packet and save into struct
+    SrvDataPkt pkt;
+
+    pkt.ultrasonic.dist = findIfExists<float>(pkt_json, {"ultrasonic", "dist"});
+    pkt.ACK = findIfExists<bool>(pkt_json, {"ACK"});
+
+    return pkt;
+}
+
+json Packet::convertPktToJson(const SrvDataPkt& pkt) const {
+    // https://github.com/nlohmann/json#json-as-first-class-data-type
+    // have to double wrap {{}} to get it to work (each key-val needs to be wrapped)
+    // key-values are seperated by commas not ':'
+    json json_pkt = {
+        {"ultrasonic", {
+            {"dist", pkt.ultrasonic.dist},
+        }},
+        {"ACK", pkt.ACK}
+    };
+    return json_pkt;
+}
+
+std::string Packet::writePkt(const SrvDataPkt& pkt_to_send) const {
+    const json& pkt_json = convertPktToJson(pkt_to_send);
+    return writePkt(pkt_json);
+}
+
+////////////////// shared pkt functions
+
+
 std::string Packet::writePkt(const json& pkt_to_send) const {
     // see pkt_sample.json for format
     // use bson for faster/concise pkt transfers
@@ -210,13 +296,6 @@ std::string Packet::writePkt(const json& pkt_to_send) const {
     const std::string& pkt_bson_str = std::string{pkt_bson.begin(), pkt_bson.end()};
     return pkt_bson_str;
 }
-
-
-std::string Packet::writePkt(const CommonPkt& pkt_to_send) const {
-    const json& pkt_json = convertPktToJson(pkt_to_send);
-    return writePkt(pkt_json);
-}
-
 
 /********************************************* Helper Functions ********************************************/
 
@@ -229,7 +308,7 @@ rtnType Packet::findIfExists(const json& json_to_check, const std::vector<std::s
     // note: when using copy constructor cannot use {} because stores original json into an array
     // see: https://github.com/nlohmann/json/issues/1359
     json recv_curr = json_to_check;                        // the received packet to parse through
-    json curr_pkt  = convertPktToJson(getCurrentPkt());    // valid json of current stored pkt (source of truth)
+    json curr_pkt  = convertPktToJson(getCurrentCmnPkt());    // valid json of current stored pkt (source of truth)
 
     // loop condition checkers
     const std::size_t len_keys {keys.size()};

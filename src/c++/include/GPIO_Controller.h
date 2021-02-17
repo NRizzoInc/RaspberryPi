@@ -40,6 +40,13 @@ using MapParentMaps = std::unordered_map<
 class GPIOController; // forward declare for mapping
 using ModeMap = Helpers::Map::ClassFnMap<GPIOController>;
 
+
+/**
+ * @brief Callback to be used when new server data is ready to be sent
+ * @param srv_data_pkt The up to date `Network::SrvDataPkt`
+ */
+using SensorDataCb = std::function<void(const Network::SrvDataPkt& srv_data_pkt)>;
+
 /**
  * @brief Handles all GPIO related operations
  */
@@ -80,6 +87,13 @@ class GPIOController :
          * @return True if everything is good to go
          */
         bool getIsInit() const override;
+
+        /**
+         * @brief Set the callback to fire when there is new sensor data available  
+         * @param cb The callback to set
+         * (param: const Network::SrvDataPkt& srv_data_pkt (the new up to date server data))
+         */
+        void setSensorDataCb(const SensorDataCb& cb);
 
         /*********************************************** GPIO Helpers **********************************************/
 
@@ -129,6 +143,19 @@ class GPIOController :
             __attribute__((unused)) const unsigned int& rate=1
         ) const;
 
+        /**
+         * @brief Run all sensors and handle getting new data via the set 
+         * (This is blocking and should be run in athread)
+         * @note Have to pass everything by reference do to function mapping requirements
+         */
+        void RunSensors(
+            // not needed, but need to follow call guidlines for fn-mapping to work
+            __attribute__((unused)) const std::vector<std::string>& colors={},
+            __attribute__((unused)) const unsigned int& interval=1000,
+            __attribute__((unused)) const int& duration=-1,
+            __attribute__((unused)) const unsigned int& rate=1
+        ) const;
+
     private:
         /******************************************** Private Variables ********************************************/
         /**
@@ -141,12 +168,14 @@ class GPIOController :
          * }
          * 
          */
-        static const ModeMap                            mode_to_action;         // maps a mode name to a gpio function
-        std::thread                                     run_thread;             // thread that contains run()
-        std::atomic_bool                                started_thread;         // wait for thread start before joining
-        std::mutex                                      thread_mutex;
-        std::condition_variable                         thread_cv;              // unblock if client has pkt to send
-        bool                                            has_cleaned_up;         // ensures cleanup doesnt happen twice
+        static const ModeMap            mode_to_action;     // maps a mode name to a gpio function
+        std::thread                     run_thread;         // thread that contains run()
+        std::atomic_bool                started_thread;     // wait for thread start before joining
+        std::mutex                      thread_mutex;
+        std::condition_variable         thread_cv;          // unblock if client has pkt to send
+        bool                            has_cleaned_up;     // ensures cleanup doesnt happen twice
+
+        SensorDataCb                    sensor_data_cb;     // callback when there is new sensor data
         
         /********************************************* Helper Functions ********************************************/
 

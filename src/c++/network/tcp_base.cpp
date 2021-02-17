@@ -49,6 +49,10 @@ ReturnCodes TcpBase::cleanup() {
         cam_vid_thread.join();
     }
 
+    if(srv_data_thread.joinable()) {
+        srv_data_thread.join();
+    }
+
     // call quit once thread for derived client/server is over
     // quit should be overriden by derived classes for proper cleanup
     quit();
@@ -58,6 +62,10 @@ ReturnCodes TcpBase::cleanup() {
 }
 
 /********************************************* Getters/Setters *********************************************/
+
+bool TcpBase::isVerbose() const {
+    return is_verbose;
+}
 
 ReturnCodes TcpBase::setExitCode(const bool new_exit) {
     should_exit.store(new_exit);
@@ -108,6 +116,10 @@ void TcpBase::runNetAgent(const bool print_data) {
         VideoStreamHandler();
     }};
 
+    srv_data_thread = std::thread{[this, print_data]() {
+        ServerDataHandler(print_data);
+    }};
+
     // unlock & notify so joiner can continue
     started_threads.store(true);
     start_thread_lk.unlock();
@@ -137,14 +149,14 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         )};
         const int header_rx_partial = ::recv(socket_fd, header_buf+header_rx_size, max_stream_left, 0);
         if (header_rx_partial < 0) {
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "Error: receiving header packet" << endl;
             }
             return RecvRtn{{}, RecvSendRtnCodes::Error};
         } 
         else if (header_rx_partial == 0) {
             // end of stream
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "Error: other host closed connection while sending header packet" << endl;
             }
             return RecvRtn{{}, RecvSendRtnCodes::ClosedConn};
@@ -162,7 +174,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
     // prepare bufs for receiving
     std::uint32_t total_recv_size {0};
     char recv_buf[header.total_length];
-    RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Sucess}; // default to success
+    RecvSendRtnCodes rtn_code {RecvSendRtnCodes::Success}; // default to success
     while (total_recv_size < header.total_length) {
         // append new data to top of buf (new start = start + curr size)
         const std::uint32_t max_stream_size {std::min(
@@ -175,7 +187,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
 
         // error checking
         if(rcv_size < 0) {
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "ERROR: RECV (" << total_recv_size << "/" << header.total_length << ")" << endl;
             }
             rtn_code = RecvSendRtnCodes::Error;
@@ -183,7 +195,7 @@ RecvRtn TcpBase::recvData(int socket_fd) {
         }
 
         else if (rcv_size == 0) {
-            if(is_verbose) {
+            if(isVerbose()) {
                 cerr << "ERROR: RECV - other host closed connection" << endl;
             }
             rtn_code = RecvSendRtnCodes::ClosedConn;
@@ -237,7 +249,7 @@ SendRtn TcpBase::sendData(
     }
 
     // iff successful, sent_size >= 0 so can safely cast to uint
-    return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Sucess};
+    return SendRtn{static_cast<std::uint32_t>(sent_size), RecvSendRtnCodes::Success};
 }
 
 

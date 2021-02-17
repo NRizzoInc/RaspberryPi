@@ -123,6 +123,13 @@ ReturnCodes CLI_Parser::addFlags() {
         ->check(::CLI::Range(1024, 65535))
         ;
 
+    net_group->add_option("--srv-data-port", cli_res[CLI::Results::ParseKeys::SRV_DATA_PORT])
+        ->description("The server's/client's port number for sending & receiving server data")
+        ->required(false)
+        ->default_val("55557")
+        ->check(::CLI::Range(1024, 65535))
+        ;
+
     /**************************************** I2C Address Flags ***************************************/
 
     auto hardware_group = add_option_group("Hardware");

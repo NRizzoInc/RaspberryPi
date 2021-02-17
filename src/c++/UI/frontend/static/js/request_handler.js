@@ -28,10 +28,11 @@ export async function postPktData(pkt_data) {
 /**
  * @brief Perform a GET request on the desired page and return the result
  * @param {String} url The url to GET the data at
- * @returns {JSON} Contains the backend's json response to the GET request
+ * @returns {JSON} Contains the backend's json response to the GET request (null if error)
  */
 export async function getJsonData(url) {
-    let reqResponse = {}
+    jQuery.migrateMute = true; // suppress warnings (temporary)
+    let reqResponse = null
     try {
         reqResponse = await $.ajax({
             url: url,
@@ -40,8 +41,9 @@ export async function getJsonData(url) {
             contentType: "application/json",
         })
     } catch (err) {
-        console.log(`Failed to GET data from '${curr_page}': ${err.status} - ${err.statusText}`);
+        // console.log(`Failed to GET data from '${curr_page}': ${err.status} - ${err.statusText}`);
     }
+    jQuery.migrateMute = false // unsuppress warnings when done
     return reqResponse
 }
 
