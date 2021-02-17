@@ -5,6 +5,17 @@ project (RPI)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# use gcc/++7
+if(NOT IS_CROSS_COMPILE)
+    message(STATUS "Building with gcc/g++7")
+    set(CMAKE_C_COMPILER /usr/bin/gcc-7 CACHE PATH "" FORCE)
+    set(CMAKE_CXX_COMPILER /usr/bin/g++-7 CACHE PATH "" FORCE)
+else()
+    message(STATUS "Building with arm cross compiler")
+    set(CMAKE_C_COMPILER /usr/bin/arm-linux-gnueabihf-gcc CACHE PATH "" FORCE)
+    set(CMAKE_CXX_COMPILER /usr/bin/arm-linux-gnueabihf-g++ CACHE PATH "" FORCE)
+endif()
+
 # use >= gcc/g++7
 if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
     message(FATAL_ERROR "Require at least g++-7")
