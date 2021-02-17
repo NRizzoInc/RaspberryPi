@@ -3,7 +3,7 @@
  * @file Handles the sending of packets to the web app to send to the rpi
  */
 
-import { postPktData } from "./request_handler.js"
+import { postPktData, getJsonData } from "./request_handler.js"
 
 
 /**
@@ -13,6 +13,8 @@ import { postPktData } from "./request_handler.js"
 const toBool = (val) => {
     return !!val
 }
+
+/*************************************** Send Pkt Functions **************************************/
 
 /**
  * @brief Final endpoint for sending packets to the web app backend which sends to server
@@ -79,4 +81,36 @@ export const sendServoPkt = async (servos) => {
  */
 export const sendCamPkt = async (camera) => {
     await sendPkt({}, {}, {}, camera)
+}
+
+/************************************* Recv Data/Pkt Functions ***********************************/
+
+/**
+ * @brief Final endpoint for getting sensor data packets from server to the web app
+ * @returns {{
+ *  "ultrasonic": {
+ *     "dist": Number
+ *   }
+ * } | null } Server data in the form of a json (null if error)
+ * @note see pkt_sample.json ""Server Data Packet"'s json in network dir for what return should look like
+ */
+export const getServerDataPkt = async () => {
+    return await getJsonData("/Server/data.json")
+}
+
+/**
+ * @brief Gets the ultrasonic (distance) sensor data from the server
+ * @returns {{
+ *   "dist": Number
+ * } | null } Server's ultrasonic data in the form of a json (null if error)
+ * @note see pkt_sample.json ""Server Data Packet"'s json in network dir for what return should look like
+ */
+export const getUltrasonicData = async () => {
+    const server_data = await getServerDataPkt()
+    // empty if error
+    return server_data == null ? null : server_data.ultrasonic
+}
+
+export const getCamSettings = async () => {
+    return await getJsonData("/Camera/settings.json")
 }
