@@ -17,7 +17,7 @@ const handleDistDiv = async () => {
     const cur_ultrasonic_data = await getUltrasonicData()
     // empty if error
     const cur_dist = cur_ultrasonic_data == {} ? -1 : cur_ultrasonic_data.dist
-    ultrasonic_el.innerHTML = `${ultrasonic_beg_msg} ${cur_dist}cm`
+    ultrasonic_el.innerHTML = `${ultrasonic_beg_msg}\n${cur_dist}cm`
 }
 
 /********* create/manage interval to every so often update the div with latest value *********/
