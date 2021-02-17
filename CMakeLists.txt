@@ -5,15 +5,16 @@ project (RPI)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# use gcc/++7
-set(CMAKE_C_COMPILER /usr/bin/gcc-7 CACHE PATH "" FORCE)
-set(CMAKE_CXX_COMPILER /usr/bin/g++-7 CACHE PATH "" FORCE)
+# use >= gcc/g++7
+if (CMAKE_COMPILER_IS_GNUCC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
+    message(FATAL_ERROR "Require at least g++-7")
+endif()
 
 # set build type based on makefile target
 # CMAKE_BUILD_TYPE set in Makefile
 # Ignore Pi Specific Warning from JSON lib: -Wno-psabi
 message(STATUS "Building in ${CMAKE_BUILD_TYPE} Mode")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-psabi")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-psabi -Wno-cast-function-type")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
