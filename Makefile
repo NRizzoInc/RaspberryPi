@@ -7,12 +7,8 @@ BUILD_ROOT := build
 
 all: build # default to non-optimized build mode
 
-.PHONY: build
-build: ./build/Makefile
-	@ $(MAKE) -j`nproc` -C build
-
-.PHONY: debug
-debug: ./build/Makefile
+.PHONY: build debug
+build debug: ./build/Makefile
 	@ $(MAKE) -j`nproc` -C build
 
 .PHONY: release
