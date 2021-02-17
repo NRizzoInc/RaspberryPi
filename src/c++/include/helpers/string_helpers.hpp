@@ -39,7 +39,7 @@ inline const std::vector<std::string> splitStr(const char delim, const std::stri
         split_str.push_back(final_el);
     }
 
-    return std::move(split_str);
+    return split_str;
 }
 
 /**
