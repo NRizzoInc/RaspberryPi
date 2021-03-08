@@ -2,7 +2,7 @@
 
 This repo contains both C++ and Python code for interfacing with a Raspberry Pi 3B+.
 In the future however, I plan on stop supporting the Python code base in favor of C++.
-_Note:_ I may rever to the raspberry pi as RPI for short.
+_Note:_ I may refer to the raspberry pi as RPI for short.
 
 ## Current Features
 
