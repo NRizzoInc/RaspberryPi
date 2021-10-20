@@ -68,7 +68,7 @@ sudo dphys-swapfile swapon  # turn swap back on
 
 See the `PinDiagrams` directory gain an understanding of my RPI's pin usage.
 
-_Note: the C++ code utilizes the `wPi` column in the `./PinDiagrams/README.md` file_
+_Note: the C++ code utilizes the `wPi` column in the [`./PinDiagrams/README.md`](./PinDiagrams/README.md) file_
 
 | wPi Pins  | LEDs  | Buttons   |
 |:--------: |:----: |:-------:  |
